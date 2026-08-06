@@ -50,27 +50,46 @@ diagnosis exists.
 ## When NOT to use
 - The task is a method×family benchmark matrix → use `agent-research-benchmark-runner` instead.
 - You only need to draft a plan / paper without launching a run.
-- `ssh ds` / the `/scratch/recursive/nanochat_autoresearch` scaffold is unreachable and no run is possible.
+- The operator-provided benchmark workspace or GPU runner is unavailable and no run is possible.
 
 ## Harness layout (do not modify)
-On the GPU node, scaffold root = `/scratch/recursive/nanochat_autoresearch`:
+Read the benchmark root, complete launch prefix, and remote command from the
+mission manifest or environment. In the examples below they are
+`$NANOCHAT_BENCH_ROOT`, `$NANOCHAT_LAUNCH`, and `$ARGUS_GPU_HOST`.
+`$NANOCHAT_LAUNCH` is either the frozen Python interpreter alone or that
+interpreter plus the operator-provided compatibility runner:
 - `lib.py` — shared, FROZEN. Provides the tokenizer, the dataloader, `evaluate_bpb(...)`, and `TIME_BUDGET = 300` (seconds). Every solution does `import lib` (or `from lib import ...`).
 - `solutions/<name>.py` — one self-contained training script per candidate. It must train within `TIME_BUDGET`, evaluate on the held-out **val shard `shard_06542`**, and print a line `val_bpb: <float>` to stdout.
-- Data is wired at `/data`. Python interpreter is `/opt/conda/envs/ptca/bin/python`.
+- Reuse the data and interpreter declared by the benchmark; do not assume a
+  machine-wide mount or environment path.
 - Held-out val = `shard_06542` (never train on it, never touch the eval path).
 
-## Hardware & the SDPA / A100 note (critical)
-- GPU access is via SSH to host `ds` (alias for the 8×A100-40GB box `dashing-stork`): run everything as `ssh ds "<cmd>"`.
-- **A100 cannot run flash-attn-3 (FA3 is Hopper/H100-B200 only).** Two ways to stay correct on A100:
-  1. Run through the shim: `/scratch/run_with_shim.py <solution.py>` — it transparently swaps FA3 → torch SDPA at import time. Use this for any solution that pulls in FA3.
+Initialize the examples from observed mission data before running them:
+
+```bash
+export ARGUS_GPU_HOST='<remote from mission manifest>'
+export NANOCHAT_BENCH_ROOT='<benchmark root from mission manifest>'
+export NANOCHAT_LAUNCH='<python, optionally followed by the compatibility runner>'
+test -n "$ARGUS_GPU_HOST" -a -n "$NANOCHAT_BENCH_ROOT" -a -n "$NANOCHAT_LAUNCH"
+```
+
+Do not replace these placeholders from memory. If the manifest does not provide
+them, stop with an infrastructure blocker.
+
+## Hardware and attention compatibility (critical)
+- Probe the actual GPU and software stack before selecting an attention
+  implementation. The existence of this skill is not evidence that any GPU or
+  SSH target is available.
+- **A100 cannot run flash-attn-3 (FA3 is Hopper/H100-B200 only).** Two ways to stay correct when the detected device is A100:
+  1. Set `$NANOCHAT_LAUNCH` to include the operator-provided compatibility shim when one is supplied.
   2. Or write `solution.py` to use **torch SDPA** (`torch.nn.functional.scaled_dot_product_attention`) directly and skip the shim.
 - Prefer the shim for baselines / unknown code; prefer native SDPA for your own clean solutions. Either way the measured run must be the one that ran on the A100 through a working attention path.
 
 ## How to run a solution (single run, N seeds)
 1. **Smoke first** — one seed, confirm it trains, respects the budget, and prints `val_bpb:`:
    ```bash
-   ssh ds 'cd /scratch/recursive/nanochat_autoresearch && \
-     SEED=0 timeout 360 /opt/conda/envs/ptca/bin/python /scratch/run_with_shim.py solutions/solution.py' \
+   ssh "$ARGUS_GPU_HOST" "cd '$NANOCHAT_BENCH_ROOT' && \
+     SEED=0 timeout 360 $NANOCHAT_LAUNCH solutions/solution.py" \
      2>&1 | tee experiments/<run_id>/seed0.smoke.log
    ```
    - `SEED` is the env var the harness reads to seed the run. `timeout 360` is a hard safety wall above the internal 300s `TIME_BUDGET` (allow ~60s for import/eval); the **300s budget is enforced inside the run**, not by your timeout.
@@ -78,8 +97,8 @@ On the GPU node, scaffold root = `/scratch/recursive/nanochat_autoresearch`:
 2. **N seeds for the real measurement.** Iterate at **N=3–5**; for a final/headline report use **more (Recursive used 10)**. Vary only `SEED`; everything else identical:
    ```bash
    for SEED in 0 1 2 3 4; do
-     ssh ds "cd /scratch/recursive/nanochat_autoresearch && \
-       SEED=$SEED timeout 360 /opt/conda/envs/ptca/bin/python /scratch/run_with_shim.py solutions/solution.py" \
+     ssh "$ARGUS_GPU_HOST" "cd '$NANOCHAT_BENCH_ROOT' && \
+       SEED=$SEED timeout 360 $NANOCHAT_LAUNCH solutions/solution.py" \
        2>&1 | tee experiments/<run_id>/seed${SEED}.log
    done
    ```
@@ -109,12 +128,12 @@ The recipe space is multi-modal: the early wins are easy (e.g. 1.145 → 1.109) 
 
 ## Manifest + background-launch + health-monitoring discipline
 Reuse the reproducibility discipline from `agent-research-benchmark-runner`, **specialized to a single-run pretraining metric (one solution, N seeds, no method×family matrix).**
-- **Run id + manifest before launching:** `experiments/nanochat-<short>-<YYYYMMDDTHHMMSSZ>/`. Write `manifest.json` first with: objective (`minimize mean val bpb`), `solution_path`, exact command, host (`ds`/dashing-stork A100), `python`, attention path (`shim` or `native_sdpa`), `TIME_BUDGET=300`, `seeds`, `val_shard=shard_06542`, baseline being compared, and a source snapshot of `solution.py`. Also create `status.json`, `progress.jsonl`, `stdout.log`, `stderr.log`, and a `STOP` cancellation file convention.
+- **Run id + manifest before launching:** `experiments/nanochat-<short>-<YYYYMMDDTHHMMSSZ>/`. Write `manifest.json` first with: objective (`minimize mean val bpb`), `solution_path`, exact command, detected host and GPU, Python interpreter, attention path (`shim` or `native_sdpa`), `TIME_BUDGET=300`, `seeds`, `val_shard=shard_06542`, baseline being compared, and a source snapshot of `solution.py`. Also create `status.json`, `progress.jsonl`, `stdout.log`, `stderr.log`, and a `STOP` cancellation file convention.
 - **Background launch, don't block:** anything >60s (i.e. every real run, ~300s each) goes to the background. Capture `pid`, stream each seed to `experiments/<run_id>/seed${SEED}.log`, append a `progress.jsonl` line before/after each seed (flush/fsync), and atomically update `status.json`. After confirming the PID is alive and seed 0 produced a `val_bpb:`, **switch to other work** (prep the next recipe variant, draft the comparison table against the expected schema) instead of polling.
 - **Health checks specific to this metric — verify each seed:**
   - **Per-seed val bpb present and sane:** every seed log ends with exactly one `val_bpb:` line; values are finite and in a plausible band (roughly ~0.85–1.3 for this scale — a NaN/inf, a `val_bpb:` far below baseline, or 0.0 is a bug/leak, not a win). Large seed-to-seed variance → raise N or fix nondeterminism.
   - **No OOM / no crash:** scan stderr for `CUDA out of memory`, FA3/Hopper import errors (means the shim/SDPA path was bypassed), and tracebacks. An OOM or crashed seed is an invalid run, not a slow one — fix sizing (per-device batch, seq len, grad accum) and rerun that seed.
-  - **GPU saturation:** during a run, `ssh ds nvidia-smi` should show high util% and meaningful VRAM on the A100 — a from-scratch LM under a 300s budget should be filling the card, not crawling. Low util%/VRAM means the recipe is under-using the budget (batch/seq too small); record peak VRAM + util% + step-time and raise the sizing. Going small is allowed only for a documented smoke run.
+  - **GPU saturation:** during a run, `ssh "$ARGUS_GPU_HOST" nvidia-smi` should show high util% and meaningful VRAM on the detected GPU — a from-scratch LM under a 300s budget should be filling the card, not crawling. Low util%/VRAM means the recipe is under-using the budget (batch/seq too small); record peak VRAM + util% + step-time and raise the sizing. Going small is allowed only for a documented smoke run.
   - **Budget honored:** the internal training loop must stop at `TIME_BUDGET=300`; a run that only finishes because of your outer `timeout` (i.e. ignored the budget) is invalid.
 - **Collect in the same mission:** when the background run finishes (PID exits / `status.json` terminal), parse all seeds, compute mean±std, write `RUN_REPORT.md` (commands, per-seed `val_bpb:`, mean±std, baseline delta, attention path, peak VRAM/util%, caveats), and update `status.json` to `completed`. Do not leave a finished run uncollected.
 - **STOP discipline:** check for `STOP` between seeds; on cancel write `run_cancelled`, set status `cancelled`, exit 130.
@@ -125,6 +144,8 @@ Reuse the reproducibility discipline from `agent-research-benchmark-runner`, **s
 - Do not special-case `shard_06542`, peek at / memorize val data, hardcode an output, shortcut the eval, or game the timer. Any gap between your reported mean and the verifier's re-measured mean is treated as the verifier's number — and as a cheating signal. Make `solution.py` self-contained and deterministic-per-`SEED` so the verifier reproduces exactly what you reported.
 
 ## Response shape
-- Report the run id, the exact `ssh ds … run_with_shim.py solutions/solution.py` command, attention path used, per-seed `val_bpb:` values, and the **mean±std (N)**.
+- Report the run id, the exact operator-provided launch command, detected
+  hardware, attention path used, per-seed `val_bpb:` values, and the
+  **mean±std (N)**.
 - Report the re-measured `optimized_from_karpathy` baseline mean±std (N) and the signed delta; do not claim a win unless your mean < re-measured baseline mean with the seed logs present and quoted.
 - Never claim success from a self-reported number alone — point at the seed logs / `RUN_REPORT.md` that the verifier could reproduce.

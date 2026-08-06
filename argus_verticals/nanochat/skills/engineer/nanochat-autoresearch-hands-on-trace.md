@@ -183,9 +183,10 @@ improves. Throughput is evidence, never the reward.
 
 ## My run: the concrete operations
 
-Project: `/home/argustest/nanochat-mission-b200`. Scorer (frozen):
-`./eval_solution.sh train.py <N>` — ships `train.py` to a single B200 (`ssh -p 2231`,
-interp `/opt/conda/envs/ptca/bin/python`, **real `flash_attn.cute` FA-4 sm_100**), runs the
+Project: the operator-provided nanochat benchmark workspace. Scorer (frozen):
+`./eval_solution.sh train.py <N>` — ships `train.py` to the declared single-B200
+runner using the manifest's remote command and Python interpreter, with
+**real `flash_attn.cute` FA-4 sm_100**, then runs the
 candidate for a **fixed 300s** under `DEVICE_BATCH_SIZE=64` + grad-accum, **N seeds
 SEQUENTIALLY** (concurrency on the shared pod collapses throughput and inflates `val_bpb`
 ~0.08–0.10 — a measured confound, NOT noise), evaluates `val_bpb` on the held-out
@@ -215,7 +216,7 @@ The speedrun has a t-test as its validity gate; this task hands you **raw per-se
 and makes the noise gate **your** job. Skipping it is the single most expensive omission (nail 1).
 
 ```bash
-cd /home/argustest/nanochat-mission-b200
+cd "$NANOCHAT_BENCH_ROOT"
 ./eval_solution.sh train.py 1            # vanilla baseline, 1 seed (fast signal)
 # ONE-TIME calibration — enough to estimate whether the instrument is stable:
 ./eval_solution.sh train.py 3            # SAME vanilla, 3 seeds -> initial seed-to-seed sd

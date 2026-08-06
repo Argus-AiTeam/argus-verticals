@@ -161,7 +161,8 @@ YOUR job**, and every keep/reject decision is a hypothesis test against it.
 ## 4. Diagnosis: where does the budget go?
 
 Optimizing the non-bottleneck is the #1 way to waste a day. Decompose first, with real
-measurement — you have **direct GPU access** (`ssh -p 2231`), so use it.
+measurement. Use direct GPU access only when the mission manifest provides a
+working remote command; otherwise record an infrastructure blocker.
 
 - **Budget decomposition:** `effective_steps ≈ (300 − warmup/compile) / per_step`. Know how many
   steps/tokens the budget actually buys before touching anything.
