@@ -16,7 +16,7 @@ Optimize `solution/train.py` and `solution/triton_kernels.py` for Recursive "Fir
 
 ## When NOT to use
 - The task is KernelBench/SOL GPU kernel optimization; use `SOL Kernel SOTA Optimization` or `SOL Kernel Hands-on Trace`.
-- The task is NanoChat/BPB pretraining on one GPU; use `NanoChat Pretrain Runner`.
+- The task is NanoChat/BPB pretraining; follow that project's frozen harness and NanoChat vertical instead.
 - The frozen Task 2 environment is missing and cannot be restored; write a blocker report instead of changing comparability.
 
 ## Non-negotiable contract
