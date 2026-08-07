@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from argus_skill.verticals._base import load_vertical, vertical_search_altitude
 from argus_skill.verticals.nanochat.stages import (
     _REF_BEST,
@@ -165,13 +167,18 @@ def test_vertical_hook_failopen_for_vertical_without_hook(tmp_path):
     assert vertical_search_altitude(mod, tmp_path) == ""
 
 
-def test_vertical_hook_failopen_on_raising_hook():
+def test_vertical_hook_failure_is_visible():
     class _Boom:
+        CHECKLIST_STAGE_ORDER = ("work",)
+        CHECKLIST_ITEMS = {"work": ()}
+        completion_gate = "none"
+
         @staticmethod
         def search_altitude_context(_root):
             raise RuntimeError("boom")
 
-    assert vertical_search_altitude(_Boom(), "/nonexistent") == ""
+    with pytest.raises(RuntimeError, match="boom"):
+        vertical_search_altitude(_Boom(), "/nonexistent")
 
 
 def _write_profiled_attempt(
