@@ -319,6 +319,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
 
 #: Speedrun missions are done on a metric verdict, not a paper-submission gate.
 completion_gate = "metric"
+MISSION_KIND = "optimize"
 
 
 def role_banner(role: str = "engineer") -> str:

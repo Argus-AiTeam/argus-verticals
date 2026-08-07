@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 
 from argus_skill.manager import Manager
-from argus_skill.manager._helpers import _OPTIMIZE_VERTICALS
 from argus_skill.skills.builtins import (
     iter_vertical_skill_texts,
     seed_builtin_skills_for_vertical,
@@ -73,7 +72,6 @@ def test_materials_uses_proportional_independently_reviewed_workflow() -> None:
     assert vertical_completion_gate(mod) == "none"
     assert vertical_requires_independent_review(mod) is True
     assert Manager._kind_for("materials") == "custom"
-    assert "materials" not in _OPTIMIZE_VERTICALS
 
 
 def test_materials_persists_and_seeds_scope(tmp_path) -> None:

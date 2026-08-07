@@ -34,6 +34,7 @@ from ..speedrun.stages import (  # noqa: F401  (re-exported as this vertical's c
 #: Mechanical metric gate (not a paper); the supervisor stops when the metric
 #: stops improving rather than on paper-completeness.
 completion_gate = "metric"
+MISSION_KIND = "optimize"
 
 
 #: Productive, mechanism-changing optimization axes for a fixed-budget run.

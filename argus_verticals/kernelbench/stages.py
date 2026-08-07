@@ -136,6 +136,7 @@ REVIEWER_CHECKLISTS: dict[str, tuple[str, str, list[str]]] = {
 }
 
 completion_gate = "metric"
+MISSION_KIND = "optimize"
 
 CHECKLIST_STAGE_ORDER: tuple[str, ...] = (
     "research",
