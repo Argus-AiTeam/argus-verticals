@@ -38,12 +38,13 @@ where there is nothing to write up.
 from __future__ import annotations
 
 from ...skills.stage_machine import ChecklistItem
+from ..optimization_base import OPTIMIZATION_STAGE_ORDER, PIPELINE_CHECK
 
-STAGE_ORDER = ["setup", "optimize", "measure", "report"]
+STAGE_ORDER = list(OPTIMIZATION_STAGE_ORDER)
 
 # Generic across verticals; kept here as a private copy for now and will
 # migrate to ``argus_skill.core.contracts`` once a third vertical lands.
-_PIPELINE_CHECK = ("Pipeline state present", "test -f research/PIPELINE_STATE.json")
+_PIPELINE_CHECK = PIPELINE_CHECK
 
 STAGE_CHECKS: dict[str, list[tuple[str, str]]] = {
     # Each check accepts EITHER the canonical speedrun scaffold (MISSION.md,

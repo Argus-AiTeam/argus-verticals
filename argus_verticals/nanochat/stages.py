@@ -19,17 +19,17 @@ import re
 import statistics
 from pathlib import Path
 
-# Reuse the BPB-shaped structure + flat-workspace checks from the generic
-# optimization vertical. This is code reuse, not identity: this module is its
-# OWN named vertical (so the nanochat task is never classified as "speedrun"),
-# free to diverge from speedrun's checklists later.
-from ..speedrun.stages import (  # noqa: F401  (re-exported as this vertical's contract)
-    CHECKLIST_ITEMS,
-    CHECKLIST_STAGE_ORDER,
-    REVIEWER_CHECKLISTS,
-    STAGE_CHECKS,
-    STAGE_ORDER,
-)
+# Reuse the generic optimization contract through the explicit base facade.
+# Containers are copied so this specialization can diverge without mutating
+# the concrete speedrun provider.
+from ..optimization_base import speedrun_base_contract
+
+_BASE = speedrun_base_contract()
+STAGE_ORDER = list(_BASE.stage_order)
+CHECKLIST_STAGE_ORDER = _BASE.stage_order
+STAGE_CHECKS = _BASE.stage_checks
+REVIEWER_CHECKLISTS = _BASE.reviewer_checklists
+CHECKLIST_ITEMS = _BASE.checklist_items
 
 #: Mechanical metric gate (not a paper); the supervisor stops when the metric
 #: stops improving rather than on paper-completeness.

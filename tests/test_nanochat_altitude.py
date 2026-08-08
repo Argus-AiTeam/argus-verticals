@@ -166,9 +166,13 @@ def test_vertical_hook_failopen_for_vertical_without_hook(tmp_path):
 
 
 def test_vertical_hook_failure_is_visible():
+    from argus_skill.skills.stage_machine import ChecklistItem
+
     class _Boom:
         CHECKLIST_STAGE_ORDER = ("work",)
-        CHECKLIST_ITEMS = {"work": ()}
+        CHECKLIST_ITEMS = {
+            "work": (ChecklistItem("work.output", "Output exists", "output"),)
+        }
         completion_gate = "none"
 
         @staticmethod

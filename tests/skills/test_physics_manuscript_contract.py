@@ -43,9 +43,10 @@ def complete_package(tmp_path: Path) -> Path:
 def test_physics_stage_order_is_five_ending_in_manuscript() -> None:
     mod = load_vertical("physics")
     assert mod.STAGE_ORDER == ("scope", "model", "execute", "review", "manuscript")
-    # Shell-check registries were retired; the vertical owns a reviewer-facing
-    # checklist and leaves the verifier available as an agent-callable tool.
+    # Shell-check registries stay retired. The terminal verifier is exposed as
+    # a typed provider hook consumed by the stage machine.
     assert not hasattr(mod, "STAGE_CHECKS")
+    assert callable(mod.stage_completion_issues)
     assert {item.id for item in mod.CHECKLIST_ITEMS["manuscript"]} >= {
         "manuscript.paper-package",
         "manuscript.paper-composition",
@@ -83,6 +84,38 @@ def test_contract_checked_without_any_marker(tmp_path: Path) -> None:
     failures = ms.verify_manuscript_deliverables(tmp_path)
     assert failures  # non-empty: deliverables are required unconditionally
     assert ms.main(["check", "--project-root", str(tmp_path)]) == 1
+
+
+def test_stage_machine_blocks_incomplete_manuscript_completion(tmp_path: Path) -> None:
+    from argus_skill.skills.stage_machine import StageCompletionError, complete_final_stage
+
+    (tmp_path / "research").mkdir()
+    state_path = tmp_path / "research" / "PIPELINE_STATE.json"
+    state_path.write_text(
+        '{"vertical":"physics","current_stage":"manuscript"}',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(StageCompletionError, match="MANUSCRIPT.md"):
+        complete_final_stage(tmp_path, reason="reviewer said done")
+
+    assert '"status": "done"' not in state_path.read_text(encoding="utf-8")
+
+
+def test_stage_machine_completes_verified_manuscript(complete_package: Path) -> None:
+    from argus_skill.skills.stage_machine import complete_final_stage
+
+    research = complete_package / "research"
+    research.mkdir(exist_ok=True)
+    state_path = research / "PIPELINE_STATE.json"
+    state_path.write_text(
+        '{"vertical":"physics","current_stage":"manuscript"}',
+        encoding="utf-8",
+    )
+
+    complete_final_stage(complete_package, reason="deterministic gate passed")
+
+    assert '"status": "done"' in state_path.read_text(encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
