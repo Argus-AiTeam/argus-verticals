@@ -12,9 +12,7 @@ WORKFLOW_MODE = "staged"
 MISSION_KIND = "research"
 REQUIRE_INDEPENDENT_REVIEW = True
 COMPLETION_CONTRACT_VERSION = 1
-# Public Argus currently names its Reviewer-certified completion gate
-# ``full_paper`` even for non-paper verticals.
-completion_gate = "full_paper"
+completion_gate = "certified"
 
 STAGE_PRIMARY_DELIVERABLES = {
     "deliver": (

@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from argus_skill.manager._core import Manager
-from argus_skill.manager._helpers import _OPTIMIZE_VERTICALS
 from argus_skill.skills.builtins import iter_vertical_skill_texts
 from argus_skill.skills.stage_machine import (
     ChecklistLoadState,
@@ -473,7 +472,6 @@ def test_chip_design_is_registered_and_staged() -> None:
     assert vertical_workflow_mode(module) == "proportional"
     assert vertical_requires_independent_review(module) is True
     assert Manager._kind_for("chip_design") == "custom"
-    assert "chip_design" not in _OPTIMIZE_VERTICALS
 
 
 def test_chip_design_checklists_load_without_paper_contract(tmp_path: Path) -> None:

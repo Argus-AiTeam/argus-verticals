@@ -57,7 +57,7 @@ def test_medical_owns_certified_independently_reviewed_workflow() -> None:
     mod = load_vertical("medical")
 
     assert vertical_workflow_mode(mod) == "staged"
-    assert vertical_completion_gate(mod) == "full_paper"
+    assert vertical_completion_gate(mod) == "certified"
     assert vertical_requires_independent_review(mod) is True
     assert vertical_completion_contract_version(mod) == 1
     assert Manager._kind_for("medical") == "research"

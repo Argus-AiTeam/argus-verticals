@@ -14,6 +14,9 @@ Inspect project instructions and existing environments before installing or
 choosing tools. Use official APIs and native batch interfaces when available.
 Treat MCP servers and generated Python as execution surfaces, not evidence.
 Evidence begins with a completed solver or instrument run and its native output.
+Index the evidence actually used in `research/MATERIALS_EVIDENCE.json` (version
+1, `evidence` list of project-relative `path` + `kind`). This is a provenance
+index, not a substitute for the native files or a scientific verdict.
 
 Make composition, phase, temperature, pressure, strain rate, texture, defects,
 processing history, geometry, units, model parameters, boundary/initial
