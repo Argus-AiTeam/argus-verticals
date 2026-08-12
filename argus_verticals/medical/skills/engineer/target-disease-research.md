@@ -12,6 +12,12 @@ pathway, drug, biomarker, indication, and subtype ambiguity explicitly.
 
 ## Evidence workflow
 
+Match the workflow to the requested deliverable. For a bounded summary, stop
+when each requested evidence item is supported: batch PubMed IDs into one
+E-utilities request, batch trial IDs where the API permits, and do not run
+overlapping searches after the evidence limit is met. Produce only the named
+output; the full dossier below is for requests that actually ask for one.
+
 1. Query PubMed and ClinicalTrials.gov with preserved exact requests and UTC
    retrieval times. Use additional sources only when available and authorized.
 2. Retain raw responses before normalization. Record provider, transport,
@@ -43,7 +49,7 @@ history. Do not rerun an unchanged successful retrieval.
 
 ## Output contract
 
-Produce and preserve:
+For a full target-disease dossier, produce and preserve:
 
 - `medical/scope.json`
 - `medical/queries.jsonl`
