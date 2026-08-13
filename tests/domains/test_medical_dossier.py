@@ -179,7 +179,10 @@ def test_validator_rejects_missing_raw_artifact(tmp_path: Path) -> None:
     assert any("raw_artifact does not exist" in issue for issue in issues)
 
 
-def test_validator_rejects_query_raw_symlink_outside_project(tmp_path: Path) -> None:
+def test_validator_rejects_query_raw_symlink_outside_project(
+    tmp_path: Path,
+    require_symlink_support,
+) -> None:
     _build(tmp_path)
     medical = tmp_path / "medical"
     outside = tmp_path.parent / f"{tmp_path.name}-outside.json"
