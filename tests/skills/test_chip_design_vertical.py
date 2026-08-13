@@ -705,6 +705,13 @@ def test_environment_audit_report_is_sanitized(tmp_path: Path) -> None:
     assert "/pdks/" not in serialized
 
 
+def test_environment_audit_sanitizes_posix_and_windows_absolute_markers() -> None:
+    assert environment_audit._safe_project_marker("rtl/top.sv") == "rtl/top.sv"
+    assert environment_audit._safe_project_marker("/pdks/sky130") is None
+    assert environment_audit._safe_project_marker(r"C:\pdks\sky130") is None
+    assert environment_audit._safe_project_marker(r"\\server\pdks\sky130") is None
+
+
 def test_environment_audit_never_executes_recorded_target_python(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -822,7 +829,10 @@ def test_environment_audit_rejects_report_that_omits_scope_requirements(
     assert any("required_capabilities" in error for error in errors)
 
 
-def test_environment_audit_rejects_symlink_output(tmp_path: Path) -> None:
+def test_environment_audit_rejects_symlink_output(
+    tmp_path: Path,
+    require_symlink_support,
+) -> None:
     outside = tmp_path.parent / f"{tmp_path.name}-outside.json"
     outside.write_text("unchanged\n", encoding="utf-8")
     output = tmp_path / "research/ENVIRONMENT_AUDIT.json"
