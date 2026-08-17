@@ -353,7 +353,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
             statement=(
                 "Every architecture frontier reports non-SRAM delta area/cells, Fmax, cycles, "
                 "and remaining area reserve; repeated low-yield local tweaks stop and escalate "
-                "to structural folding or an explicit Pareto/no-go result."
+                "to structural folding or an explicit Pareto characterization."
             ),
             evidence_hint="append-only PPA frontier ledger bound to RTL and constraint hashes",
         ),
@@ -443,7 +443,7 @@ def role_banner(role: str) -> str:
         "are different claims. Freeze interfaces, numerical behavior, target technology, "
         "resource/power budgets, baselines, and acceptance metrics before implementation. "
         "Numeric area, frequency, power, memory, and quality targets are operator-owned "
-        "contracts. An Agent-authored plan, ledger, review packet, or no-go report may "
+        "contracts. An Agent-authored plan, ledger, review packet, or rejection report may "
         "recommend a change but cannot authorize one; relaxing a target requires explicit "
         "operator approval recorded as such. "
         "Use maintained EDA flows and IP before authoring replacements. Never invent tool "
