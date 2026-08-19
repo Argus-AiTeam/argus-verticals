@@ -7,8 +7,8 @@ from argus_skill.verticals.physics import downgrade, mode_config, stages, tiers
 
 
 def _seed(tmp_path: Path) -> Path:
-    (tmp_path / "research").mkdir(parents=True, exist_ok=True)
-    (tmp_path / "research" / "PIPELINE_STATE.json").write_text(
+    (tmp_path / ".argus").mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".argus" / "PIPELINE_STATE.json").write_text(
         json.dumps(
             {
                 "current_stage": "execute",

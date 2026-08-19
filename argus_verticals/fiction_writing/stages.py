@@ -69,7 +69,7 @@ STAGE_ORDER = ["intake", "plan", "draft", "state_update", "review", "revise"]
 completion_gate = "none"
 
 # Generic across verticals; a private copy (mirrors learning/speedrun).
-_PIPELINE_CHECK = ("Pipeline state present", "test -f research/PIPELINE_STATE.json")
+_PIPELINE_CHECK = ("Pipeline state present", "test -f .argus/PIPELINE_STATE.json")
 
 # Lenient artifact-existence checks. The reviewer is the real gate; these only
 # confirm the stage produced *something* to review.

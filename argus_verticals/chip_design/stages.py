@@ -29,7 +29,7 @@ WORKFLOW_MODE = "proportional"
 completion_gate = "metric"
 REQUIRE_INDEPENDENT_REVIEW = True
 
-_PIPELINE_CHECK = ("Pipeline state present", "test -f research/PIPELINE_STATE.json")
+_PIPELINE_CHECK = ("Pipeline state present", "test -f .argus/PIPELINE_STATE.json")
 _EVIDENCE = "${ARGUS_SKILL_PYTHON:-python} -m argus_skill.verticals.chip_design.evidence"
 _AUDIT = "${ARGUS_SKILL_PYTHON:-python} -m argus_skill.verticals.chip_design.environment_audit"
 

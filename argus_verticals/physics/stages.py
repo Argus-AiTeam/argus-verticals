@@ -340,10 +340,9 @@ def _current_stage(project_root: object) -> str:
     if project_root is None:
         return ""
     try:
-        import json as _json
+        from ...core.pipeline_state import read_pipeline_state
 
-        p = Path(str(project_root)) / "research" / "PIPELINE_STATE.json"
-        data = _json.loads(p.read_text(encoding="utf-8"))
+        data = read_pipeline_state(project_root)
         return str(data.get("current_stage", "") or "")
     except Exception:  # noqa: BLE001
         return ""

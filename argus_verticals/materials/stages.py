@@ -25,7 +25,7 @@ completion_gate = "none"
 
 _PIPELINE_CHECK = (
     "Pipeline state present",
-    "test -f research/PIPELINE_STATE.json",
+    "test -f .argus/PIPELINE_STATE.json",
 )
 _EVIDENCE_CHECK = (
     "Materials evidence index validates",

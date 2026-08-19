@@ -97,7 +97,7 @@ def _digest(path: Path) -> str:
 
 def _complete_project(root: Path, *, delivery_level: str = "rtl_ip") -> Path:
     _write_json(
-        root / "research/PIPELINE_STATE.json",
+        root / ".argus/PIPELINE_STATE.json",
         {"vertical": "chip_design", "current_stage": "signoff"},
     )
     _write_json(

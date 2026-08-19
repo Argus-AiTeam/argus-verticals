@@ -30,7 +30,7 @@ def _isolate_forced_vertical_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _state(root: Path) -> dict:
-    return json.loads((root / "research" / "PIPELINE_STATE.json").read_text(encoding="utf-8"))
+    return json.loads((root / ".argus" / "PIPELINE_STATE.json").read_text(encoding="utf-8"))
 
 
 def test_physics_is_a_selectable_builtin_vertical() -> None:
