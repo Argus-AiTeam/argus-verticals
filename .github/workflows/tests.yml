@@ -6,9 +6,19 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The Argus ref to test against. Pin it to a commit SHA at or after the
+  # 2026-09-14 verticals split when a reproducible baseline is needed.
+  ARGUS_REF: main
+
 jobs:
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -17,7 +27,7 @@ jobs:
       - name: Install Argus (framework) and this package with its dev extras
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
+          python -m pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@${ARGUS_REF}"
           python -m pip install -e ".[dev,zh-fold]"
       - name: Lint
         run: python -m ruff check argus_verticals tests

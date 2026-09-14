@@ -23,5 +23,10 @@ htmlcov/
 .argus_subagents/
 research/CHECKLISTS.json
 
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
+
 # scratch
 .tmp_pytest/

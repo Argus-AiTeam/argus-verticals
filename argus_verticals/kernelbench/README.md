@@ -6,6 +6,6 @@ Optimize-kind mission on top of Argus's speedrun base contract (`argus_skill.ver
 
 - `stages.py`: `research → setup → optimize → measure → report`, KernelBench evidence checks (`argus_skill.verticals.metric_evidence`).
 - `official_eval_server.py`: thin HTTP wrapper around the official evaluator; signs only full-coverage results (`argus_skill.team.result_provenance`).
-- `skills/engineer/` plus three top-level skill cards on target selection, report-only evidence, and verifier drift.
+- `skills/engineer/`: B200 runtime, official SOL-ExecBench environment, hands-on trace and SOTA optimisation playbooks, plus three Engineer playbooks on target selection without execution, report-only head-to-head evidence, and governance-verifier drift repair.
 
 Extras: none (the evaluator itself is external). Tests: `tests/test_eval_signing.py`.
