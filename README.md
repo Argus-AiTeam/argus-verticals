@@ -55,6 +55,7 @@ Manager's menu. Optional extras:
 
 ```bash
 pip install "argus-verticals[quant]"    # numpy/pandas/scipy/scikit-learn/matplotlib/mplfinance/lightgbm/torch for the quant toolkits
+pip install "argus-verticals[literary]" # jsonschema + PyYAML, the literary verticals' shared contracts (also pulled in by [dev])
 pip install "argus-verticals[zh-fold]"  # opencc, traditional/simplified folding for the literary novelty check
 ```
 
@@ -91,6 +92,58 @@ each with a JSON schema.
 
 Each vertical directory has its own `README.md` with its modules, the extras
 it needs, and the tests that cover it.
+
+## Store metadata
+
+Besides the pip route above, Argus's **Vertical Store** (UI and CLI) installs
+verticals from this repository one directory at a time, without pip. Three
+files make that possible; all of them are generated or validated by
+`scripts/build_catalog.py`, which is standard-library only and imports nothing
+from Argus.
+
+**`argus_verticals/<name>/vertical.json`** — the per-vertical manifest, next to
+`stages.py`, validated against [`catalog/vertical.schema.json`](catalog/vertical.schema.json):
+
+| field | meaning |
+|---|---|
+| `name`, `module` | the entry-point name and target from `pyproject.toml`; the generator fails if they disagree |
+| `version` | semver of this directory; bump it when anything under `paths` changes (see CONTRIBUTING) |
+| `purpose_zh` | optional Chinese one-liner for the store; the English `VERTICAL_PURPOSE` is *not* repeated here, the generator reads it from `stages.py` |
+| `paths` | repo-relative directories that make up the vertical (`["argus_verticals/quant"]`; a vertical nested in another's directory, like `digital_circuit/benchmark`, is never part of the parent's archive) |
+| `requires` | other catalog verticals the store installs alongside: the code imports them (`chip_design` → `digital_circuit`) or `VERTICAL_SKILL_PARENTS` names them (`nanogpt_speedrun` → `speedrun`); Argus built-ins such as `kernel_engineering` are not listed |
+| `shared` | helper directories bundled into the archive because the code imports them (the five literary verticals → `argus_verticals/literary/shared`) |
+| `python_requirements`, `optional_python_requirements` | pip requirements the runtime code imports, unguarded or behind a guard, spelled exactly as in an extra of `pyproject.toml`; the store shows them, it does not install them |
+| `tags`, `maintainers`, `min_argus` | 2–4 browsing tags; GitHub handles; the Argus commit family the vertical is written for (`2026-09-14-split`; the store compares by feature probe, not by this string) |
+
+**`catalog.json`** at the repository root — the browsing index, committed and
+kept current by CI (`python scripts/build_catalog.py --check` fails when it is
+stale). For every vertical it holds the manifest fields plus what the
+generator derives by parsing `stages.py` with `ast`: `purpose`,
+`skill_parents`, `has_skills`, `api_version`, and `size_bytes`. Keys are
+sorted and there are no timestamps, so the file only changes when a vertical
+does; `generated_from.commit` records the commit it was built at and is
+ignored by `--check`.
+
+**GitHub Releases** — pushing a repository-wide tag `vX.Y.Z` runs
+[`release.yml`](.github/workflows/release.yml), which builds
+`python scripts/build_catalog.py --release vX.Y.Z --dist dist` and attaches to
+the release one `<name>-<version>.zip` per vertical (exactly the `paths` +
+`shared` trees with their repo-relative paths, no `__pycache__`, no tests,
+fixed timestamps so a rebuild is byte-identical), `dist/catalog.json` (the
+index plus, per vertical, `archive: {file, url, sha256, size}`), and
+`dist/SHA256SUMS`. The store reads `dist/catalog.json`, downloads the zip,
+verifies the sha256, extracts it under
+`<ARGUS_SKILL_HOME>/verticals/argus_verticals/<name>/` next to a synthetic
+`argus_verticals/__init__.py`, and loads `argus_verticals.<name>.stages` from
+there; `tests/test_catalog.py` rehearses exactly that round trip for every
+archive.
+
+```bash
+python scripts/build_catalog.py                       # rewrite catalog.json
+python scripts/build_catalog.py --check               # CI: is the committed index current?
+python scripts/build_catalog.py --release v0.2.0 --dist dist   # archives + dist/catalog.json + SHA256SUMS
+python scripts/build_catalog.py --verify dist         # digests, member lists, byte-identical rebuild
+```
 
 ## Add your own vertical
 
@@ -134,18 +187,27 @@ it needs, and the tests that cover it.
    [project.entry-points."argus_skill.verticals"]
    my_vertical = "argus_verticals.my_vertical.stages"
    ```
-6. **Write tests** under `tests/` for your deterministic checks, and a
-   `README.md` in the vertical directory (purpose, modules, extras, tests).
-7. **Run the gate:**
+6. **Write `vertical.json`** next to `stages.py` (copy a neighbour's; fields in
+   [Store metadata](#store-metadata)) and run `python scripts/build_catalog.py`
+   to regenerate `catalog.json`. Start at `"version": "0.1.0"`; list in
+   `requires` every catalog vertical you import or inherit skills from, and in
+   `shared` every helper directory you import.
+7. **Write tests** under `tests/` for your deterministic checks, and a
+   `README.md` in the vertical directory (purpose, modules, extras, tests, and
+   the line ``Manifest: `vertical.json` ``).
+8. **Run the gate:**
    ```bash
    pip install -e ".[dev]"
-   ruff check argus_verticals tests
-   pytest -q tests/test_contract_conformance.py   # then the full suite: pytest -q
+   ruff check argus_verticals tests scripts
+   python scripts/build_catalog.py --check
+   pytest -q tests/test_contract_conformance.py tests/test_catalog.py   # then the full suite: pytest -q
    ```
    The conformance test imports every entry point, checks the four plugin
    attributes, runs Argus's own `vertical_contract` validation, and fails if a
-   directory with a `stages.py` is not registered (or vice versa).
-8. **Open a pull request.** See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+   directory with a `stages.py` is not registered (or vice versa). The catalog
+   test checks the manifest against the schema, `pyproject.toml`, and your
+   actual imports.
+9. **Open a pull request.** See [CONTRIBUTING.md](CONTRIBUTING.md) for the
    rules a reviewer applies.
 
 ## The contract, in short
@@ -181,7 +243,8 @@ git clone https://github.com/Argus-AiTeam/argus-verticals.git
 cd argus-verticals
 pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"   # at or after the 2026-09-14 split
 pip install -e ".[dev,zh-fold]"
-ruff check argus_verticals tests
+ruff check argus_verticals tests scripts
+python scripts/build_catalog.py --check
 pytest -q
 ```
 

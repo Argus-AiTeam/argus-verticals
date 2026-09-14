@@ -39,6 +39,19 @@ code comments, Skill markdown, issues and pull requests alike.
    to choose a vertical. Keep it to one line, name what the vertical is, and,
    where a neighbour exists, what it is not. Changing an existing purpose is a
    behaviour change: say so in the pull request.
+9. **Every vertical carries a `vertical.json`, and its version moves with its
+   directory.** The manifest (schema: `catalog/vertical.schema.json`) is what
+   the Argus Vertical Store installs from. Bump the vertical's `version`
+   (semver) in the same pull request that changes any file under its `paths`:
+   patch for fixes and prose, minor for new checks or skills, major when the
+   stage order or a deliverable changes. Keep `requires` and `shared` equal to
+   what the code imports (`tests/test_catalog.py` checks this against the
+   actual imports and `VERTICAL_SKILL_PARENTS`), and keep the English purpose
+   out of the manifest: it lives in `stages.py` only. Regenerate the index with
+   `python scripts/build_catalog.py`; CI fails on a stale `catalog.json`.
+   Releases are repository-wide tags `vX.Y.Z`: pushing one builds and attaches
+   `<name>-<version>.zip` for every vertical, so a vertical whose version did
+   not change ships a byte-identical archive.
 
 ## Ownership
 
@@ -57,7 +70,8 @@ because Argus is not on PyPI.
 ```bash
 pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
 pip install -e ".[dev,zh-fold]"
-ruff check argus_verticals tests
+ruff check argus_verticals tests scripts
+python scripts/build_catalog.py --check
 pytest -q
 ```
 
