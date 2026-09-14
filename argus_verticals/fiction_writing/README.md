@@ -15,3 +15,5 @@ Stages `intake → plan → draft → state_update → review → revise`, revie
 - `skills/engineer/`, `skills/reviewer/`.
 
 Extras: `zh-fold` (optional). Tests: `tests/test_fiction_writing*.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

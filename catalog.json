@@ -1,0 +1,477 @@
+{
+  "generated_from": {
+    "commit": "a35baf819681f613c48753ac05f67df5846ae8d0",
+    "repo": "Argus-AiTeam/argus-verticals"
+  },
+  "schema": 1,
+  "verticals": {
+    "ale_last_exam": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.ale_last_exam.stages",
+      "name": "ale_last_exam",
+      "paths": [
+        "argus_verticals/ale_last_exam"
+      ],
+      "purpose": "Agents' Last Exam long-horizon professional workflow in a real sandbox with hidden-reference, artifact-first GUI+CLI delivery",
+      "purpose_zh": "Agents' Last Exam 长程专业工作流：在真实沙箱中按隐藏参考答案、以产物优先的方式完成 GUI+CLI 交付",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 14701,
+      "skill_parents": [],
+      "tags": [
+        "benchmark",
+        "agents",
+        "sandbox"
+      ],
+      "version": "0.1.0"
+    },
+    "chip_design": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.chip_design.stages",
+      "name": "chip_design",
+      "paths": [
+        "argus_verticals/chip_design"
+      ],
+      "purpose": "end-to-end digital ASIC/accelerator design from workload and microarchitecture through RTL, physical implementation, and sign-off",
+      "purpose_zh": "端到端数字 ASIC/加速器设计：从工作负载与微架构到 RTL、物理实现与签核",
+      "python_requirements": [],
+      "requires": [
+        "digital_circuit"
+      ],
+      "shared": [],
+      "size_bytes": 105860,
+      "skill_parents": [
+        "digital_circuit"
+      ],
+      "tags": [
+        "hardware",
+        "asic",
+        "rtl",
+        "eda"
+      ],
+      "version": "0.1.0"
+    },
+    "classical_poetry": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.classical_poetry.stages",
+      "name": "classical_poetry",
+      "paths": [
+        "argus_verticals/classical_poetry"
+      ],
+      "purpose": "compose or check classical Chinese 近体诗/古体/词 with reproducible 押韵/平仄 prosody and literary review",
+      "purpose_zh": "创作或校验中文近体诗/古体/词，押韵、平仄以可复现的方式机器检查，并做文学评审",
+      "python_requirements": [
+        "jsonschema>=4",
+        "PyYAML>=6"
+      ],
+      "requires": [],
+      "shared": [
+        "argus_verticals/literary/shared"
+      ],
+      "size_bytes": 763731,
+      "skill_parents": [],
+      "tags": [
+        "literary",
+        "poetry",
+        "chinese",
+        "prosody"
+      ],
+      "version": "0.1.0"
+    },
+    "digital_circuit": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.digital_circuit.stages",
+      "name": "digital_circuit",
+      "paths": [
+        "argus_verticals/digital_circuit"
+      ],
+      "purpose": "Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off",
+      "purpose_zh": "Verilog/SystemVerilog RTL、测试平台、形式验证、FPGA/ASIC 综合、时序与签核",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 55075,
+      "skill_parents": [],
+      "tags": [
+        "hardware",
+        "rtl",
+        "verilog",
+        "verification"
+      ],
+      "version": "0.1.0"
+    },
+    "digital_circuit_benchmark": {
+      "api_version": 1,
+      "has_skills": false,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.digital_circuit.benchmark.stages",
+      "name": "digital_circuit_benchmark",
+      "paths": [
+        "argus_verticals/digital_circuit/benchmark"
+      ],
+      "purpose": "single-stage fixed-harness RTL benchmark: interface, RTL, local verification, pre-score elaboration, and attempt handoff",
+      "purpose_zh": "单阶段固定评测框架的 RTL 基准：接口、RTL、本地验证、评分前展开与尝试交接",
+      "python_requirements": [],
+      "requires": [
+        "digital_circuit"
+      ],
+      "shared": [],
+      "size_bytes": 13365,
+      "skill_parents": [
+        "digital_circuit"
+      ],
+      "tags": [
+        "hardware",
+        "rtl",
+        "benchmark"
+      ],
+      "version": "0.1.0"
+    },
+    "fiction_writing": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.fiction_writing.stages",
+      "name": "fiction_writing",
+      "optional_python_requirements": [
+        "opencc>=1.1"
+      ],
+      "paths": [
+        "argus_verticals/fiction_writing"
+      ],
+      "purpose": "write or continue original fiction narrative prose while preserving characters, world, and timeline; not a literature review or research task",
+      "purpose_zh": "撰写或续写原创小说叙事文本，保持人物、世界观与时间线一致；不是文献综述或研究任务",
+      "python_requirements": [
+        "jsonschema>=4",
+        "PyYAML>=6"
+      ],
+      "requires": [],
+      "shared": [
+        "argus_verticals/literary/shared"
+      ],
+      "size_bytes": 286299,
+      "skill_parents": [],
+      "tags": [
+        "literary",
+        "fiction",
+        "writing"
+      ],
+      "version": "0.1.0"
+    },
+    "kernelbench": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.kernelbench.stages",
+      "name": "kernelbench",
+      "paths": [
+        "argus_verticals/kernelbench"
+      ],
+      "purpose": "maximize correctness-checked SOL score/speedup for GPU kernels on B200 SOL-ExecBench/KernelBench",
+      "purpose_zh": "在 B200 SOL-ExecBench/KernelBench 上最大化通过正确性检查的 GPU 内核 SOL 得分/加速比",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 87001,
+      "skill_parents": [
+        "kernel_engineering"
+      ],
+      "tags": [
+        "gpu",
+        "kernels",
+        "benchmark",
+        "optimization"
+      ],
+      "version": "0.1.0"
+    },
+    "literary_editor": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.literary_editor.stages",
+      "name": "literary_editor",
+      "paths": [
+        "argus_verticals/literary_editor"
+      ],
+      "purpose": "rewrite, expand, polish, proofread, or critique an existing literary text while preserving edit scope and source facts",
+      "purpose_zh": "改写、扩写、润色、校对或评论既有文学文本，保持编辑范围与原文事实不变",
+      "python_requirements": [
+        "jsonschema>=4",
+        "PyYAML>=6"
+      ],
+      "requires": [],
+      "shared": [
+        "argus_verticals/literary/shared"
+      ],
+      "size_bytes": 66843,
+      "skill_parents": [],
+      "tags": [
+        "literary",
+        "editing",
+        "writing"
+      ],
+      "version": "0.1.0"
+    },
+    "materials": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.materials.stages",
+      "name": "materials",
+      "paths": [
+        "argus_verticals/materials"
+      ],
+      "purpose": "materials science and materials processing across atomistic, microstructure, continuum, CAD/CAE, and experimental scales",
+      "purpose_zh": "材料科学与材料加工，跨原子、微观组织、连续介质、CAD/CAE 与实验尺度",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 47119,
+      "skill_parents": [],
+      "tags": [
+        "science",
+        "materials",
+        "simulation"
+      ],
+      "version": "0.1.0"
+    },
+    "medical": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.medical.stages",
+      "name": "medical",
+      "paths": [
+        "argus_verticals/medical"
+      ],
+      "purpose": "biomedical and pharmaceutical evidence execution: target-disease mechanisms, human genetics, preclinical translation, clinical trials, safety, failed programs, competitive pipelines, and auditable non-diagnostic decision dossiers with independent review; not a generic paper pipeline",
+      "purpose_zh": "生物医药证据执行：靶点-疾病机制、人类遗传学、临床前转化、临床试验、安全性、失败项目、竞争管线，产出可审计的非诊断决策档案并独立评审；不是通用论文流水线",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 61844,
+      "skill_parents": [],
+      "tags": [
+        "biomedical",
+        "pharma",
+        "evidence",
+        "research"
+      ],
+      "version": "0.1.0"
+    },
+    "modern_poetry": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.modern_poetry.stages",
+      "name": "modern_poetry",
+      "paths": [
+        "argus_verticals/modern_poetry"
+      ],
+      "purpose": "compose or revise modern free verse/prose poems without classical prosody checks; enforce only declared hard constraints",
+      "purpose_zh": "创作或修改现代自由诗/散文诗，不做古典格律检查；只执行声明的硬性约束",
+      "python_requirements": [
+        "jsonschema>=4",
+        "PyYAML>=6"
+      ],
+      "requires": [],
+      "shared": [
+        "argus_verticals/literary/shared"
+      ],
+      "size_bytes": 67460,
+      "skill_parents": [],
+      "tags": [
+        "literary",
+        "poetry",
+        "writing"
+      ],
+      "version": "0.1.0"
+    },
+    "nanochat": {
+      "api_version": 1,
+      "has_skills": false,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.nanochat.stages",
+      "name": "nanochat",
+      "paths": [
+        "argus_verticals/nanochat"
+      ],
+      "purpose": "minimize val_bpb on the nanochat train.py (bits-per-byte, ~300s, 1 GPU)",
+      "purpose_zh": "在 nanochat 的 train.py 上最小化 val_bpb（bits-per-byte，约 300 秒，1 张 GPU）",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 40402,
+      "skill_parents": [],
+      "tags": [
+        "ml",
+        "training",
+        "optimization",
+        "benchmark"
+      ],
+      "version": "0.1.0"
+    },
+    "nanogpt_speedrun": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.nanogpt_speedrun.stages",
+      "name": "nanogpt_speedrun",
+      "paths": [
+        "argus_verticals/nanogpt_speedrun"
+      ],
+      "purpose": "minimize wall-clock time to reach val_loss<=3.28 on modded-nanogpt (8xH100)",
+      "purpose_zh": "在 modded-nanogpt（8xH100）上最小化达到 val_loss<=3.28 的墙钟时间",
+      "python_requirements": [],
+      "requires": [
+        "speedrun"
+      ],
+      "shared": [],
+      "size_bytes": 18182,
+      "skill_parents": [
+        "speedrun"
+      ],
+      "tags": [
+        "ml",
+        "training",
+        "speedrun",
+        "gpu"
+      ],
+      "version": "0.1.0"
+    },
+    "physics": {
+      "api_version": 1,
+      "has_skills": false,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.physics.stages",
+      "name": "physics",
+      "paths": [
+        "argus_verticals/physics"
+      ],
+      "purpose": "theory, simulation, data analysis, literature, or experiment design for a real physical system with bounded evidence",
+      "purpose_zh": "针对真实物理系统、在有界证据下进行理论、模拟、数据分析、文献或实验设计",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 48858,
+      "skill_parents": [],
+      "tags": [
+        "science",
+        "physics",
+        "simulation",
+        "research"
+      ],
+      "version": "0.1.0"
+    },
+    "prose": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.prose.stages",
+      "name": "prose",
+      "paths": [
+        "argus_verticals/prose"
+      ],
+      "purpose": "compose or revise literary essays, memoir, or 抒情/叙事散文/随笔; not verse or plot-driven fiction",
+      "purpose_zh": "创作或修改文学随笔、回忆录或抒情/叙事散文/随笔；不是诗歌，也不是情节驱动的小说",
+      "python_requirements": [
+        "jsonschema>=4",
+        "PyYAML>=6"
+      ],
+      "requires": [],
+      "shared": [
+        "argus_verticals/literary/shared"
+      ],
+      "size_bytes": 68282,
+      "skill_parents": [],
+      "tags": [
+        "literary",
+        "prose",
+        "writing"
+      ],
+      "version": "0.1.0"
+    },
+    "quant": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.quant.stages",
+      "name": "quant",
+      "paths": [
+        "argus_verticals/quant"
+      ],
+      "purpose": "equity factor research (IC/ICIR, backtest, Sharpe) producing a reviewer-certified report, not a generic metric loop",
+      "purpose_zh": "股票因子研究（IC/ICIR、回测、Sharpe），产出评审员认证的报告，不是通用指标循环",
+      "python_requirements": [
+        "numpy>=1.26",
+        "pandas>=2",
+        "scipy>=1.11",
+        "scikit-learn>=1.4",
+        "matplotlib>=3.8",
+        "mplfinance>=0.12.10b0",
+        "lightgbm>=4",
+        "torch>=2.2"
+      ],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 338009,
+      "skill_parents": [],
+      "tags": [
+        "finance",
+        "quant",
+        "factors",
+        "backtest"
+      ],
+      "version": "0.1.0"
+    },
+    "speedrun": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.speedrun.stages",
+      "name": "speedrun",
+      "paths": [
+        "argus_verticals/speedrun"
+      ],
+      "purpose": "single-metric script/benchmark optimization under a wall-clock budget: setup, optimize, measure, report; no paper",
+      "purpose_zh": "墙钟预算内的单指标脚本/基准优化：搭建、优化、测量、报告；不写论文",
+      "python_requirements": [],
+      "requires": [],
+      "shared": [],
+      "size_bytes": 60011,
+      "skill_parents": [],
+      "tags": [
+        "optimization",
+        "benchmark",
+        "speedrun"
+      ],
+      "version": "0.1.0"
+    }
+  }
+}

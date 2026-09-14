@@ -1,0 +1,21 @@
+{
+  "name": "digital_circuit_benchmark",
+  "version": "0.1.0",
+  "module": "argus_verticals.digital_circuit.benchmark.stages",
+  "purpose_zh": "单阶段固定评测框架的 RTL 基准：接口、RTL、本地验证、评分前展开与尝试交接",
+  "paths": [
+    "argus_verticals/digital_circuit/benchmark"
+  ],
+  "requires": [
+    "digital_circuit"
+  ],
+  "shared": [],
+  "python_requirements": [],
+  "tags": [
+    "hardware",
+    "rtl",
+    "benchmark"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

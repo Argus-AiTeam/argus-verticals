@@ -9,3 +9,5 @@ Optimize-kind mission on Argus's speedrun base contract with a `metric` completi
 - `skills/engineer/nanogpt-speedrun-h100-sota.md`.
 
 Extras: none. Tests: `tests/skills/test_nanogpt_speedrun_vertical.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Argus-AiTeam/argus-verticals/blob/main/catalog/vertical.schema.json",
+  "title": "Argus vertical manifest (vertical.json)",
+  "description": "Store metadata for one vertical in argus-verticals. Lives next to the vertical's stages.py. The one-line purpose is NOT repeated here: scripts/build_catalog.py reads VERTICAL_PURPOSE, VERTICAL_SKILL_PARENTS and the presence of VERTICAL_SKILLS from stages.py and merges them into catalog.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "version",
+    "module",
+    "paths",
+    "requires",
+    "shared",
+    "python_requirements",
+    "tags",
+    "maintainers",
+    "min_argus"
+  ],
+  "properties": {
+    "name": {
+      "description": "The vertical's name; equals its entry-point name in pyproject.toml and the directory path joined with '_'.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,47}$"
+    },
+    "version": {
+      "description": "Semantic version of this vertical's directory. Bump it whenever a file under `paths` changes; the release archive is named <name>-<version>.zip.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+    },
+    "module": {
+      "description": "The stages module Argus loads; equals the entry-point target in pyproject.toml.",
+      "type": "string",
+      "pattern": "^argus_verticals(\\.[a-z][a-z0-9_]*)+\\.stages$"
+    },
+    "purpose_zh": {
+      "description": "Optional faithful Chinese rendering of VERTICAL_PURPOSE for the store's UI. The English purpose itself lives only in stages.py.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "paths": {
+      "description": "Repo-relative directories that make up the vertical (the directory holding stages.py first). Another vertical's directory nested inside one of these (digital_circuit/benchmark inside digital_circuit) is never part of this vertical's archive.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^argus_verticals(/[a-z][a-z0-9_]*)+$"
+      }
+    },
+    "requires": {
+      "description": "Other catalog verticals that must be installed with this one: its code imports them, or its VERTICAL_SKILL_PARENTS names them. Argus built-ins (kernel_engineering) are not listed.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{0,47}$"
+      }
+    },
+    "shared": {
+      "description": "Repo-relative helper directories that are not verticals but are bundled into this vertical's archive because its code imports them (argus_verticals/literary/shared).",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^argus_verticals(/[a-z][a-z0-9_]*)+$"
+      }
+    },
+    "python_requirements": {
+      "description": "Third-party pip requirements (PEP 508 strings, copied from an extra in pyproject.toml) that the vertical's runtime code, including bundled shared helpers, imports unguarded. The store does not pip install; it shows these to the operator.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "optional_python_requirements": {
+      "description": "Requirements imported only behind a guard (try/except or lazily inside a function); the vertical works without them with a documented gap.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tags": {
+      "description": "Two to four short lowercase tags for browsing.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]{0,23}$"
+      }
+    },
+    "maintainers": {
+      "description": "GitHub handles (with the leading @) of the people who review changes to this vertical. Empty is allowed.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^@[A-Za-z0-9-]+$"
+      }
+    },
+    "min_argus": {
+      "description": "Free-form label of the oldest Argus commit family this vertical is written for. The store compares by feature probe, not by this string.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

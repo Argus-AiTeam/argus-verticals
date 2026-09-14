@@ -1,0 +1,20 @@
+{
+  "name": "physics",
+  "version": "0.1.0",
+  "module": "argus_verticals.physics.stages",
+  "purpose_zh": "针对真实物理系统、在有界证据下进行理论、模拟、数据分析、文献或实验设计",
+  "paths": [
+    "argus_verticals/physics"
+  ],
+  "requires": [],
+  "shared": [],
+  "python_requirements": [],
+  "tags": [
+    "science",
+    "physics",
+    "simulation",
+    "research"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

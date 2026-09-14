@@ -8,3 +8,5 @@ Optimize-kind mission `setup → optimize → measure → report` with a `metric
 - `skills/engineer/speedrun-hands-on-trace.md`, `skills/engineer/speedrun-sota-optimization.md`.
 
 Extras: none. Tests: covered by `tests/test_contract_conformance.py`, `tests/test_voice_wordlist.py`, and indirectly by `tests/skills/test_nanogpt_speedrun_vertical.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

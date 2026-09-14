@@ -1,0 +1,29 @@
+{
+  "name": "quant",
+  "version": "0.1.0",
+  "module": "argus_verticals.quant.stages",
+  "purpose_zh": "股票因子研究（IC/ICIR、回测、Sharpe），产出评审员认证的报告，不是通用指标循环",
+  "paths": [
+    "argus_verticals/quant"
+  ],
+  "requires": [],
+  "shared": [],
+  "python_requirements": [
+    "numpy>=1.26",
+    "pandas>=2",
+    "scipy>=1.11",
+    "scikit-learn>=1.4",
+    "matplotlib>=3.8",
+    "mplfinance>=0.12.10b0",
+    "lightgbm>=4",
+    "torch>=2.2"
+  ],
+  "tags": [
+    "finance",
+    "quant",
+    "factors",
+    "backtest"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

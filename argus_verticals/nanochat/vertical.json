@@ -1,0 +1,20 @@
+{
+  "name": "nanochat",
+  "version": "0.1.0",
+  "module": "argus_verticals.nanochat.stages",
+  "purpose_zh": "在 nanochat 的 train.py 上最小化 val_bpb（bits-per-byte，约 300 秒，1 张 GPU）",
+  "paths": [
+    "argus_verticals/nanochat"
+  ],
+  "requires": [],
+  "shared": [],
+  "python_requirements": [],
+  "tags": [
+    "ml",
+    "training",
+    "optimization",
+    "benchmark"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

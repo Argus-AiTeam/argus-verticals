@@ -42,6 +42,13 @@ quant = [
   "lightgbm>=4",
   "torch>=2.2",
 ]
+# The literary verticals' shared contracts (argus_verticals/literary/shared)
+# validate with JSON Schema and read YAML source registries; the store's
+# vertical.json manifests cite these exact strings in python_requirements.
+literary = [
+  "jsonschema>=4",
+  "PyYAML>=6",
+]
 # Traditional/simplified Chinese folding for literary checks.
 zh-fold = [
   "opencc>=1.1",

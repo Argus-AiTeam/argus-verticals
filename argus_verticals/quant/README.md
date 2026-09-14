@@ -13,3 +13,5 @@ Research-kind mission with a `certified` completion gate. Only `stages.py` is im
 - `skills/engineer/`, `skills/reviewer/`.
 
 Extras: `quant` (numpy, pandas, scipy, scikit-learn, matplotlib, mplfinance, lightgbm, torch). `qlib`, `adata`, `backtrader`, `vectorbt`, and the private `finance_argus` package are not packaged. Tests: `tests/test_quant_*.py`; those needing lightgbm, torch, qlib, or adata skip when absent.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

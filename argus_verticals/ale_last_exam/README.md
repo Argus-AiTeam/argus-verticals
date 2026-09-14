@@ -8,3 +8,5 @@ Single stage (`execute`). Success is the benchmark's post-run scoring of the pro
 - `skills/engineer/ale-last-exam-execution.md`, `skills/reviewer/ale-last-exam-delivery-review.md`.
 
 Extras: none. Tests: covered by `tests/test_contract_conformance.py` and `tests/test_voice_wordlist.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

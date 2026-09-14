@@ -11,3 +11,5 @@ Research-kind mission `scope → retrieve → normalize → analyze → review �
 - `skills/manager/`, `skills/planner/`, `skills/engineer/`, `skills/reviewer/`.
 
 Extras: none. Tests: `tests/skills/test_medical_vertical.py`, `tests/domains/test_medical_connectors.py`, `tests/domains/test_medical_dossier.py`, `tests/domains/test_medical_evidence.py` (fixtures in `tests/domains/fixtures/`).
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

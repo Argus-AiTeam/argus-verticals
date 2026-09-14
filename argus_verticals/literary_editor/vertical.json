@@ -1,0 +1,24 @@
+{
+  "name": "literary_editor",
+  "version": "0.1.0",
+  "module": "argus_verticals.literary_editor.stages",
+  "purpose_zh": "改写、扩写、润色、校对或评论既有文学文本，保持编辑范围与原文事实不变",
+  "paths": [
+    "argus_verticals/literary_editor"
+  ],
+  "requires": [],
+  "shared": [
+    "argus_verticals/literary/shared"
+  ],
+  "python_requirements": [
+    "jsonschema>=4",
+    "PyYAML>=6"
+  ],
+  "tags": [
+    "literary",
+    "editing",
+    "writing"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

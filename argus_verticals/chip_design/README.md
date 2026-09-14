@@ -12,3 +12,5 @@ Proportional workflow with independent review and a `metric` completion gate. In
 - `skills/engineer/`, `skills/reviewer/`.
 
 Extras: none. Tests: `tests/skills/test_chip_design_vertical.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

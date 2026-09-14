@@ -10,3 +10,5 @@ Stages `intake → plan → compose → form_check → review → revise`. Uses 
 - `skills/reviewer/modern-verse-review.md`.
 
 Extras: none. Tests: `tests/test_modern_poetry_form.py`, `tests/test_modern_poetry_intake.py`, `tests/test_modern_poetry_runtime.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

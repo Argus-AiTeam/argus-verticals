@@ -1,0 +1,24 @@
+{
+  "name": "modern_poetry",
+  "version": "0.1.0",
+  "module": "argus_verticals.modern_poetry.stages",
+  "purpose_zh": "创作或修改现代自由诗/散文诗，不做古典格律检查；只执行声明的硬性约束",
+  "paths": [
+    "argus_verticals/modern_poetry"
+  ],
+  "requires": [],
+  "shared": [
+    "argus_verticals/literary/shared"
+  ],
+  "python_requirements": [
+    "jsonschema>=4",
+    "PyYAML>=6"
+  ],
+  "tags": [
+    "literary",
+    "poetry",
+    "writing"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

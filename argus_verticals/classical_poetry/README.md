@@ -13,3 +13,5 @@ Stages `intake → form_plan → compose → prosody_check → review → revise
 - `skills/reviewer/prosody-and-conception-review.md`.
 
 Extras: none. Tests: `tests/test_classical_poetry_intake.py`, `tests/test_classical_poetry_prosody.py`, `tests/test_classical_poetry_runtime.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

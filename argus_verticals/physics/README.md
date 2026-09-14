@@ -10,3 +10,5 @@ Proportional workflow `scope → model → execute → review → manuscript`; t
 - `manuscript.py`: outcome check for the compiled manuscript.
 
 Extras: none. Tests: `tests/skills/test_physics_manuscript_contract.py`, `tests/skills/test_physics_runtime_routing.py`, `tests/skills/test_physics_tiered_workflow.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

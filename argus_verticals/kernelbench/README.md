@@ -9,3 +9,5 @@ Optimize-kind mission on top of Argus's speedrun base contract (`argus_skill.ver
 - `skills/engineer/`: B200 runtime, official SOL-ExecBench environment, hands-on trace and SOTA optimisation playbooks, plus three Engineer playbooks on target selection without execution, report-only head-to-head evidence, and governance-verifier drift repair.
 
 Extras: none (the evaluator itself is external). Tests: `tests/test_eval_signing.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

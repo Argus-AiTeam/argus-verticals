@@ -7,3 +7,5 @@ Optimize-kind mission on Argus's speedrun base contract (`argus_skill.verticals.
 - `stages.py`: contract, role banners, `search_altitude_context`, collaborative-contract helpers.
 
 Extras: none. Tests: `tests/test_nanochat_altitude.py`, `tests/test_nanochat_collaborative_contract.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

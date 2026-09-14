@@ -1,0 +1,22 @@
+{
+  "name": "nanogpt_speedrun",
+  "version": "0.1.0",
+  "module": "argus_verticals.nanogpt_speedrun.stages",
+  "purpose_zh": "在 modded-nanogpt（8xH100）上最小化达到 val_loss<=3.28 的墙钟时间",
+  "paths": [
+    "argus_verticals/nanogpt_speedrun"
+  ],
+  "requires": [
+    "speedrun"
+  ],
+  "shared": [],
+  "python_requirements": [],
+  "tags": [
+    "ml",
+    "training",
+    "speedrun",
+    "gpu"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

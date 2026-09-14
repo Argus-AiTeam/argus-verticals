@@ -7,3 +7,5 @@ Direct workflow with one stage (`execute`) and independent review. Registered as
 - `stages.py`: the contract, repair-freshness expectations (`argus_skill.core.repair_freshness`), preflight and external-scoring checks, and a CLI (`python -m argus_verticals.digital_circuit.benchmark.stages`).
 
 Extras: none. Tests: `tests/skills/test_digital_circuit_benchmark_vertical.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

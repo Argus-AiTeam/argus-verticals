@@ -1,0 +1,27 @@
+{
+  "name": "fiction_writing",
+  "version": "0.1.0",
+  "module": "argus_verticals.fiction_writing.stages",
+  "purpose_zh": "撰写或续写原创小说叙事文本，保持人物、世界观与时间线一致；不是文献综述或研究任务",
+  "paths": [
+    "argus_verticals/fiction_writing"
+  ],
+  "requires": [],
+  "shared": [
+    "argus_verticals/literary/shared"
+  ],
+  "python_requirements": [
+    "jsonschema>=4",
+    "PyYAML>=6"
+  ],
+  "optional_python_requirements": [
+    "opencc>=1.1"
+  ],
+  "tags": [
+    "literary",
+    "fiction",
+    "writing"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

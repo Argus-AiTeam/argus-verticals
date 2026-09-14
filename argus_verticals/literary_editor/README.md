@@ -10,3 +10,5 @@ Stages `intake → diagnose → revision_plan → edit → verify`. Uses `argus_
 - `skills/reviewer/edit-review.md`.
 
 Extras: none. Tests: `tests/test_literary_editor_intake.py`, `tests/test_literary_editor_ops.py`, `tests/test_literary_editor_runtime.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

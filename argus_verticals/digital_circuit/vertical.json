@@ -1,0 +1,20 @@
+{
+  "name": "digital_circuit",
+  "version": "0.1.0",
+  "module": "argus_verticals.digital_circuit.stages",
+  "purpose_zh": "Verilog/SystemVerilog RTL、测试平台、形式验证、FPGA/ASIC 综合、时序与签核",
+  "paths": [
+    "argus_verticals/digital_circuit"
+  ],
+  "requires": [],
+  "shared": [],
+  "python_requirements": [],
+  "tags": [
+    "hardware",
+    "rtl",
+    "verilog",
+    "verification"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}

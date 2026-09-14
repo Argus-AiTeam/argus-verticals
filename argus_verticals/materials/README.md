@@ -9,3 +9,5 @@ Proportional workflow `scope → grounding → model → execute → validate �
 - `skills/manager/`, `skills/planner/`, `skills/engineer/`, `skills/reviewer/`.
 
 Extras: none. Tests: `tests/skills/test_materials_vertical.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).

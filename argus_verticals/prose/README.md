@@ -10,3 +10,5 @@ Stages `intake → plan → draft → structure_check → review → revise`. Us
 - `skills/reviewer/prose-review.md`.
 
 Extras: none. Tests: `tests/test_prose_intake.py`, `tests/test_prose_runtime.py`, `tests/test_prose_structure.py`.
+
+Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).
