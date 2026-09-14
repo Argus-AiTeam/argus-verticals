@@ -30,6 +30,8 @@ jobs:
           python -m pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@${ARGUS_REF}"
           python -m pip install -e ".[dev,zh-fold]"
       - name: Lint
-        run: python -m ruff check argus_verticals tests
+        run: python -m ruff check argus_verticals tests scripts
+      - name: Store catalog is current (catalog.json matches every vertical.json and stages.py)
+        run: python scripts/build_catalog.py --check
       - name: Test
         run: python -m pytest -q

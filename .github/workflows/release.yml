@@ -1,0 +1,59 @@
+name: release
+
+# Publishes the Argus Vertical Store artifacts for one repository-wide tag:
+# one <name>-<version>.zip per vertical, dist/catalog.json (the index with
+# download URLs and sha256 digests) and dist/SHA256SUMS. The test suite is not
+# run here (it needs Argus); tests.yml already gates every push to main, and
+# the generator's --verify round-trips every archive before anything is
+# published.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and publish (vX.Y.Z)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The committed catalog must be current for this tag
+        run: python scripts/build_catalog.py --check
+      - name: Build the per-vertical archives, dist/catalog.json and dist/SHA256SUMS
+        run: python scripts/build_catalog.py --check --release "$TAG" --dist dist
+      - name: Zip round-trip self-test (digests, member lists, byte-identical rebuild)
+        run: |
+          python scripts/build_catalog.py --verify dist
+          (cd dist && sha256sum -c SHA256SUMS)
+          ls -l dist
+      - name: Create or update the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.zip
+            dist/catalog.json
+            dist/SHA256SUMS

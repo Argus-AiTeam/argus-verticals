@@ -92,7 +92,12 @@ def _register_checkout_entry_points_if_uninstalled() -> None:
         return
     except PackageNotFoundError:
         pass
-    from argus_skill.verticals import _registry
+    try:
+        from argus_skill.verticals import _registry
+    except ImportError:
+        # No Argus: only the Argus-free tests (tests/test_catalog.py) can run;
+        # every other module fails at import with the real reason.
+        return
 
     pyproject = tomllib.loads((_repo_root() / "pyproject.toml").read_text(encoding="utf-8"))
     declared = pyproject["project"]["entry-points"][_registry.ENTRY_POINT_GROUP]
@@ -182,7 +187,11 @@ def _no_stop_leaks_between_tests():
     """Argus's process-wide stop flag outlives a test by design; clear it on
     both sides so one test's stop request cannot change what an unrelated
     test observes."""
-    from argus_skill.core import process_stop
+    try:
+        from argus_skill.core import process_stop
+    except ImportError:
+        yield
+        return
 
     process_stop.clear_stop()
     yield
