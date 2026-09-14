@@ -16,7 +16,7 @@ env:
   # It must point at a commit that includes the argus_skill -> argus package
   # rename (2026-09-14) or later: this package imports `argus` and registers
   # the `argus.verticals` entry-point group, which an older Argus does not read.
-  ARGUS_REF: 44c09f6d73f5484749b4ce972cfbbf8a916029bd  # Argus commit that split the verticals out (2026-09-14)
+  ARGUS_REF: 863e76426337e214d29d334ce8c273ac056db3f5  # Argus commit with the argus_skill -> argus rename (2026-09-14); must be this or later
 
 jobs:
   tests:
