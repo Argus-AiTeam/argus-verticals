@@ -144,9 +144,10 @@ fixed timestamps so a rebuild is byte-identical), `dist/catalog.json` (the
 index plus, per vertical, `archive: {file, url, sha256, size}`), and
 `dist/SHA256SUMS`. The store reads `dist/catalog.json`, downloads the zip,
 verifies the sha256, extracts it under
-`<ARGUS_SKILL_HOME>/verticals/argus_verticals/<name>/` next to a synthetic
-`argus_verticals/__init__.py`, and loads `argus_verticals.<name>.stages` from
-there; `tests/test_catalog.py` rehearses exactly that round trip for every
+`<ARGUS_SKILL_HOME>/verticals/argus_verticals/<name>/` (no `__init__.py` is
+written: Argus registers `argus_verticals` as a namespace package, or appends
+the store directory to an installed pip copy's `__path__`), and loads
+`argus_verticals.<name>.stages` from there; `tests/test_catalog.py` rehearses exactly that round trip for every
 archive.
 
 ```bash
