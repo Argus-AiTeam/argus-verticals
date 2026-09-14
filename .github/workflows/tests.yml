@@ -13,7 +13,7 @@ concurrency:
 env:
   # The Argus ref to test against. Pin it to a commit SHA at or after the
   # 2026-09-14 verticals split when a reproducible baseline is needed.
-  ARGUS_REF: main
+  ARGUS_REF: 44c09f6d73f5484749b4ce972cfbbf8a916029bd  # Argus commit that split the verticals out (2026-09-14)
 
 jobs:
   tests:
