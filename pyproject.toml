@@ -1,0 +1,132 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "argus-verticals"
+version = "0.1.0"
+description = "Community verticals (domain packs) for the Argus autonomous research and engineering runtime."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [
+  { name = "Argus AI Team contributors" },
+]
+keywords = ["argus", "agent", "llm", "verticals", "domain-packs", "research", "engineering"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development",
+]
+dependencies = [
+  "argus-skill>=0.1.6",
+]
+
+[project.optional-dependencies]
+# Quantitative analysis and model tooling.
+quant = [
+  "numpy>=1.26",
+  "pandas>=2",
+  "scipy>=1.11",
+  "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+  "mplfinance>=0.12.10b0",
+  "lightgbm>=4",
+  "torch>=2.2",
+]
+# Traditional/simplified Chinese folding for literary checks.
+zh-fold = [
+  "opencc>=1.1",
+]
+# Everything the test suite imports at module level. The heavy quant backends
+# (lightgbm, torch, qlib, adata) are NOT here: the tests that need them skip
+# when they are absent, so a contributor's machine and CI stay light.
+dev = [
+  "pytest>=7",
+  "ruff>=0.4",
+  "PyYAML>=6",
+  "jsonschema>=4",
+  "numpy>=1.26",
+  "pandas>=2",
+  "scipy>=1.11",
+  "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+  "mplfinance>=0.12.10b0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Argus-AiTeam/argus-verticals"
+Repository = "https://github.com/Argus-AiTeam/argus-verticals"
+"Argus framework" = "https://github.com/lbx154/Argus"
+
+# Argus reads this group at startup (argus_skill.verticals._registry). Every
+# vertical directory in argus_verticals/ must appear here exactly once; the
+# conformance test (tests/test_contract_conformance.py) enforces that.
+[project.entry-points."argus_skill.verticals"]
+ale_last_exam = "argus_verticals.ale_last_exam.stages"
+chip_design = "argus_verticals.chip_design.stages"
+classical_poetry = "argus_verticals.classical_poetry.stages"
+digital_circuit = "argus_verticals.digital_circuit.stages"
+digital_circuit_benchmark = "argus_verticals.digital_circuit.benchmark.stages"
+fiction_writing = "argus_verticals.fiction_writing.stages"
+kernelbench = "argus_verticals.kernelbench.stages"
+literary_editor = "argus_verticals.literary_editor.stages"
+materials = "argus_verticals.materials.stages"
+medical = "argus_verticals.medical.stages"
+modern_poetry = "argus_verticals.modern_poetry.stages"
+nanochat = "argus_verticals.nanochat.stages"
+nanogpt_speedrun = "argus_verticals.nanogpt_speedrun.stages"
+physics = "argus_verticals.physics.stages"
+prose = "argus_verticals.prose.stages"
+quant = "argus_verticals.quant.stages"
+speedrun = "argus_verticals.speedrun.stages"
+
+[tool.hatch.build.targets.wheel]
+packages = ["argus_verticals"]
+# Skill markdown, JSON schemas, YAML registries, and reference corpora inside
+# the package are runtime data and ship with the wheel.
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "argus_verticals/**",
+  "tests/**",
+  "README.md",
+  "CONTRIBUTING.md",
+  "LICENSE",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+  "build",
+  "dist",
+  ".venv",
+]
+
+[tool.ruff.lint]
+select = ["F", "E", "I"]
+ignore = [
+  "E501",
+  "E402",
+  "E731",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["argus_verticals"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]

@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Argus project state a stray test or run could leave in the checkout
+/skills/
+.autors/
+.argus/
+.argus-skill/
+.argus_subagents/
+research/CHECKLISTS.json
+
+# scratch
+.tmp_pytest/
