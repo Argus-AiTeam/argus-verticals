@@ -12,11 +12,11 @@ code comments, Skill markdown, issues and pull requests alike.
 2. **No cross-vertical imports**, except through a documented shared helper
    package such as `argus_verticals/literary/shared/`, or an explicit,
    README-documented dependency on a parent vertical (as `chip_design` uses
-   `digital_circuit.evidence`). Framework code is imported from `argus_skill`;
+   `digital_circuit.evidence`). Framework code is imported from `argus`;
    never copy framework modules into a vertical.
 3. **Absolute imports across packages.** Inside a vertical, relative imports
    are fine; anything that crosses a vertical boundary is written as
-   `from argus_verticals.<name>...` or `from argus_skill...`.
+   `from argus_verticals.<name>...` or `from argus...`.
 4. **No secrets, no data dumps.** No API keys, tokens, or credentials in code,
    tests, fixtures, or Skill markdown. Fixtures are small hand-written samples;
    corpora, market data, model weights and benchmark dumps stay out of the
@@ -64,11 +64,17 @@ does not block a change; the conformance test and a reviewer do.
 Install Argus first, at or after the 2026-09-14 split (the commit that made
 vertical discovery dynamic and added `VERTICAL_SKILL_PARENTS`); an older Argus
 ignores skill parents and still lists the 17 verticals as built-ins, and the
-conformance test says so. This package declares no pip dependency on Argus
-because Argus is not on PyPI.
+conformance test says so. The same day's package rename is required too: the
+Python package `argus_skill` became `argus` and the pip distribution
+`argus-skill` became `argus`; this package imports `argus` and registers the
+`argus.verticals` entry-point group, and the conformance test fails against an
+older Argus with "Argus is older than the argus_skill → argus rename; update
+Argus". (`ARGUS_SKILL_*` environment variables and `~/.argus-skill` kept their
+spelling.) This package declares no pip dependency on Argus because Argus is
+not on PyPI.
 
 ```bash
-pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
+pip install "argus @ git+https://github.com/lbx154/Argus.git@main"
 pip install -e ".[dev,zh-fold]"
 ruff check argus_verticals tests scripts
 python scripts/build_catalog.py --check
@@ -83,7 +89,10 @@ are reviewed fastest.
 
 Argus's version number does not track the split, so compatibility is probed,
 not declared: `tests/test_contract_conformance.py` requires
-`VerticalPlugin.skill_parents` to exist in the installed Argus. When Argus bumps
+`VerticalPlugin.skill_parents` to exist in the installed Argus and
+`argus.verticals._registry.ENTRY_POINT_GROUP` to be `"argus.verticals"`, the
+group this package registers (an Argus from before the rename has no `argus`
+module at all, and the test says so before anything else). When Argus bumps
 `VERTICAL_API_VERSION`, this package follows with a release that updates every
 `ARGUS_VERTICAL_API_VERSION`; until then Argus ignores the mismatched plugins
 and logs why, so a stale install fails loudly rather than silently.

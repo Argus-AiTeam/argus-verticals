@@ -15,7 +15,7 @@ that lives here.
 ## How Argus finds these verticals
 
 Argus discovers out-of-tree verticals through the Python entry-point group
-`argus_skill.verticals` (`argus_skill/verticals/_registry.py`). Every entry in
+`argus.verticals` (`argus/verticals/_registry.py`). Every entry in
 this package's `pyproject.toml` points at a `stages.py` module that declares:
 
 | attribute | meaning |
@@ -28,7 +28,7 @@ this package's `pyproject.toml` points at a `stages.py` module that declares:
 Once the package is installed, a discovered vertical is treated like a
 built-in: same Manager menu, same Skill seeding, same stage machine, same
 Reviewer. Argus validates every plugin with the same
-`argus_skill.core.vertical_contract.vertical_contract` check it applies to its
+`argus.core.vertical_contract.vertical_contract` check it applies to its
 own verticals, and drops (with a warning) any that fail.
 
 ## Install
@@ -39,7 +39,7 @@ declares no pip dependency on it (a requirement could neither be resolved
 nor express "at or after the split"):
 
 ```bash
-pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
+pip install "argus @ git+https://github.com/lbx154/Argus.git@main"
 pip install "argus-verticals @ git+https://github.com/Argus-AiTeam/argus-verticals.git"
 # pip install argus-verticals            # PyPI release planned
 ```
@@ -50,7 +50,18 @@ older Argus still lists these 17 verticals as built-ins and ignores skill
 parents; against such an install the conformance test fails with
 "Argus is older than the verticals split; update Argus".
 
-That is all: the next `argus-skill` start sees the new verticals in the
+It must also include the **2026-09-14 package rename**: on the same day the
+Python package `argus_skill` became `argus` and the pip distribution
+`argus-skill` became `argus`. This package imports `argus` and registers its
+entry points under the `argus.verticals` group, so an Argus from before the
+rename cannot import it; the conformance test then fails with "Argus is older
+than the argus_skill → argus rename; update Argus". If a distribution still
+named `argus-skill` is installed, `pip uninstall argus-skill` before installing
+`argus`. Persisted names did not move with the rename: the `ARGUS_SKILL_*`
+environment variables, the state root `~/.argus-skill` and the other on-disk
+markers keep their spelling.
+
+That is all: the next `argus` start sees the new verticals in the
 Manager's menu. Optional extras:
 
 ```bash
@@ -177,14 +188,14 @@ python scripts/build_catalog.py --verify dist         # digests, member lists, b
    ```
 4. **Implement the contract** in the same module: `CHECKLIST_STAGE_ORDER`,
    `CHECKLIST_ITEMS`, `completion_gate`, and whichever optional fields your
-   workflow needs (table below). Import framework helpers from `argus_skill`
-   (for example `from argus_skill.skills.stage_machine import ChecklistItem`);
+   workflow needs (table below). Import framework helpers from `argus`
+   (for example `from argus.skills.stage_machine import ChecklistItem`);
    import other verticals only through `argus_verticals.<name>` or a shared
    helper package.
 5. **Register the entry point** in `pyproject.toml`, name = directory name
    (nested directories join with `_`):
    ```toml
-   [project.entry-points."argus_skill.verticals"]
+   [project.entry-points."argus.verticals"]
    my_vertical = "argus_verticals.my_vertical.stages"
    ```
 6. **Write `vertical.json`** next to `stages.py` (copy a neighbour's; fields in
@@ -213,7 +224,7 @@ python scripts/build_catalog.py --verify dist         # digests, member lists, b
 ## The contract, in short
 
 Argus reads these attributes off the `stages` module and freezes them into a
-`VerticalContract` (`argus_skill/core/vertical_contract.py` in Argus is the
+`VerticalContract` (`argus/core/vertical_contract.py` in Argus is the
 authoritative definition; this table is a summary).
 
 | attribute on `stages.py` | type / closed vocabulary | notes |
@@ -241,7 +252,7 @@ authoritative definition; this table is a summary).
 ```bash
 git clone https://github.com/Argus-AiTeam/argus-verticals.git
 cd argus-verticals
-pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"   # at or after the 2026-09-14 split
+pip install "argus @ git+https://github.com/lbx154/Argus.git@main"   # at or after the 2026-09-14 split and argus_skill → argus rename
 pip install -e ".[dev,zh-fold]"
 ruff check argus_verticals tests scripts
 python scripts/build_catalog.py --check
