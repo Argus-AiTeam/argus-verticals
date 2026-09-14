@@ -6,7 +6,6 @@ from pathlib import Path
 import yaml
 from argus_skill.domains import BUILTIN_DOMAINS, DOMAIN_PURPOSES
 from argus_skill.manager import Manager
-from argus_skill.skills.builtins import iter_vertical_skill_texts
 from argus_skill.skills.stage_machine import (
     ChecklistLoadState,
     resolve_stage_checklist_contract,
@@ -30,6 +29,8 @@ from argus_skill.verticals._base import (
     vertical_stage_primary_deliverables,
     vertical_workflow_mode,
 )
+
+from argus_verticals.medical import stages as medical_stages
 
 STAGES = ("scope", "retrieve", "normalize", "analyze", "review", "deliver")
 SKILLS = {
@@ -118,7 +119,13 @@ def test_medical_role_banners_and_skills_are_packaged() -> None:
     assert "PubMed" in engineer
     assert "registration is not efficacy" in reviewer.casefold()
 
-    skills = dict(iter_vertical_skill_texts("medical"))
+    # Read the skills this package ships (Argus's seeder may still prefer its own
+    # in-tree copy of the same vertical while it ships one).
+    skills_root = Path(medical_stages.VERTICAL_SKILLS)
+    skills = {
+        path.relative_to(skills_root).as_posix(): path.read_text(encoding="utf-8")
+        for path in sorted(skills_root.rglob("*.md"))
+    }
     assert set(skills) == SKILLS
     for name, text in skills.items():
         front, separator, body = text[4:].partition("\n---\n")
