@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from ...core.file_digest import sha256_file as _sha256
+from argus_skill.core.file_digest import sha256_file as _sha256
 
 DELIVERY_LEVELS = {"rtl_ip", "fpga", "gds", "pre_tapeout", "tapeout"}
 PASS_STATUSES = {"pass", "passed", "ready", "success", "proved"}
@@ -219,7 +219,7 @@ def _rtl(project_root: Path) -> Path:
 
 
 def _verification(project_root: Path) -> Path:
-    from ..digital_circuit.evidence import validate_verification_sources
+    from argus_verticals.digital_circuit.evidence import validate_verification_sources
 
     validate_verification_sources(project_root)
     path, payload = _payload(project_root, "verification/RESULTS.json")

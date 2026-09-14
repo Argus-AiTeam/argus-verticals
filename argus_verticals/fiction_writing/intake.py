@@ -2,7 +2,7 @@
 
 This is the fiction end of the Task-Envelope closed loop. The envelope is the
 SHARED cross-vertical task contract
-(:mod:`argus_skill.verticals.literary.shared.task_envelope`);
+(:mod:`argus_verticals.literary.shared.task_envelope`);
 fiction is its first real consumer. The ``creative_brief`` derived here stays
 PRIVATE to fiction (viewpoint/tense/market_style/genre are narrative concepts a
 poem or essay would not share).
@@ -15,7 +15,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..literary.shared.task_envelope import normalize_envelope
+from argus_verticals.literary.shared.task_envelope import normalize_envelope
+
 from .profiles import FictionProfileError, resolve_profile
 
 #: The narrative-prose forms fiction_writing handles. A ``form`` outside this set

@@ -71,13 +71,13 @@ Query the curated registry:
 
 ```bash
 "${ARGUS_SKILL_PYTHON:-python}" -m \
-  argus_skill.verticals.chip_design.environment_audit catalog \
+  argus_verticals.chip_design.environment_audit catalog \
   --list-categories
 "${ARGUS_SKILL_PYTHON:-python}" -m \
-  argus_skill.verticals.chip_design.environment_audit catalog \
+  argus_verticals.chip_design.environment_audit catalog \
   --category accelerator_ip
 "${ARGUS_SKILL_PYTHON:-python}" -m \
-  argus_skill.verticals.chip_design.environment_audit catalog \
+  argus_verticals.chip_design.environment_audit catalog \
   --category physical_design
 ```
 
@@ -88,10 +88,10 @@ Collect from the exact runtime:
 
 ```bash
 "${ARGUS_SKILL_PYTHON:-python}" -m \
-  argus_skill.verticals.chip_design.environment_audit collect \
+  argus_verticals.chip_design.environment_audit collect \
   --project-root . --target-python .venv/bin/python
 "${ARGUS_SKILL_PYTHON:-python}" -m \
-  argus_skill.verticals.chip_design.environment_audit check \
+  argus_verticals.chip_design.environment_audit check \
   --project-root .
 ```
 

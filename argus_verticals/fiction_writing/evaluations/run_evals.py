@@ -19,7 +19,7 @@ parsed value and pass/fail saved to reports/. Reported as "fixed-sample
 single-run k/N", never generalized to an accuracy.
 
 Usage:
-  python -m argus_skill.verticals.fiction_writing.evaluations.run_evals all|routing|reviewer|demo
+  python -m argus_verticals.fiction_writing.evaluations.run_evals all|routing|reviewer|demo
 """
 from __future__ import annotations
 
@@ -35,8 +35,10 @@ from pathlib import Path
 
 from argus_skill.core.models import RunnerResult
 from argus_skill.manager import Manager
-from argus_skill.skills.vertical_select import VERTICAL_PURPOSES
-from argus_skill.verticals.fiction_writing.state import apply_patch, validate_state
+from argus_skill.skills.vertical_select import available_vertical_purposes
+
+from argus_verticals.fiction_writing.stages import VERTICAL_PURPOSE
+from argus_verticals.fiction_writing.state import apply_patch, validate_state
 
 BASE = os.environ.get("ANTHROPIC_BASE_URL", "http://localhost:8536").rstrip("/")
 ROUTER_MODEL = os.environ.get("FW_EVAL_ROUTER_MODEL", "claude-haiku-4.5")
@@ -236,18 +238,22 @@ def eval_routing() -> None:
 
 def eval_routing_menu() -> None:
     """MENU-DISCRIMINATION PROBE (explicitly PARTIAL). Uses Argus's REAL
-    VERTICAL_PURPOSES menu but a direct single-shot decision (NO repo grounding,
+    vertical menu (built-ins plus installed plugins, with this vertical's own
+    VERTICAL_PURPOSE line) but a direct single-shot decision (NO repo grounding,
     NO tool loop, NOT the production decide_vertical chain). It answers only:
     given the real menu text, does a model separate fiction from a
     literature-review/research task? Do not read this as production routing
     accuracy — the full grounded chain is measured (and shown to need the heavy
     backend) in eval_routing()."""
-    menu = "\n".join(f"  - {k}: {v}" for k, v in VERTICAL_PURPOSES.items())
+    purposes = available_vertical_purposes()
+    # The menu line for this vertical is owned here, not by Argus's built-in list.
+    purposes["fiction_writing"] = VERTICAL_PURPOSE
+    menu = "\n".join(f"  - {k}: {v}" for k, v in purposes.items())
     system = ("You are Argus's Manager. From the menu, pick the single best "
               'vertical id for the task. Return ONLY JSON: {"vertical":"<id>"}.')
     print(f"\n=== ROUTING — MENU-DISCRIMINATION PROBE (PARTIAL; model={ROUTER_MODEL}, "
           f"temp={TEMPERATURE}) ===")
-    print("    real VERTICAL_PURPOSES menu; direct decision; NO tools / NO grounding")
+    print("    real vertical menu; direct decision; NO tools / NO grounding")
     records, ok = [], 0
     for task, expected in _ROUTING_TASKS:
         raw = call(ROUTER_MODEL, system, f"MENU:\n{menu}\n\nTASK: {task}\n\nJSON only.", 120)

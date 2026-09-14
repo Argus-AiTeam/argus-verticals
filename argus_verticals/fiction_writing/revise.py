@@ -2,7 +2,7 @@
 
 The fiction end of the Review-Contract closed loop. The reviewer's structured
 output (``fiction/review.json`` today) is parsed and validated by the SHARED
-contract (:mod:`argus_skill.verticals.literary.shared.review_contract`) against
+contract (:mod:`argus_verticals.literary.shared.review_contract`) against
 fiction's own
 finding VOCABULARY, then turned into an ordered revision plan the revise stage
 acts on — blocking continuity findings first, each carrying the
@@ -15,7 +15,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..literary.shared.review_contract import extract_review, normalize_review, revision_plan
+from argus_verticals.literary.shared.review_contract import (
+    extract_review,
+    normalize_review,
+    revision_plan,
+)
 
 #: Blocking continuity finding types (mirror the reviewer skill + the engine's
 #: machine-decidable guarantees). A finding typed outside the fiction vocabulary

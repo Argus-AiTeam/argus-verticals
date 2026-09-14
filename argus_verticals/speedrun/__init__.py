@@ -5,7 +5,7 @@ kernel speedrun, training-script optimization (nanochat_autoresearch,
 NanoGPT speedrun), latency optimization, etc.
 
 Four stages: ``setup → optimize → measure → report``. See
-``argus_skill.verticals.speedrun.stages`` for the stage checklist and
+``argus_verticals.speedrun.stages`` for the stage checklist and
 deterministic completion checks.
 
 No paper artifacts, no LaTeX, no figures. The verdict is mechanical:

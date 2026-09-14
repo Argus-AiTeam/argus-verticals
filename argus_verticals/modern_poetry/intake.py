@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..literary.shared.task_envelope import normalize_envelope
+from argus_verticals.literary.shared.task_envelope import normalize_envelope
 
 #: Modern-poetry forms (zh names + english aliases).
 MODERN_FORMS: frozenset[str] = frozenset({

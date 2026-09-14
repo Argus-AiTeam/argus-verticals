@@ -11,7 +11,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..literary.shared.task_envelope import normalize_envelope
+from argus_verticals.literary.shared.task_envelope import normalize_envelope
+
 from .edit_ops import EDITOR_MODES
 
 _SOURCE_ROLES = frozenset({"source_text", "prior_state"})

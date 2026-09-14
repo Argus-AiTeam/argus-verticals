@@ -8,8 +8,8 @@ import re
 import sys
 from pathlib import Path
 
-from ...core.file_digest import sha256_file as _sha256
-from ..metric_evidence import EvidenceError, validate_nanogpt_evidence
+from argus_skill.core.file_digest import sha256_file as _sha256
+from argus_skill.verticals.metric_evidence import EvidenceError, validate_nanogpt_evidence
 
 FREEZE_RELPATH = Path("research/NANOGPT_FREEZE.json")
 REQUIRED_ROLES = frozenset({"harness", "metric", "data", "budget"})

@@ -60,7 +60,7 @@ def _atomic_write(path: Path, text: str) -> None:
 
 
 def _pipeline_state(root: Path) -> dict:
-    from ...core.pipeline_state import read_pipeline_state
+    from argus_skill.core.pipeline_state import read_pipeline_state
 
     try:
         return read_pipeline_state(root)

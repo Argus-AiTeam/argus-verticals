@@ -29,7 +29,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from argus_skill.verticals.fiction_writing.novelty import is_original
+from argus_verticals.fiction_writing.novelty import is_original
 
 BLOCK_RUNS = (16, 20, 24, 28, 32)
 OVERLAP_RATIOS = (0.3, 0.4, 0.5, 0.6, 0.7)

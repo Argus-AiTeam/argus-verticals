@@ -197,7 +197,7 @@ def _cli(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(
-        prog="python -m argus_skill.verticals.quant.search_ledger",
+        prog="python -m argus_verticals.quant.search_ledger",
         description="Verify the hash chain of a factor-mining search ledger.",
     )
     parser.add_argument("command", choices=["verify"])

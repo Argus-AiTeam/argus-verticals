@@ -4,7 +4,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ...skills.stage_machine import ChecklistItem
+from argus_skill.skills.stage_machine import ChecklistItem
+
+# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# version and purpose advertise this vertical to the Manager's menu, the skills
+# root is seeded like a built-in's, and parents' skill trees are seeded first.
+# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+ARGUS_VERTICAL_API_VERSION = 1
+VERTICAL_PURPOSE = (
+    "biomedical and pharmaceutical evidence execution: target-disease "
+    "mechanisms, human genetics, preclinical translation, clinical trials, safety, "
+    "failed programs, competitive pipelines, and auditable non-diagnostic decision "
+    "dossiers with independent review; not a generic paper pipeline"
+)
+VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
+VERTICAL_SKILL_PARENTS: tuple[str, ...] = ()
 
 STAGE_ORDER = ("scope", "retrieve", "normalize", "analyze", "review", "deliver")
 CHECKLIST_STAGE_ORDER = STAGE_ORDER

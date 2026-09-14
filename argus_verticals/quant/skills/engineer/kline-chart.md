@@ -11,7 +11,7 @@ Use this when a quant mission needs to **show**, not just describe, price action
 what a strategy is doing — a report figure, a sanity look at a name, or a picture of
 where a signal says to buy/sell. Renders a report-quality candlestick chart to a PNG.
 
-## API (`argus_skill/verticals/quant/charting.py`)
+## API (`argus_verticals/quant/charting.py`)
 - `candlestick_chart(ohlcv, out_path, *, title, mavs=(5,20,60), volume=True, signal=None, buy=None, sell=None)`
   — `ohlcv` is a DataFrame with open/high/low/close[/volume] (any case), date index.
   `signal` (a date→value Series) draws in a lower panel; `buy`/`sell` (date lists)
@@ -30,7 +30,7 @@ where a signal says to buy/sell. Renders a report-quality candlestick chart to a
 
 ## Example
 ```python
-from argus_skill.verticals.quant.charting import chart_from_dump
+from argus_verticals.quant.charting import chart_from_dump
 chart_from_dump("SH600519", "2025-06-01", "2026-06-04", "artifacts/moutai.png",
                 mavs=(5, 20, 60), buy=buy_dates, sell=sell_dates, signal=score_series)
 ```

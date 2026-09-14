@@ -26,7 +26,21 @@ Both skill files live under ``argus_skill/builtin_skills/{reviewer,engineer}/``.
 """
 from __future__ import annotations
 
-from ...skills.stage_machine import ChecklistItem
+from pathlib import Path
+
+from argus_skill.skills.stage_machine import ChecklistItem
+
+# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# version and purpose advertise this vertical to the Manager's menu, the skills
+# root is seeded like a built-in's, and parents' skill trees are seeded first.
+# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+ARGUS_VERTICAL_API_VERSION = 1
+VERTICAL_PURPOSE = (
+    "equity factor research (IC/ICIR, backtest, Sharpe) producing a "
+    "reviewer-certified report, not a generic metric loop"
+)
+VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
+VERTICAL_SKILL_PARENTS: tuple[str, ...] = ()
 
 STAGE_ORDER = [
     "research", "plan", "benchmark", "run",
@@ -182,7 +196,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
             ),
             evidence_hint=(
                 "run/SEARCH_LEDGER.jsonl — check its tamper-evidence with "
-                "`python -m argus_skill.verticals.quant.search_ledger verify "
+                "`python -m argus_verticals.quant.search_ledger verify "
                 "--path run/SEARCH_LEDGER.jsonl`; a hand-written or edited "
                 "ledger fails the chain. The chain says whether the rows are "
                 "authentic, not whether the search was broad enough."

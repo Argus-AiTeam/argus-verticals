@@ -8,8 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..literary.shared.artifact_manifest import normalize_manifest
-from ..literary.shared.review_contract import normalize_review, revision_plan
+from argus_verticals.literary.shared.artifact_manifest import normalize_manifest
+from argus_verticals.literary.shared.review_contract import normalize_review, revision_plan
+
 from .prosody import PROSODY_FINDING_TYPES
 
 #: Poetry finding vocabulary: the machine-decidable prosody types (rhyme/meter/

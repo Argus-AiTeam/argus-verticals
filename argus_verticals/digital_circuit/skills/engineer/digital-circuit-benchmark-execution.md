@@ -17,7 +17,7 @@ description: "Run fixed-harness RTL benchmarks with isolated workspaces, immutab
 8. Record the first official attempt immutably before any repair. Keep Pass@1 separate from post-repair success.
 9. On failure, expose only the allowed official failure/oracle log to a narrow repair mission. Do not expose hidden source or infer golden implementation details.
    Before dispatch, the trusted controller must run
-   `python -m argus_skill.verticals.digital_circuit.benchmark.stages
+   `python -m argus_verticals.digital_circuit.benchmark.stages
    --project-root . --prepare-repair-expectation --generation N --iteration N
    --mission-id ID --answer-path <public-output>` for every answer file.
    Never let the repair worker invent or rewrite this pre-dispatch identity.

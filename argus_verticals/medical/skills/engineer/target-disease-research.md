@@ -36,7 +36,7 @@ Use the bundled builder instead of rewriting the retrieval or dossier code. Quot
 the operator's actual target and disease values:
 
 ```bash
-python -m argus_skill.verticals.medical.dossier \
+python -m argus_verticals.medical.dossier \
   --project-root . \
   --target 'EGFR' \
   --disease 'non-small cell lung cancer' \

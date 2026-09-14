@@ -9,7 +9,7 @@ Story State Update
 ## Description
 Keep long-term continuity by turning each chapter into a small, validated DELTA
 to `story_state` — not a rewrite. The writer emits a `state_patch.json`; the
-engine (`argus_skill.verticals.fiction_writing.state.apply_patch`) validates and
+engine (`argus_verticals.fiction_writing.state.apply_patch`) validates and
 applies it with hard safety guarantees so prior setup is never silently lost.
 
 ## Category
@@ -54,7 +54,7 @@ Do NOT use to write prose or to hand-edit `story_state.json` directly.
    - a revealed setup = `resolve_foreshadowing`; a closed question = `resolve_thread`.
 3. **Apply through the engine**, not by hand:
    ```python
-   from argus_skill.verticals.fiction_writing.state import apply_patch
+   from argus_verticals.fiction_writing.state import apply_patch
    new_state, result = apply_patch(old_state_or_None, patch)
    ```
    The engine guarantees: idempotent by `patch_id`; atomic (a bad op rejects the
@@ -65,7 +65,7 @@ Do NOT use to write prose or to hand-edit `story_state.json` directly.
 4. **On a PatchError, repair against a structured diagnosis — never bypass the
    engine.** Use the grounded validate→repair loop, not a blind retry:
    ```python
-   from argus_skill.verticals.fiction_writing.state_patch_io import (
+   from argus_verticals.fiction_writing.state_patch_io import (
        diagnose_patch, apply_patch_with_repair)
    d = diagnose_patch(old_state, patch)   # {ok} or {ok:False, error, valid:<ids>}
    # fix the named op[idx] against d["valid"], OR drive it automatically:

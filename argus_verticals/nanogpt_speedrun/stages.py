@@ -20,7 +20,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..optimization_base import speedrun_base_contract
+from argus_skill.verticals.optimization_base import speedrun_base_contract
+
+# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# version and purpose advertise this vertical to the Manager's menu, the skills
+# root is seeded like a built-in's, and parents' skill trees are seeded first.
+# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+ARGUS_VERTICAL_API_VERSION = 1
+VERTICAL_PURPOSE = "minimize wall-clock time to reach val_loss<=3.28 on modded-nanogpt (8xH100)"
+VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
+VERTICAL_SKILL_PARENTS: tuple[str, ...] = ("speedrun",)
 
 _BASE = speedrun_base_contract()
 STAGE_ORDER = list(_BASE.stage_order)

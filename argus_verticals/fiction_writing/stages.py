@@ -28,7 +28,7 @@ mission; there is no metric and no paper submission):
    ``fiction/story_state.json``. The writer NEVER hand-rewrites the whole state
    — it emits a structured patch that is program-validated (idempotent, no
    silent deletion of prior state, valid id references, parseable timeline).
-   See ``argus_skill.verticals.fiction_writing.state``.
+   See ``argus_verticals.fiction_writing.state``.
 
 5. **review**: the reviewer produces ``fiction/review.json`` — typed, severity-
    tagged, evidence-located findings across CONTINUITY (dead characters
@@ -62,7 +62,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ...skills.stage_machine import ChecklistItem
+from argus_skill.skills.stage_machine import ChecklistItem
+
+# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# version and purpose advertise this vertical to the Manager's menu, the skills
+# root is seeded like a built-in's, and parents' skill trees are seeded first.
+# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+ARGUS_VERTICAL_API_VERSION = 1
+VERTICAL_PURPOSE = (
+    "write or continue original fiction narrative prose while preserving "
+    "characters, world, and timeline; not a literature review or research task"
+)
+VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
+VERTICAL_SKILL_PARENTS: tuple[str, ...] = ()
 
 STAGE_ORDER = ["intake", "plan", "draft", "state_update", "review", "revise"]
 

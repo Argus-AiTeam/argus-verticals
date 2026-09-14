@@ -59,7 +59,7 @@ def validate_usage(usage: dict[str, Any], registry: dict[str, Any]) -> None:
     """Structural + provenance validation of a usage log against ``registry``.
 
     ``registry`` is expected to be already valid (see
-    :func:`argus_skill.verticals.literary.shared.source_registry.validate_registry`).
+    :func:`argus_verticals.literary.shared.source_registry.validate_registry`).
     Raises
     :class:`ProvenanceError` on the first indefensible entry.
     """
