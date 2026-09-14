@@ -23,6 +23,7 @@ from argus_skill.skills.vertical_select import (
 )
 from argus_skill.verticals._base import (
     load_vertical,
+    load_vertical_contract,
     vertical_checklist_items,
     vertical_checklist_stage_order,
     vertical_completion_gate,
@@ -30,6 +31,7 @@ from argus_skill.verticals._base import (
     vertical_role_banner,
     vertical_workflow_mode,
 )
+from argus_skill.verticals._registry import vertical_plugin
 
 MATERIALS_SKILLS = {
     "manager/materials-research-manager.md",
@@ -52,10 +54,11 @@ def test_materials_is_registered_and_loadable() -> None:
     assert set(available_vertical_purposes()) >= set(available_verticals())
     assert require_vertical("materials") == "materials"
 
+    plugin = vertical_plugin("materials")
+    assert plugin is not None, "materials is not registered with Argus's plugin registry"
+    assert plugin.module.__name__ == "argus_verticals.materials.stages"
     mod = load_vertical("materials")
-    # Argus may resolve its own in-tree copy while it still ships one; the
-    # module path only has to end in this vertical.
-    assert mod.__name__.endswith("materials.stages")
+    assert mod is plugin.module
     assert mod.STAGE_ORDER == (
         "scope",
         "grounding",
@@ -229,3 +232,20 @@ def test_materials_final_stage_cannot_complete_without_indexed_evidence(tmp_path
 
     _write_materials_evidence(tmp_path)
     complete_final_stage(tmp_path, reason="reviewed and evidence indexed")
+
+
+def test_materials_declares_targets_only() -> None:
+    # From Argus tests/life/test_final_submission_scope_applies.py: materials
+    # declares research target levels without a certified completion gate.
+    contract = load_vertical_contract("materials")
+    assert contract.research_target_levels
+    assert contract.completion_gate != "certified"
+
+
+def test_materials_without_a_live_search_declaration_takes_the_default_path() -> None:
+    # From Argus tests/test_codex_live_search.py.
+    from argus_skill.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
+
+    contract = load_vertical_contract("materials")
+    assert contract.engineer_live_search_stages is None
+    assert contract.live_search_stages(DEFAULT_LIVE_SEARCH_STAGES) == frozenset(contract.stage_order)

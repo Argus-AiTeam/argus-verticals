@@ -6,6 +6,8 @@ from pathlib import Path
 import yaml
 from argus_skill.domains import BUILTIN_DOMAINS, DOMAIN_PURPOSES
 from argus_skill.manager import Manager
+from argus_skill.reviewer import Reviewer
+from argus_skill.skills.builtins import iter_vertical_skill_texts
 from argus_skill.skills.stage_machine import (
     ChecklistLoadState,
     resolve_stage_checklist_contract,
@@ -29,8 +31,7 @@ from argus_skill.verticals._base import (
     vertical_stage_primary_deliverables,
     vertical_workflow_mode,
 )
-
-from argus_verticals.medical import stages as medical_stages
+from argus_skill.verticals._registry import vertical_plugin
 
 STAGES = ("scope", "retrieve", "normalize", "analyze", "review", "deliver")
 SKILLS = {
@@ -48,10 +49,11 @@ def test_medical_is_registered_as_a_vertical_not_a_domain() -> None:
     assert "medical" not in DOMAIN_PURPOSES
     assert require_vertical("medical") == "medical"
 
+    plugin = vertical_plugin("medical")
+    assert plugin is not None, "medical is not registered with Argus's plugin registry"
+    assert plugin.module.__name__ == "argus_verticals.medical.stages"
     mod = load_vertical("medical")
-    # Argus may resolve its own in-tree copy while it still ships one; the
-    # module path only has to end in this vertical.
-    assert mod.__name__.endswith("medical.stages")
+    assert mod is plugin.module
     assert vertical_checklist_stage_order(mod) == STAGES
 
 
@@ -119,13 +121,7 @@ def test_medical_role_banners_and_skills_are_packaged() -> None:
     assert "PubMed" in engineer
     assert "registration is not efficacy" in reviewer.casefold()
 
-    # Read the skills this package ships (Argus's seeder may still prefer its own
-    # in-tree copy of the same vertical while it ships one).
-    skills_root = Path(medical_stages.VERTICAL_SKILLS)
-    skills = {
-        path.relative_to(skills_root).as_posix(): path.read_text(encoding="utf-8")
-        for path in sorted(skills_root.rglob("*.md"))
-    }
+    skills = dict(iter_vertical_skill_texts("medical"))
     assert set(skills) == SKILLS
     for name, text in skills.items():
         front, separator, body = text[4:].partition("\n---\n")
@@ -171,3 +167,30 @@ def test_deliver_stage_requires_valid_dossier(tmp_path: Path) -> None:
         stage="deliver",
         project_root=tmp_path,
     ) == ()
+
+
+def test_certified_medical_review_does_not_inherit_paper_policy(tmp_path: Path) -> None:
+    """From Argus tests/test_reviewer_trust_first.py: a certified completion gate
+    alone must not make the Reviewer read medical work as a paper."""
+    persist_vertical(tmp_path, "medical")
+    state_path = tmp_path / ".argus" / "PIPELINE_STATE.json"
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    state["current_stage"] = "review"
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+
+    reviewer = Reviewer(runner=None, skill_store=None)
+    prompt = reviewer._build_prompt(
+        objective="review the current result",
+        operator_messages=[],
+        planner_review_instruction="",
+        round_index=1,
+        session_id=None,
+        main_summary="RESULT: checked evidence",
+        main_error=None,
+        prior_checkpoint={},
+        working_dir=str(tmp_path),
+        scope="final_submission",
+    )
+
+    assert "## Near-complete paper review" not in prompt
+    assert "## Final paper review" not in prompt

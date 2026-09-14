@@ -20,6 +20,7 @@ from argus_skill.skills.vertical_select import (
     resolve_vertical,
 )
 from argus_skill.verticals._base import load_vertical, vertical_role_banner
+from argus_skill.verticals._registry import vertical_plugin
 
 
 @pytest.fixture(autouse=True)
@@ -83,9 +84,10 @@ def test_planner_resolution_chain_reads_physics_role_banner(tmp_path: Path) -> N
     persist_vertical(tmp_path, "physics")
 
     mod = load_vertical(resolve_vertical(tmp_path), project_root=tmp_path)
-    # Argus may resolve its own in-tree copy while it still ships one; the
-    # module path only has to end in this vertical.
-    assert mod.__name__.endswith("physics.stages")
+    plugin = vertical_plugin("physics")
+    assert plugin is not None, "physics is not registered with Argus's plugin registry"
+    assert plugin.module.__name__ == "argus_verticals.physics.stages"
+    assert mod is plugin.module
 
     banner = vertical_role_banner(mod, "planner")
     assert "MISSION TYPE: PHYSICS" in banner

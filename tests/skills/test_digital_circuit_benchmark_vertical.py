@@ -30,12 +30,10 @@ def test_benchmark_subvertical_is_registered_and_direct() -> None:
     assert mod.WORKFLOW_MODE == "direct"
     assert mod.REQUIRE_INDEPENDENT_REVIEW is True
     assert Manager._kind_for("digital_circuit_benchmark") == "custom"
-    # The loader may resolve an in-tree copy while Argus still ships one; the
-    # plugin registry must always resolve to this package's module.
-    assert mod.__name__.endswith("digital_circuit.benchmark.stages")
     plugin = vertical_plugin("digital_circuit_benchmark")
-    if plugin is not None:  # requires the package to be installed
-        assert plugin.module.__name__ == "argus_verticals.digital_circuit.benchmark.stages"
+    assert plugin is not None, "digital_circuit_benchmark is not registered with Argus's plugin registry"
+    assert plugin.module.__name__ == "argus_verticals.digital_circuit.benchmark.stages"
+    assert mod is plugin.module
 
 
 def test_benchmark_subvertical_inherits_digital_circuit_skills() -> None:
