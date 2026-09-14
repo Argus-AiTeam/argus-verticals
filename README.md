@@ -7,9 +7,10 @@ autonomous research and engineering.
 A vertical tells Argus how one kind of work is done: the ordered stages, the
 per-stage review checklists, what counts as done (`completion_gate`), which
 role banners the Manager, Planner, Engineer and Reviewer read, and the Skill
-markdown those roles are seeded with. Argus ships a small set of built-in
-verticals (research, software, math, kernel_engineering, learning, and its own
-maintenance). Everything domain-specific beyond that lives here.
+markdown those roles are seeded with. Argus ships seven built-in
+verticals (`research`, `software`, `kernel_engineering`, `learning`,
+`argus_maintenance`, `math`, `math_synth`). Everything domain-specific beyond
+that lives here.
 
 ## How Argus finds these verticals
 
@@ -32,11 +33,22 @@ own verticals, and drops (with a warning) any that fail.
 
 ## Install
 
+Install Argus first, then this package into the same Python environment.
+Argus is installed from its repository, not from PyPI, so this package
+declares no pip dependency on it (a requirement could neither be resolved
+nor express "at or after the split"):
+
 ```bash
-pip install argus-verticals                     # PyPI release planned
-# or, straight from the repository
+pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
 pip install "argus-verticals @ git+https://github.com/Argus-AiTeam/argus-verticals.git"
+# pip install argus-verticals            # PyPI release planned
 ```
+
+The Argus you install must be **at or after the 2026-09-14 split**: the commit
+that made vertical discovery dynamic and added `VERTICAL_SKILL_PARENTS`. An
+older Argus still lists these 17 verticals as built-ins and ignores skill
+parents; against such an install the conformance test fails with
+"Argus is older than the verticals split; update Argus".
 
 That is all: the next `argus-skill` start sees the new verticals in the
 Manager's menu. Optional extras:
@@ -82,8 +94,8 @@ it needs, and the tests that cover it.
 
 ## Add your own vertical
 
-1. **Copy the smallest vertical as a template.** `argus_verticals/materials/`
-   is a good start: one `stages.py`, one `evidence.py`, a full
+1. **Copy the smallest vertical with a full four-role skills tree as a
+   template.** `argus_verticals/materials/` is a good start: one `stages.py`, one `evidence.py`, a full
    `skills/{manager,planner,engineer,reviewer}/` tree, a `README.md`, and one
    test file. Rename the directory to your vertical's name (`^[a-z][a-z0-9_]{0,47}$`).
 2. **Lay it out like this:**
@@ -97,8 +109,12 @@ it needs, and the tests that cover it.
      README.md
    tests/test_<name>_*.py
    ```
-   Skill markdown uses Argus's format: a `---` front matter with `name` and
-   `description`, then `## When to use` and `## How to solve`.
+   A skill file is Argus's format: a `---` front matter with `name` and
+   `description`, then free Markdown. Put every file under a role directory;
+   a role-less file at the top of `skills/` is seeded without a role and is
+   permitted but discouraged. Scripts a skill invokes live in a `*_scripts/`
+   directory next to it (`engineer/<skill>_scripts/tool.py`) and are seeded
+   verbatim.
 3. **Declare the plugin attributes** near the top of `stages.py`:
    ```python
    ARGUS_VERTICAL_API_VERSION = 1
@@ -163,14 +179,18 @@ authoritative definition; this table is a summary).
 ```bash
 git clone https://github.com/Argus-AiTeam/argus-verticals.git
 cd argus-verticals
-pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
+pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"   # at or after the 2026-09-14 split
 pip install -e ".[dev,zh-fold]"
 ruff check argus_verticals tests
 pytest -q
 ```
 
 Tests that need `lightgbm`, `torch`, `qlib`, or `adata` skip when those are
-not installed.
+not installed. When the package is not installed (`pip install -e .` not run),
+`tests/conftest.py` registers the checkout's own entry points for the session
+so the suite still exercises Argus's registry and seeder; when it is installed,
+the conformance test fails on metadata that no longer matches `pyproject.toml`
+("stale install — re-run pip install -e .").
 
 ## License
 

@@ -13,10 +13,15 @@ self-contained so the suite runs against an installed ``argus-skill``.
 from __future__ import annotations
 
 import os
+import tomllib
 from collections.abc import Iterator
+from importlib.metadata import EntryPoint, PackageNotFoundError, distribution
 from pathlib import Path
 
 import pytest
+
+_DISTRIBUTION = "argus-verticals"
+_CHECKOUT_ENTRY_POINTS_REGISTERED = False
 
 
 @pytest.fixture
@@ -69,14 +74,64 @@ def _isolate_argus_state_roots(
     monkeypatch.setenv("CODEX_HOME", str(root / "codex-home"))
 
 
+def _register_checkout_entry_points_if_uninstalled() -> None:
+    """Make a bare checkout discoverable by Argus's registry.
+
+    Argus finds these verticals through ``importlib.metadata`` entry points, so
+    a checkout that was never ``pip install -e .``-ed has none and every
+    ``load_vertical("<moved>")`` would raise. When the distribution is absent
+    this reads the same group from ``pyproject.toml`` and hands those entry
+    points to ``argus_skill.verticals._registry`` for the session, so the tests
+    still exercise the real registry and seeder. When the distribution IS
+    installed nothing is patched: the installed metadata is authoritative, and
+    ``tests/test_contract_conformance.py`` fails on a stale install.
+    """
+    global _CHECKOUT_ENTRY_POINTS_REGISTERED
+    try:
+        distribution(_DISTRIBUTION)
+        return
+    except PackageNotFoundError:
+        pass
+    from argus_skill.verticals import _registry
+
+    pyproject = tomllib.loads((_repo_root() / "pyproject.toml").read_text(encoding="utf-8"))
+    declared = pyproject["project"]["entry-points"][_registry.ENTRY_POINT_GROUP]
+    checkout = [
+        EntryPoint(name=name, value=value, group=_registry.ENTRY_POINT_GROUP)
+        for name, value in declared.items()
+    ]
+    real_entry_points = _registry.entry_points
+
+    def entry_points_with_checkout(**params):
+        found = list(real_entry_points(**params))
+        if params.get("group") == _registry.ENTRY_POINT_GROUP:
+            found.extend(checkout)
+        return found
+
+    _registry.entry_points = entry_points_with_checkout
+    _registry.refresh_vertical_plugins()
+    _CHECKOUT_ENTRY_POINTS_REGISTERED = True
+
+
 def pytest_configure(config: pytest.Config) -> None:  # noqa: ARG001
-    """Keep collection-time imports in safe mode.
+    """Keep collection-time imports in safe mode; make the checkout discoverable.
 
     The per-test fixture above re-points every state root, but module import
     happens before it runs; safe mode keeps any import-time side effect from
     reaching a real sandbox escape.
     """
     os.environ.setdefault("ARGUS_SKILL_SAFE_MODE", "1")
+    _register_checkout_entry_points_if_uninstalled()
+
+
+def pytest_report_header(config: pytest.Config) -> list[str]:  # noqa: ARG001
+    if _CHECKOUT_ENTRY_POINTS_REGISTERED:
+        return [
+            "argus-verticals: distribution not installed; the checkout's pyproject entry "
+            "points are registered with Argus for this session (pip install -e . to test "
+            "the installed metadata)"
+        ]
+    return ["argus-verticals: using the installed distribution's entry points"]
 
 
 @pytest.fixture(autouse=True)

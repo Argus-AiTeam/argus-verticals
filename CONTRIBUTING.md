@@ -48,6 +48,12 @@ does not block a change; the conformance test and a reviewer do.
 
 ## Workflow
 
+Install Argus first, at or after the 2026-09-14 split (the commit that made
+vertical discovery dynamic and added `VERTICAL_SKILL_PARENTS`); an older Argus
+ignores skill parents and still lists the 17 verticals as built-ins, and the
+conformance test says so. This package declares no pip dependency on Argus
+because Argus is not on PyPI.
+
 ```bash
 pip install "argus-skill @ git+https://github.com/lbx154/Argus.git@main"
 pip install -e ".[dev,zh-fold]"
@@ -61,7 +67,9 @@ are reviewed fastest.
 
 ## Compatibility with Argus
 
-This package depends on `argus-skill>=0.1.6`. When Argus bumps
+Argus's version number does not track the split, so compatibility is probed,
+not declared: `tests/test_contract_conformance.py` requires
+`VerticalPlugin.skill_parents` to exist in the installed Argus. When Argus bumps
 `VERTICAL_API_VERSION`, this package follows with a release that updates every
 `ARGUS_VERTICAL_API_VERSION`; until then Argus ignores the mismatched plugins
 and logs why, so a stale install fails loudly rather than silently.

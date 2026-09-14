@@ -8,9 +8,10 @@ learns before a release that a vertical would be silently dropped from the
 Manager's menu. It also pins the repository's own rules: one directory per
 vertical, each registered exactly once, each with a README.
 
-The contract is exercised directly rather than through
-``argus_skill.verticals._base.load_vertical`` because that loader prefers an
-in-tree copy of the same name when one exists.
+The contract is exercised directly (``vertical_contract`` on the imported
+module) so a failure names the offending attribute, and once more through
+Argus's registry so the installed metadata is proven to advertise exactly what
+``pyproject.toml`` declares.
 """
 from __future__ import annotations
 
@@ -23,13 +24,18 @@ from pathlib import Path
 import pytest
 from argus_skill.core.vertical_contract import vertical_contract
 from argus_skill.skills.vertical_select import VERTICALS as ARGUS_BUILTIN_VERTICALS
-from argus_skill.verticals._registry import ENTRY_POINT_GROUP, VERTICAL_API_VERSION
+from argus_skill.verticals._registry import (
+    ENTRY_POINT_GROUP,
+    VERTICAL_API_VERSION,
+    VerticalPlugin,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = REPO_ROOT / "argus_verticals"
+DISTRIBUTION = "argus-verticals"
 # Mirrors the registry's accepted name shape.
 ENTRY_POINT_NAME = re.compile(r"^[a-z][a-z0-9_]{0,47}$")
-SKILL_ROLE_DIRS = frozenset({"manager", "planner", "engineer", "reviewer", "references"})
+SKILL_ROLE_DIRS = frozenset({"manager", "planner", "engineer", "reviewer"})
 
 
 def _entry_points() -> dict[str, str]:
@@ -49,7 +55,44 @@ def _module_dir(target: str) -> Path:
     return PACKAGE_ROOT.joinpath(*target.split(".")[1:-1])
 
 
+def _installed_entry_points() -> dict[str, str] | None:
+    """Entry points of the installed distribution, or None when not installed."""
+    try:
+        dist = distribution(DISTRIBUTION)
+    except PackageNotFoundError:
+        return None
+    return {ep.name: ep.value for ep in dist.entry_points if ep.group == ENTRY_POINT_GROUP}
+
+
+def _skills_layout_issues(skills: Path) -> list[str]:
+    """Directories under skills/ are roles, ``references`` corpora, or ``*_scripts``.
+
+    Argus's seeder (``argus_skill/skills/builtins.py``) treats ``references/``
+    as non-matchable assets and ships ``*_scripts/`` directories verbatim so a
+    skill can invoke the scripts it documents; anything else is a stray.
+    """
+    issues: list[str] = []
+    for directory in sorted(path for path in skills.rglob("*") if path.is_dir()):
+        parts = directory.relative_to(skills).parts
+        if "references" in parts:
+            continue
+        head, *rest = parts
+        if head not in SKILL_ROLE_DIRS and not head.endswith("_scripts"):
+            issues.append(f"{directory.relative_to(skills).as_posix()}: not a role dir {sorted(SKILL_ROLE_DIRS)}")
+        for segment in rest:
+            if not segment.endswith("_scripts"):
+                issues.append(f"{directory.relative_to(skills).as_posix()}: only *_scripts/ may nest under a role")
+    return issues
+
+
 ENTRY_POINTS = _entry_points()
+
+
+def test_argus_is_at_or_after_the_verticals_split() -> None:
+    """Argus's version number did not move for the split; probe the capability."""
+    assert "skill_parents" in VerticalPlugin.__dataclass_fields__, (
+        "Argus is older than the verticals split; update Argus"
+    )
 
 
 @pytest.mark.parametrize(("name", "target"), sorted(ENTRY_POINTS.items()))
@@ -70,8 +113,7 @@ def test_plugin_module_satisfies_the_argus_contract(name: str, target: str) -> N
             f"{name}: VERTICAL_SKILLS must be the vertical's own skills/ directory"
         )
         assert any(skills.rglob("*.md")), f"{name}: skills/ holds no markdown"
-        stray = sorted(p.name for p in skills.iterdir() if p.is_dir() and p.name not in SKILL_ROLE_DIRS)
-        assert not stray, f"{name}: skills/ subdirectories must be roles {sorted(SKILL_ROLE_DIRS)}: {stray}"
+        assert not _skills_layout_issues(skills), f"{name}: {_skills_layout_issues(skills)}"
     else:
         assert not (_module_dir(target) / "skills").is_dir(), (
             f"{name}: has a skills/ directory but does not declare VERTICAL_SKILLS"
@@ -130,12 +172,23 @@ def test_purposes_are_distinct() -> None:
         seen[purpose] = name
 
 
-def test_argus_discovers_the_installed_plugins() -> None:
-    """End-to-end through Argus's registry; needs this package installed."""
-    try:
-        distribution("argus-verticals")
-    except PackageNotFoundError:
-        pytest.skip("argus-verticals is not installed; run `pip install -e .` to test discovery")
+def test_installed_metadata_matches_pyproject() -> None:
+    """An editable install that predates an entry-point edit advertises the wrong set."""
+    installed = _installed_entry_points()
+    if installed is None:
+        pytest.skip(
+            "argus-verticals is not installed; tests/conftest.py registered the "
+            "checkout's entry points for this session"
+        )
+    assert installed == ENTRY_POINTS, (
+        "stale install — re-run pip install -e . "
+        f"(installed entry points {sorted(installed)} differ from pyproject.toml {sorted(ENTRY_POINTS)})"
+    )
+
+
+def test_argus_discovers_the_plugins() -> None:
+    """End-to-end through Argus's registry (installed metadata, or the checkout's
+    entry points registered by tests/conftest.py)."""
     from argus_skill.verticals._registry import vertical_plugins
 
     plugins = vertical_plugins()
@@ -146,6 +199,7 @@ def test_argus_discovers_the_installed_plugins() -> None:
         plugin = plugins[name]
         assert plugin.module is module
         assert plugin.purpose == module.VERTICAL_PURPOSE.strip()
+        assert plugin.skill_parents == tuple(module.VERTICAL_SKILL_PARENTS)
         declared = getattr(module, "VERTICAL_SKILLS", None)
         assert (plugin.skills_root is None) == (declared is None)
         if declared is not None:

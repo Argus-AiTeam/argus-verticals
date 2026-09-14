@@ -24,9 +24,11 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development",
 ]
-dependencies = [
-  "argus-skill>=0.1.6",
-]
+# Argus itself is installed from its repository, not from PyPI, and its version
+# number does not move for the 2026-09-14 verticals split, so no requirement
+# can express "an Argus at or after the split". Install Argus first (see the
+# README); tests/test_contract_conformance.py probes the split capability.
+dependencies = []
 
 [project.optional-dependencies]
 # Quantitative analysis and model tooling.
