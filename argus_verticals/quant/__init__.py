@@ -11,7 +11,7 @@ This package ships two layers:
 * the **declarative vertical contract** in :mod:`.stages`
   (``STAGE_ORDER`` + checklist items, ``role_banner``, ``completion_gate``) —
   the only thing the harness loads via
-  ``argus_skill.verticals._base.load_vertical("quant")``; and
+  ``argus.verticals._base.load_vertical("quant")``; and
 * the **execution-side discipline helpers** the engineer's factor-mining loop
   uses — :mod:`.search_ledger` (hash-chained trial log), :mod:`.backtest` /
   :mod:`.executor` (the ``BacktestExecutor`` contract), :mod:`.factors`,

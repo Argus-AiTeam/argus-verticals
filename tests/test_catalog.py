@@ -43,12 +43,16 @@ PACKAGE_ROOT = REPO_ROOT / "argus_verticals"
 SCHEMA_PATH = REPO_ROOT / "catalog" / "vertical.schema.json"
 CATALOG_PATH = REPO_ROOT / "catalog.json"
 SCRIPT_PATH = REPO_ROOT / "scripts" / "build_catalog.py"
-ENTRY_POINT_GROUP = "argus_skill.verticals"
+ENTRY_POINT_GROUP = "argus.verticals"
 RELEASE_TAG = "v9.9.9-test"
 
 # Import name -> distribution name where they differ.
 IMPORT_TO_DISTRIBUTION = {"sklearn": "scikit-learn", "yaml": "PyYAML"}
 STDLIB = set(sys.stdlib_module_names)
+# Imports that are not pip requirements of a vertical: the Argus framework
+# (``argus``; its pre-rename spelling ``argus_skill`` is deliberately absent so
+# a stray old import is reported as an undeclared requirement) and this package.
+NOT_THIRD_PARTY = frozenset({"argus", "argus_verticals"})
 
 
 def _load_generator():
@@ -259,7 +263,7 @@ def test_python_requirements_match_the_third_party_imports(name: str) -> None:
     for path in _python_files(manifest["paths"] + manifest["shared"], _other_paths(name)):
         for dotted, guarded in _imports(path):
             top = dotted.split(".")[0]
-            if top in STDLIB or top == "__future__" or top.startswith("argus_"):
+            if top in STDLIB or top == "__future__" or top in NOT_THIRD_PARTY:
                 continue
             distribution = _import_distribution(top)
             anywhere.add(distribution)
@@ -503,8 +507,8 @@ def test_verify_accepts_the_release_and_rejects_tampering(release: tuple[Path, d
 
 
 def _argus_root() -> Path:
-    argus_skill = pytest.importorskip("argus_skill")
-    return Path(argus_skill.__file__).resolve().parents[1]
+    argus = pytest.importorskip("argus")
+    return Path(argus.__file__).resolve().parents[1]
 
 
 def _closure(name: str) -> list[str]:

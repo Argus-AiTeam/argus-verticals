@@ -7,12 +7,12 @@ playbooks so an old seeded copy is recognised and replaced.
 """
 from __future__ import annotations
 
-from argus_skill.skills.builtins import (
+from argus.skills.builtins import (
     _RETIRED_BUILTIN_SEED_HASHES,
     iter_vertical_skill_texts,
 )
-from argus_skill.verticals._base import load_vertical
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._base import load_vertical
+from argus.verticals._registry import vertical_plugin
 
 RETIRED_NANOCHAT_SKILLS = {
     "engineer/nanochat-autoresearch-hands-on-trace.md",

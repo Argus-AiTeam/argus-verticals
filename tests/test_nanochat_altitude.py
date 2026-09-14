@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 
 import pytest
-from argus_skill.verticals._base import load_vertical, vertical_search_altitude
+from argus.verticals._base import load_vertical, vertical_search_altitude
 
 from argus_verticals.nanochat.stages import (
     _no_score_facts,
@@ -166,7 +166,7 @@ def test_vertical_hook_failopen_for_vertical_without_hook(tmp_path):
 
 
 def test_vertical_hook_failure_is_visible():
-    from argus_skill.skills.stage_machine import ChecklistItem
+    from argus.skills.stage_machine import ChecklistItem
 
     class _Boom:
         CHECKLIST_STAGE_ORDER = ("work",)

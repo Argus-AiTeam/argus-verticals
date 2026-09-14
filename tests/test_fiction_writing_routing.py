@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import json
 
-from argus_skill.manager import Manager
-from argus_skill.manager.domain_author import build_vertical_decision_prompt
-from argus_skill.skills.vertical_select import (
+from argus.manager import Manager
+from argus.manager.domain_author import build_vertical_decision_prompt
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     persist_vertical,
     resolve_vertical,

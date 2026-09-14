@@ -3,15 +3,15 @@ from __future__ import annotations
 import json
 
 import pytest
-from argus_skill.core.repair_freshness import load_freshness_expectation
-from argus_skill.manager import Manager
-from argus_skill.skills.builtins import iter_vertical_skill_texts
-from argus_skill.skills.vertical_select import (
+from argus.core.repair_freshness import load_freshness_expectation
+from argus.manager import Manager
+from argus.skills.builtins import iter_vertical_skill_texts
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
 )
-from argus_skill.verticals._base import load_vertical, vertical_role_banner
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._base import load_vertical, vertical_role_banner
+from argus.verticals._registry import vertical_plugin
 
 from argus_verticals.digital_circuit.benchmark.stages import (
     prepare_repair_expectation,

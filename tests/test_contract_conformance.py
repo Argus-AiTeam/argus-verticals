@@ -1,8 +1,8 @@
 """The community gate: every vertical here is a valid Argus plugin.
 
-Argus discovers out-of-tree verticals through the ``argus_skill.verticals``
-entry-point group (``argus_skill/verticals/_registry.py``) and validates each
-one with ``argus_skill.core.vertical_contract.vertical_contract``. This module
+Argus discovers out-of-tree verticals through the ``argus.verticals``
+entry-point group (``argus/verticals/_registry.py``) and validates each
+one with ``argus.core.vertical_contract.vertical_contract``. This module
 runs those same checks against ``pyproject.toml`` directly, so a contributor
 learns before a release that a vertical would be silently dropped from the
 Manager's menu. It also pins the repository's own rules: one directory per
@@ -16,15 +16,25 @@ Argus's registry so the installed metadata is proven to advertise exactly what
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import re
 import tomllib
 from importlib.metadata import PackageNotFoundError, distribution
 from pathlib import Path
 
 import pytest
-from argus_skill.core.vertical_contract import vertical_contract
-from argus_skill.skills.vertical_select import VERTICALS as ARGUS_BUILTIN_VERTICALS
-from argus_skill.verticals._registry import (
+
+# Capability probe, before any ``argus`` import: the framework package was
+# named ``argus_skill`` until 2026-09-14 and its version number did not move
+# for the rename, so an old install shows up as "no module named argus". Fail
+# here with the reason instead of letting the imports below raise ImportError.
+RENAME_MESSAGE = "Argus is older than the argus_skill → argus rename; update Argus"
+if importlib.util.find_spec("argus") is None:
+    pytest.fail(RENAME_MESSAGE, pytrace=False)
+
+from argus.core.vertical_contract import vertical_contract
+from argus.skills.vertical_select import VERTICALS as ARGUS_BUILTIN_VERTICALS
+from argus.verticals._registry import (
     ENTRY_POINT_GROUP,
     VERTICAL_API_VERSION,
     VerticalPlugin,
@@ -67,7 +77,7 @@ def _installed_entry_points() -> dict[str, str] | None:
 def _skills_layout_issues(skills: Path) -> list[str]:
     """Directories under skills/ are roles, ``references`` corpora, or ``*_scripts``.
 
-    Argus's seeder (``argus_skill/skills/builtins.py``) treats ``references/``
+    Argus's seeder (``argus/skills/builtins.py``) treats ``references/``
     as non-matchable assets and ships ``*_scripts/`` directories verbatim so a
     skill can invoke the scripts it documents; anything else is a stray.
     """
@@ -93,6 +103,13 @@ def test_argus_is_at_or_after_the_verticals_split() -> None:
     assert "skill_parents" in VerticalPlugin.__dataclass_fields__, (
         "Argus is older than the verticals split; update Argus"
     )
+
+
+def test_argus_is_at_or_after_the_package_rename() -> None:
+    """Argus reads plugins from the ``argus.verticals`` group; the pre-rename
+    ``argus_skill.verticals`` group is only honoured for one release and with a
+    warning, so this package registers the new group alone."""
+    assert ENTRY_POINT_GROUP == "argus.verticals", RENAME_MESSAGE
 
 
 @pytest.mark.parametrize(("name", "target"), sorted(ENTRY_POINTS.items()))
@@ -156,7 +173,7 @@ def test_every_vertical_directory_is_registered_exactly_once() -> None:
     registered = set(ENTRY_POINTS.values())
     present = _vertical_stage_modules()
     assert registered == present, (
-        "pyproject.toml [project.entry-points.\"argus_skill.verticals\"] and the "
+        "pyproject.toml [project.entry-points.\"argus.verticals\"] and the "
         "argus_verticals/ tree disagree.\n"
         f"  registered but missing on disk: {sorted(registered - present)}\n"
         f"  on disk but not registered:     {sorted(present - registered)}"
@@ -189,7 +206,7 @@ def test_installed_metadata_matches_pyproject() -> None:
 def test_argus_discovers_the_plugins() -> None:
     """End-to-end through Argus's registry (installed metadata, or the checkout's
     entry points registered by tests/conftest.py)."""
-    from argus_skill.verticals._registry import vertical_plugins
+    from argus.verticals._registry import vertical_plugins
 
     plugins = vertical_plugins()
     missing = sorted(set(ENTRY_POINTS) - set(plugins))

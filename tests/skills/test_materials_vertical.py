@@ -4,24 +4,24 @@ import json
 from pathlib import Path
 
 import pytest
-from argus_skill.manager import Manager
-from argus_skill.skills.builtins import (
+from argus.manager import Manager
+from argus.skills.builtins import (
     iter_vertical_skill_texts,
     seed_builtin_skills_for_vertical,
 )
-from argus_skill.skills.stage_machine import (
+from argus.skills.stage_machine import (
     ChecklistLoadState,
     format_stage_checklist,
     resolve_stage_checklist_contract,
 )
-from argus_skill.skills.vertical_select import (
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
     persist_vertical,
     require_vertical,
     resolve_vertical,
 )
-from argus_skill.verticals._base import (
+from argus.verticals._base import (
     load_vertical,
     load_vertical_contract,
     vertical_checklist_items,
@@ -31,7 +31,7 @@ from argus_skill.verticals._base import (
     vertical_role_banner,
     vertical_workflow_mode,
 )
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._registry import vertical_plugin
 
 MATERIALS_SKILLS = {
     "manager/materials-research-manager.md",
@@ -219,7 +219,7 @@ def test_materials_evidence_gate_requires_real_project_files(tmp_path: Path) -> 
 
 
 def test_materials_final_stage_cannot_complete_without_indexed_evidence(tmp_path: Path) -> None:
-    from argus_skill.skills.stage_machine import StageCompletionError, complete_final_stage
+    from argus.skills.stage_machine import StageCompletionError, complete_final_stage
 
     persist_vertical(tmp_path, "materials")
     state_path = tmp_path / ".argus" / "PIPELINE_STATE.json"
@@ -244,7 +244,7 @@ def test_materials_declares_targets_only() -> None:
 
 def test_materials_without_a_live_search_declaration_takes_the_default_path() -> None:
     # From Argus tests/test_codex_live_search.py.
-    from argus_skill.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
+    from argus.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
 
     contract = load_vertical_contract("materials")
     assert contract.engineer_live_search_stages is None

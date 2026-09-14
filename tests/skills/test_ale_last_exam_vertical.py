@@ -4,24 +4,24 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.skills.builtins import (
+from argus.skills.builtins import (
     iter_vertical_skill_texts,
     seed_builtin_skills_for_vertical,
 )
-from argus_skill.skills.stage_machine import (
+from argus.skills.stage_machine import (
     ChecklistLoadState,
     format_full_pipeline_checklist,
     format_stage_checklist,
     resolve_stage_checklist_contract,
 )
-from argus_skill.skills.vertical_select import (
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
     require_vertical,
     resolve_vertical,
 )
-from argus_skill.verticals._base import load_vertical, vertical_completion_gate
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._base import load_vertical, vertical_completion_gate
+from argus.verticals._registry import vertical_plugin
 
 
 def _ale_project(tmp_path: Path) -> Path:

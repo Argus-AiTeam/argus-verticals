@@ -39,16 +39,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from argus_skill.skills.stage_machine import ChecklistItem
-from argus_skill.verticals.optimization_base import (
+from argus.skills.stage_machine import ChecklistItem
+from argus.verticals.optimization_base import (
     OPTIMIZATION_CHECKLIST_ITEMS,
     OPTIMIZATION_STAGE_ORDER,
 )
 
-# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
-# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+# The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
     "single-metric script/benchmark optimization under a wall-clock budget: "
@@ -73,16 +73,16 @@ __all__ = [
 # System (B) — markdown stage checklists for the speedrun vertical
 # ===========================================================================
 #
-# These feed ``argus_skill.skills.stage_machine`` (the markdown checklist
+# These feed ``argus.skills.stage_machine`` (the markdown checklist
 # that drives the planner/engineer/reviewer round loop) via the optional-hook
-# contract in ``argus_skill.verticals._base``. The research vertical re-exports
+# contract in ``argus.verticals._base``. The research vertical re-exports
 # the paper floor; the speedrun vertical declares a 4-stage, metric-agnostic
 # checklist instead — there is no paper, one number to move the right way
 # under a fixed wall-clock budget, whatever that number is (val bpb, kernel
 # speedup/SOL, latency, accuracy, …).
 #
 # The items are GENERIC across optimization missions and are owned by Argus's
-# bridge module ``argus_skill.verticals.optimization_base``
+# bridge module ``argus.verticals.optimization_base``
 # (``OPTIMIZATION_CHECKLIST_ITEMS``): the deliverable/eval contract is pinned
 # at ``setup``, the candidate is produced and screened at ``optimize``, the
 # repeat-mean / budget measurement happens at ``measure``, and the head-to-head
@@ -105,7 +105,7 @@ MISSION_KIND = "optimize"
 
 
 def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
-    from argus_skill.verticals.metric_evidence import EvidenceError, validate_speedrun_evidence
+    from argus.verticals.metric_evidence import EvidenceError, validate_speedrun_evidence
 
     issues: list[str] = []
     if stage in {"measure", "report"}:

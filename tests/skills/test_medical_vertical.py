@@ -4,22 +4,22 @@ import json
 from pathlib import Path
 
 import yaml
-from argus_skill.domains import BUILTIN_DOMAINS, DOMAIN_PURPOSES
-from argus_skill.manager import Manager
-from argus_skill.reviewer import Reviewer
-from argus_skill.skills.builtins import iter_vertical_skill_texts
-from argus_skill.skills.stage_machine import (
+from argus.domains import BUILTIN_DOMAINS, DOMAIN_PURPOSES
+from argus.manager import Manager
+from argus.reviewer import Reviewer
+from argus.skills.builtins import iter_vertical_skill_texts
+from argus.skills.stage_machine import (
     ChecklistLoadState,
     resolve_stage_checklist_contract,
 )
-from argus_skill.skills.vertical_select import (
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
     persist_vertical,
     require_vertical,
     resolve_vertical,
 )
-from argus_skill.verticals._base import (
+from argus.verticals._base import (
     load_vertical,
     vertical_checklist_items,
     vertical_checklist_stage_order,
@@ -31,7 +31,7 @@ from argus_skill.verticals._base import (
     vertical_stage_primary_deliverables,
     vertical_workflow_mode,
 )
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._registry import vertical_plugin
 
 STAGES = ("scope", "retrieve", "normalize", "analyze", "review", "deliver")
 SKILLS = {
@@ -130,7 +130,7 @@ def test_medical_role_banners_and_skills_are_packaged() -> None:
 
     target_disease = skills["engineer/target-disease-research.md"]
     assert "python -m argus_verticals.medical.dossier" in target_disease
-    assert "argus_skill.domains.medical" not in target_disease
+    assert "argus.domains.medical" not in target_disease
 
 
 def test_deliver_stage_requires_valid_dossier(tmp_path: Path) -> None:

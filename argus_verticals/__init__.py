@@ -3,7 +3,7 @@
 Each subpackage is one Argus vertical: a ``stages.py`` module that implements
 the framework's ``VerticalContract`` plus the Skill markdown, schemas, and
 helpers that vertical needs. Argus discovers them through the
-``argus_skill.verticals`` entry-point group declared in ``pyproject.toml`` and
+``argus.verticals`` entry-point group declared in ``pyproject.toml`` and
 treats them exactly like its built-in verticals.
 
 Verticals in this package:

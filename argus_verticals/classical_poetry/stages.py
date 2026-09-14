@@ -23,12 +23,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from argus_skill.skills.stage_machine import ChecklistItem
+from argus.skills.stage_machine import ChecklistItem
 
-# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
-# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+# The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
     "compose or check classical Chinese 近体诗/古体/词 with reproducible "

@@ -27,7 +27,8 @@ classifiers = [
 # Argus itself is installed from its repository, not from PyPI, and its version
 # number does not move for the 2026-09-14 verticals split, so no requirement
 # can express "an Argus at or after the split". Install Argus first (see the
-# README); tests/test_contract_conformance.py probes the split capability.
+# README); tests/test_contract_conformance.py probes the split and the
+# 2026-09-14 argus_skill -> argus rename by capability.
 dependencies = []
 
 [project.optional-dependencies]
@@ -74,10 +75,10 @@ Homepage = "https://github.com/Argus-AiTeam/argus-verticals"
 Repository = "https://github.com/Argus-AiTeam/argus-verticals"
 "Argus framework" = "https://github.com/lbx154/Argus"
 
-# Argus reads this group at startup (argus_skill.verticals._registry). Every
+# Argus reads this group at startup (argus.verticals._registry). Every
 # vertical directory in argus_verticals/ must appear here exactly once; the
 # conformance test (tests/test_contract_conformance.py) enforces that.
-[project.entry-points."argus_skill.verticals"]
+[project.entry-points."argus.verticals"]
 ale_last_exam = "argus_verticals.ale_last_exam.stages"
 chip_design = "argus_verticals.chip_design.stages"
 classical_poetry = "argus_verticals.classical_poetry.stages"

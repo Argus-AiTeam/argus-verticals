@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 import pytest
-from argus_skill.verticals._base import load_vertical
+from argus.verticals._base import load_vertical
 
 from argus_verticals.physics import manuscript
 
@@ -59,7 +59,7 @@ def test_non_manuscript_stages_have_no_deterministic_check(tmp_path: Path) -> No
 
 
 def test_stage_machine_blocks_then_completes(tmp_path: Path) -> None:
-    from argus_skill.skills.stage_machine import StageCompletionError, complete_final_stage
+    from argus.skills.stage_machine import StageCompletionError, complete_final_stage
 
     state_dir = tmp_path / ".argus"
     state_dir.mkdir()

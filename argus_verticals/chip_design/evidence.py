@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from argus_skill.core.file_digest import sha256_file as _sha256
+from argus.core.file_digest import sha256_file as _sha256
 
 DELIVERY_LEVELS = {"rtl_ip", "fpga", "gds", "pre_tapeout", "tapeout"}
 PASS_STATUSES = {"pass", "passed", "ready", "success", "proved"}

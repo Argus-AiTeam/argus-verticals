@@ -3,11 +3,11 @@ engine. Deterministic, no network, no LLM — the shared-core backbone."""
 from __future__ import annotations
 
 import pytest
-from argus_skill.skills.vertical_select import (
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
 )
-from argus_skill.verticals._base import load_vertical
+from argus.verticals._base import load_vertical
 
 from argus_verticals.fiction_writing.state import (
     PatchError,

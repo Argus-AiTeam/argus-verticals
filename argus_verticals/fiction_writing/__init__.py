@@ -2,7 +2,7 @@
 consistent, structured story_state.
 
 Re-exports the stage contract from :mod:`.stages` so
-``argus_skill.verticals._base.load_vertical("fiction_writing")`` finds the
+``argus.verticals._base.load_vertical("fiction_writing")`` finds the
 symbols it reads via ``getattr``. The shared narrative-state core (schemas +
 safe patch engine) lives in :mod:`.state`.
 """

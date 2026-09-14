@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "a35baf819681f613c48753ac05f67df5846ae8d0",
+    "commit": "5f2eff3f88b0eb4154aae7ea7227e0433d534d2f",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -20,7 +20,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 14701,
+      "size_bytes": 14683,
       "skill_parents": [],
       "tags": [
         "benchmark",
@@ -46,7 +46,7 @@
         "digital_circuit"
       ],
       "shared": [],
-      "size_bytes": 105860,
+      "size_bytes": 105812,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -78,7 +78,7 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 763731,
+      "size_bytes": 763701,
       "skill_parents": [],
       "tags": [
         "literary",
@@ -103,7 +103,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 55075,
+      "size_bytes": 55039,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -130,7 +130,7 @@
         "digital_circuit"
       ],
       "shared": [],
-      "size_bytes": 13365,
+      "size_bytes": 13329,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -164,7 +164,7 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 286299,
+      "size_bytes": 286249,
       "skill_parents": [],
       "tags": [
         "literary",
@@ -188,7 +188,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 87001,
+      "size_bytes": 86947,
       "skill_parents": [
         "kernel_engineering"
       ],
@@ -220,7 +220,7 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 66843,
+      "size_bytes": 66813,
       "skill_parents": [],
       "tags": [
         "literary",
@@ -244,7 +244,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 47119,
+      "size_bytes": 47101,
       "skill_parents": [],
       "tags": [
         "science",
@@ -268,7 +268,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 61844,
+      "size_bytes": 61826,
       "skill_parents": [],
       "tags": [
         "biomedical",
@@ -298,7 +298,7 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 67460,
+      "size_bytes": 67430,
       "skill_parents": [],
       "tags": [
         "literary",
@@ -322,7 +322,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 40402,
+      "size_bytes": 40378,
       "skill_parents": [],
       "tags": [
         "ml",
@@ -349,7 +349,7 @@
         "speedrun"
       ],
       "shared": [],
-      "size_bytes": 18182,
+      "size_bytes": 18146,
       "skill_parents": [
         "speedrun"
       ],
@@ -376,7 +376,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 48858,
+      "size_bytes": 48828,
       "skill_parents": [],
       "tags": [
         "science",
@@ -406,7 +406,7 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 68282,
+      "size_bytes": 68252,
       "skill_parents": [],
       "tags": [
         "literary",
@@ -439,7 +439,7 @@
       ],
       "requires": [],
       "shared": [],
-      "size_bytes": 338009,
+      "size_bytes": 337967,
       "skill_parents": [],
       "tags": [
         "finance",
@@ -464,7 +464,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 60011,
+      "size_bytes": 59945,
       "skill_parents": [],
       "tags": [
         "optimization",

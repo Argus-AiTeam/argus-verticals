@@ -1,6 +1,6 @@
 """Quant-factor research vertical — stage definitions and checklists.
 
-The finance analog of ``argus_skill.verticals.research.stages``. It reuses the
+The finance analog of ``argus.verticals.research.stages``. It reuses the
 SAME 8 stage ids as the paper pipeline
 (``research → plan → benchmark → run → analysis → draft → review →
 submission``) so every domain-agnostic mechanism that keys off stage ids keeps
@@ -22,18 +22,18 @@ Two built-in finance skills back the Reviewer/Engineer prompts:
   and the non-negotiable ``BacktestExecutor`` / search-ledger contract; used on
   the run / analysis search stages.
 
-Both skill files live under ``argus_skill/builtin_skills/{reviewer,engineer}/``.
+Both skill files live under ``argus/builtin_skills/{reviewer,engineer}/``.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-from argus_skill.skills.stage_machine import ChecklistItem
+from argus.skills.stage_machine import ChecklistItem
 
-# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
-# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+# The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
     "equity factor research (IC/ICIR, backtest, Sharpe) producing a "

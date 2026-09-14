@@ -99,7 +99,7 @@ def _sign_result_if_full_coverage(
     if not signing_key or not correct or max_workloads:
         return None
     try:
-        from argus_skill.team import result_provenance as _rp
+        from argus.team import result_provenance as _rp
         signed = {"target": problem, "metric": cand_ms,
                   "mechanism": "official-eval", "correct": True}
         signed["sig"] = _rp.sign_result(signed, _rp.read_key(signing_key))

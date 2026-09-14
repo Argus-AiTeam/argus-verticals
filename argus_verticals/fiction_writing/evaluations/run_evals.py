@@ -33,9 +33,9 @@ import time
 import urllib.request
 from pathlib import Path
 
-from argus_skill.core.models import RunnerResult
-from argus_skill.manager import Manager
-from argus_skill.skills.vertical_select import available_vertical_purposes
+from argus.core.models import RunnerResult
+from argus.manager import Manager
+from argus.skills.vertical_select import available_vertical_purposes
 
 from argus_verticals.fiction_writing.stages import VERTICAL_PURPOSE
 from argus_verticals.fiction_writing.state import apply_patch, validate_state
@@ -45,7 +45,7 @@ ROUTER_MODEL = os.environ.get("FW_EVAL_ROUTER_MODEL", "claude-haiku-4.5")
 JUDGE_MODEL = os.environ.get("FW_EVAL_JUDGE_MODEL", "claude-sonnet-4.6")
 TEMPERATURE = 0
 HERE = Path(__file__).resolve().parent
-REPO_ROOT = HERE.parents[3]          # …/argus-skill (for grounded investigation)
+REPO_ROOT = HERE.parents[3]          # …/argus-verticals (for grounded investigation)
 REPORTS = HERE / "reports"
 REPORTS.mkdir(exist_ok=True)
 

@@ -4,7 +4,7 @@ This package is the shared FOUNDATION consumed by the literary verticals
 (fiction_writing, classical/modern poetry, prose, literary editor). It is
 DELIBERATELY NOT a vertical: it ships no ``stages`` contract, exposes no
 ``STAGE_ORDER``, and is never registered in
-``argus_skill.skills.vertical_select.VERTICALS``. It holds only cross-vertical
+``argus.skills.vertical_select.VERTICALS``. It holds only cross-vertical
 CONTRACTS and their validators:
 
 * :mod:`.task_envelope` — the creative-authoring task contract (intake);

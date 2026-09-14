@@ -8,7 +8,7 @@ backtest with realistic A-share costs) into the quant-factor domain's
 Quick start (CI / mock — no tushare or qlib needed)::
 
     from finance_argus.core.loop import mock_backtest
-    from argus_skill.domains.quant_factor.integrations.finance_argus import (
+    from argus.domains.quant_factor.integrations.finance_argus import (
         build_finance_argus_registry, make_finance_argus_executor,
     )
 

@@ -21,12 +21,12 @@ from pathlib import Path
 # Reuse the generic optimization contract through the explicit base facade.
 # Containers are copied so this specialization can diverge without mutating
 # the concrete speedrun provider.
-from argus_skill.verticals.optimization_base import speedrun_base_contract
+from argus.verticals.optimization_base import speedrun_base_contract
 
-# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
-# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+# The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = "minimize val_bpb on the nanochat train.py (bits-per-byte, ~300s, 1 GPU)"
 VERTICAL_SKILL_PARENTS: tuple[str, ...] = ()

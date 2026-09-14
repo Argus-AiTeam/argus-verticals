@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from argus_skill.manager import Manager
-from argus_skill.verticals._base import load_vertical, load_vertical_contract
-from argus_skill.verticals._registry import vertical_plugin
-from argus_skill.verticals.optimization_base import (
+from argus.manager import Manager
+from argus.verticals._base import load_vertical, load_vertical_contract
+from argus.verticals._registry import vertical_plugin
+from argus.verticals.optimization_base import (
     OPTIMIZATION_CHECKLIST_ITEMS,
     OPTIMIZATION_STAGE_ORDER,
 )
@@ -60,7 +60,7 @@ def test_speedrun_reviewer_banner_is_innovation_coach() -> None:
 
 
 def test_speedrun_without_a_live_search_declaration_takes_the_default_path() -> None:
-    from argus_skill.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
+    from argus.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
 
     contract = load_vertical_contract("speedrun")
     assert contract.engineer_live_search_stages is None

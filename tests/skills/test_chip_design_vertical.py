@@ -6,20 +6,20 @@ import sys
 from pathlib import Path
 
 import pytest
-from argus_skill.manager import Manager
-from argus_skill.skills.builtins import iter_vertical_skill_texts
-from argus_skill.skills.stage_machine import (
+from argus.manager import Manager
+from argus.skills.builtins import iter_vertical_skill_texts
+from argus.skills.stage_machine import (
     ChecklistLoadState,
     format_full_pipeline_checklist,
     resolve_stage_checklist_contract,
 )
-from argus_skill.skills.vertical_select import (
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
     persist_vertical,
     require_vertical,
 )
-from argus_skill.verticals._base import (
+from argus.verticals._base import (
     load_vertical,
     vertical_completion_gate,
     vertical_requires_independent_review,

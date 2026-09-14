@@ -5,13 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Iterable
 
-from argus_skill.verticals.kernel_engineering.tool_registry import (
+from argus.verticals.kernel_engineering.tool_registry import (
     filter_entries as _filter_entries,
 )
-from argus_skill.verticals.kernel_engineering.tool_registry import (
+from argus.verticals.kernel_engineering.tool_registry import (
     load_registry as _load_registry,
 )
-from argus_skill.verticals.kernel_engineering.tool_registry import (
+from argus.verticals.kernel_engineering.tool_registry import (
     probe_entries,
     render_catalog,
     validate_registry,

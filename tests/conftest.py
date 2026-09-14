@@ -8,7 +8,8 @@ checkout fails. Some tests drive real Argus entry points (``Manager``,
 write into the developer's real ``~/.argus-skill``.
 
 Nothing here imports from Argus's ``tests`` package; this file is
-self-contained so the suite runs against an installed ``argus-skill``.
+self-contained so the suite runs against an installed ``argus`` (the pip
+distribution named ``argus-skill`` before the 2026-09-14 rename).
 """
 from __future__ import annotations
 
@@ -81,7 +82,7 @@ def _register_checkout_entry_points_if_uninstalled() -> None:
     a checkout that was never ``pip install -e .``-ed has none and every
     ``load_vertical("<moved>")`` would raise. When the distribution is absent
     this reads the same group from ``pyproject.toml`` and hands those entry
-    points to ``argus_skill.verticals._registry`` for the session, so the tests
+    points to ``argus.verticals._registry`` for the session, so the tests
     still exercise the real registry and seeder. When the distribution IS
     installed nothing is patched: the installed metadata is authoritative, and
     ``tests/test_contract_conformance.py`` fails on a stale install.
@@ -93,7 +94,7 @@ def _register_checkout_entry_points_if_uninstalled() -> None:
     except PackageNotFoundError:
         pass
     try:
-        from argus_skill.verticals import _registry
+        from argus.verticals import _registry
     except ImportError:
         # No Argus: only the Argus-free tests (tests/test_catalog.py) can run;
         # every other module fails at import with the real reason.
@@ -188,7 +189,7 @@ def _no_stop_leaks_between_tests():
     both sides so one test's stop request cannot change what an unrelated
     test observes."""
     try:
-        from argus_skill.core import process_stop
+        from argus.core import process_stop
     except ImportError:
         yield
         return

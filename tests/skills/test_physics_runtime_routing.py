@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 import pytest
-from argus_skill.skills.vertical_select import (
+from argus.skills.vertical_select import (
     available_vertical_purposes,
     available_verticals,
     explicit_builtin_vertical,
@@ -19,8 +19,8 @@ from argus_skill.skills.vertical_select import (
     require_vertical,
     resolve_vertical,
 )
-from argus_skill.verticals._base import load_vertical, vertical_role_banner
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._base import load_vertical, vertical_role_banner
+from argus.verticals._registry import vertical_plugin
 
 
 @pytest.fixture(autouse=True)
@@ -98,7 +98,7 @@ def test_planner_resolution_chain_reads_physics_role_banner(tmp_path: Path) -> N
 def test_physics_is_custom_kind_not_optimize_not_paper() -> None:
     # Requirement (Part 4): the Manager routes physics as a dynamic/report ("custom")
     # vertical — never a lean optimize loop and never the paper/certified kind.
-    from argus_skill.manager import Manager
+    from argus.manager import Manager
 
     assert Manager._kind_for("physics") == "custom"
     # Parity with the sibling dynamic vertical (math), which is also "custom".

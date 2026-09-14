@@ -5,7 +5,7 @@
 Optimize-kind mission on Argus's speedrun base contract with a `metric` completion gate; inherits `speedrun`'s skills (`VERTICAL_SKILL_PARENTS = ("speedrun",)`).
 
 - `stages.py`: contract and completion checks.
-- `capstone.py`: frozen-protocol and measured-result check for the final run (`argus_skill.verticals.metric_evidence`).
+- `capstone.py`: frozen-protocol and measured-result check for the final run (`argus.verticals.metric_evidence`).
 - `skills/engineer/nanogpt-speedrun-h100-sota.md`.
 
 Extras: none. Tests: `tests/skills/test_nanogpt_speedrun_vertical.py`.

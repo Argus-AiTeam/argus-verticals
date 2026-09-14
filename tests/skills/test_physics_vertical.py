@@ -6,7 +6,7 @@ pipeline outputs or any large literature-distillation artifact.
 
 from __future__ import annotations
 
-from argus_skill.verticals._base import (
+from argus.verticals._base import (
     load_vertical,
     load_vertical_contract,
     vertical_checklist_items,
@@ -15,7 +15,7 @@ from argus_skill.verticals._base import (
     vertical_role_banner,
     vertical_workflow_mode,
 )
-from argus_skill.verticals._registry import vertical_plugin
+from argus.verticals._registry import vertical_plugin
 
 
 def test_physics_vertical_can_be_imported() -> None:
@@ -36,8 +36,8 @@ def test_load_vertical_physics_resolves_to_physics_not_fallback() -> None:
     mod = load_vertical("physics")
 
     assert mod is plugin.module
-    assert mod.__name__ != "argus_skill.verticals.research.stages"
-    assert mod.__name__ != "argus_skill.verticals.math.stages"
+    assert mod.__name__ != "argus.verticals.research.stages"
+    assert mod.__name__ != "argus.verticals.math.stages"
 
 
 def test_physics_stage_contract_is_five_stages_ending_in_manuscript() -> None:
@@ -141,7 +141,7 @@ def test_physics_reviewer_checklists_are_native_items() -> None:
 def test_physics_without_a_live_search_declaration_takes_the_default_path() -> None:
     # From Argus tests/test_codex_live_search.py: a vertical that declares no
     # ENGINEER_LIVE_SEARCH_STAGES searches on every stage under the default policy.
-    from argus_skill.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
+    from argus.engineer.round_config import DEFAULT_LIVE_SEARCH_STAGES
 
     contract = load_vertical_contract("physics")
     assert contract.engineer_live_search_stages is None

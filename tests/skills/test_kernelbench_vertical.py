@@ -4,10 +4,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.skills.stage_machine import current_stage, format_full_pipeline_checklist
-from argus_skill.skills.vertical_select import persist_vertical, require_vertical
-from argus_skill.verticals._base import load_vertical
-from argus_skill.verticals._registry import vertical_plugin
+from argus.skills.stage_machine import current_stage, format_full_pipeline_checklist
+from argus.skills.vertical_select import persist_vertical, require_vertical
+from argus.verticals._base import load_vertical
+from argus.verticals._registry import vertical_plugin
 
 
 def _project(tmp_path: Path, vertical: str | None, *, current: str = "run") -> Path:

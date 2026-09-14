@@ -23,7 +23,7 @@ The rejections enforced by :func:`validate_usage` are:
 
 Scope note (kept honest): this validates the RIGHTS/PROVENANCE shape of a use. It
 does NOT verify a citation quote appears verbatim in the source text — that is the
-ingestion track's job (see :mod:`argus_skill.skills.provenance`) and only becomes
+ingestion track's job (see :mod:`argus.skills.provenance`) and only becomes
 possible once a source is actually ingested with local text.
 """
 from __future__ import annotations

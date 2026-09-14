@@ -42,7 +42,7 @@ PACKAGE_ROOT = REPO_ROOT / "argus_verticals"
 SCHEMA_PATH = REPO_ROOT / "catalog" / "vertical.schema.json"
 PYPROJECT_PATH = REPO_ROOT / "pyproject.toml"
 CATALOG_PATH = REPO_ROOT / "catalog.json"
-ENTRY_POINT_GROUP = "argus_skill.verticals"
+ENTRY_POINT_GROUP = "argus.verticals"
 GITHUB_REPO = "Argus-AiTeam/argus-verticals"
 CATALOG_SCHEMA_VERSION = 1
 

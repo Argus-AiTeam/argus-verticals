@@ -16,13 +16,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from argus_skill.skills.stage_machine import ChecklistItem
-from argus_skill.verticals.optimization_base import speedrun_base_contract
+from argus.skills.stage_machine import ChecklistItem
+from argus.verticals.optimization_base import speedrun_base_contract
 
-# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
-# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+# The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
     "maximize correctness-checked SOL score/speedup for GPU kernels on "
@@ -40,7 +40,7 @@ MISSION_KIND = "optimize"
 
 
 def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
-    from argus_skill.verticals.metric_evidence import EvidenceError, validate_kernelbench_evidence
+    from argus.verticals.metric_evidence import EvidenceError, validate_kernelbench_evidence
 
     issues: list[str] = []
     if stage == "measure":

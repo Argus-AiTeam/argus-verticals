@@ -6,7 +6,7 @@ import json
 import time
 from pathlib import Path
 
-from argus_skill.core.repair_freshness import (
+from argus.core.repair_freshness import (
     FreshnessExpectation,
     FreshnessGateResult,
     evaluate_repair_freshness,
@@ -16,14 +16,14 @@ from argus_skill.core.repair_freshness import (
     repair_state_lock,
     write_freshness_expectation,
 )
-from argus_skill.skills.stage_machine import ChecklistItem
+from argus.skills.stage_machine import ChecklistItem
 
 from argus_verticals.digital_circuit.stages import role_banner as _digital_circuit_role_banner
 
-# Plugin contract read by Argus (argus_skill/verticals/_registry.py): the API
+# Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
-# The stage/checklist contract itself is argus_skill/core/vertical_contract.py.
+# The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
     "single-stage fixed-harness RTL benchmark: interface, RTL, "
@@ -256,7 +256,7 @@ def role_banner(role: str) -> str:
         "with a trusted controller-provided `controller/hash_answer.py` when its "
         "SHA-256 is frozen in controller provenance; otherwise use "
         "`python -c \"from pathlib import Path; from "
-        "argus_skill.core.repair_freshness import hash_project_files, "
+        "argus.core.repair_freshness import hash_project_files, "
         "load_freshness_expectation; e=load_freshness_expectation(Path('.')); "
         "print(hash_project_files(Path('.'), e.answer_paths))\"`; do not substitute "
         "a plain per-file SHA-256. Preflight "

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import importlib
 
-from argus_skill.team import result_provenance as rp
+from argus.team import result_provenance as rp
 
 oes = importlib.import_module(
     "argus_verticals.kernelbench.official_eval_server"

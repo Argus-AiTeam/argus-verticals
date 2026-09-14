@@ -12,14 +12,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.manager import Manager
-from argus_skill.skills.builtins import (
+from argus.manager import Manager
+from argus.skills.builtins import (
     iter_vertical_skill_texts,
     seed_builtin_skills_for_vertical,
 )
-from argus_skill.skills.stage_machine import format_full_pipeline_checklist
-from argus_skill.verticals._base import load_vertical, vertical_completion_gate
-from argus_skill.verticals._registry import vertical_plugin
+from argus.skills.stage_machine import format_full_pipeline_checklist
+from argus.verticals._base import load_vertical, vertical_completion_gate
+from argus.verticals._registry import vertical_plugin
 
 QUANT_STAGES: tuple[str, ...] = (
     "research", "plan", "benchmark", "run",

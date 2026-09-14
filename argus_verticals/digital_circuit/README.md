@@ -4,7 +4,7 @@
 
 Staged workflow `specification → rtl → verification → synthesis → delivery`. The `benchmark/` subpackage is a separate vertical (`digital_circuit_benchmark`) that inherits this skill tree.
 
-- `stages.py`: contract, checklists, completion checks (uses `argus_skill.verticals.path_evidence`).
+- `stages.py`: contract, checklists, completion checks (uses `argus.verticals.path_evidence`).
 - `evidence.py`: fail-closed evidence checks (interface, preflight, verification sources) also consumed by `chip_design` and `benchmark/`.
 - `skills/engineer/` (RTL verification, error-guided repair, spec-guidance registry, benchmark execution), `skills/reviewer/`.
 
