@@ -10,9 +10,9 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from argus_skill.verticals._base import load_vertical, vertical_search_altitude
-from argus_skill.verticals.nanochat.stages import (
+
+from argus_verticals.nanochat.stages import (
     _no_score_facts,
     search_altitude_context,
 )

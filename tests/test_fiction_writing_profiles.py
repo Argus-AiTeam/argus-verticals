@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.intake import brief_from_envelope
-from argus_skill.verticals.fiction_writing.profiles import (
+from argus_verticals.fiction_writing.intake import brief_from_envelope
+from argus_verticals.fiction_writing.profiles import (
     DEFAULT_PROFILE,
     FICTION_PROFILES,
     FictionProfileError,

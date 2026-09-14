@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-import argus_skill.verticals.fiction_writing as fw
+import argus_verticals.fiction_writing as fw
 
 _SKILLS_DIR = Path(fw.__file__).resolve().parent / "skills"
 _SKILL_FILES = sorted(_SKILLS_DIR.rglob("*.md"))

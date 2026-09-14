@@ -6,7 +6,7 @@ advisory regardless of their density.
 """
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.style_lint import (
+from argus_verticals.fiction_writing.style_lint import (
     STYLE_LINT_TYPES,
     check_style,
     is_clean,

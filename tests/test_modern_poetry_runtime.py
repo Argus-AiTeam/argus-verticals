@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.verticals.modern_poetry.stages import stage_completion_issues
+from argus_verticals.modern_poetry.stages import stage_completion_issues
 
 _POEM = "夜把城市折起来\n只留一盏灯\n和灯下没说完的话"
 

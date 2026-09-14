@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from argus_skill.verticals.digital_circuit.evidence import (
+from argus_verticals.digital_circuit.evidence import (
     EvidenceError,
     benchmark_output_paths,
     validate_benchmark_interface,

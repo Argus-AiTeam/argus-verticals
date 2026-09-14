@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.literary_editor.intake import (
+from argus_verticals.literary_editor.intake import (
     EditorIntakeError,
     brief_from_envelope,
 )

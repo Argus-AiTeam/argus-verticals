@@ -6,7 +6,7 @@ from urllib.error import URLError
 
 import pytest
 
-from argus_skill.verticals.medical.dossier import (
+from argus_verticals.medical.dossier import (
     build_target_disease_dossier,
     main,
     validate_dossier,

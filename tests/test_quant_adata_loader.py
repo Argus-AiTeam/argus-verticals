@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from argus_skill.verticals.quant.integrations.adata_cn import (
+from argus_verticals.quant.integrations.adata_cn import (
     forward_returns,
     load_ohlcv_panel,
     to_feature_panel,

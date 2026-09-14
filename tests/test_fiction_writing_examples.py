@@ -9,10 +9,10 @@ from pathlib import Path
 
 import jsonschema
 
-from argus_skill.verticals.fiction_writing.state import validate_state
-from argus_skill.verticals.fiction_writing.temporal import check_temporal_consistency
+from argus_verticals.fiction_writing.state import validate_state
+from argus_verticals.fiction_writing.temporal import check_temporal_consistency
 
-_FW = Path(__file__).resolve().parents[1] / "argus_skill" / "verticals" / "fiction_writing"
+_FW = Path(__file__).resolve().parents[1] / "argus_verticals" / "fiction_writing"
 _EX = _FW / "examples" / "honglou"
 _SCHEMAS = _FW / "schemas"
 

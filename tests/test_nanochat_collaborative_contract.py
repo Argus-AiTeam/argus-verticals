@@ -1,4 +1,4 @@
-from argus_skill.verticals.nanochat.stages import role_banner
+from argus_verticals.nanochat.stages import role_banner
 
 
 def test_common_banner_supports_both_scaffolds_and_canonical_workdir():

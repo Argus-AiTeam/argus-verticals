@@ -13,7 +13,7 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft7Validator
 
-import argus_skill.verticals.fiction_writing as fw
+import argus_verticals.fiction_writing as fw
 
 _FW = Path(fw.__file__).resolve().parent
 

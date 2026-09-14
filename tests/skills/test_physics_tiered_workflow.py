@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.verticals.physics import downgrade, stages, tiers
+from argus_verticals.physics import downgrade, stages, tiers
 
 
 def _seed(tmp_path: Path) -> Path:

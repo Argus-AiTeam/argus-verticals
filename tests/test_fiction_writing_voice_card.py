@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.style import (
+from argus_verticals.fiction_writing.style import (
     StyleProfileError,
     forbidden_lexicon,
     validate_voice_card,

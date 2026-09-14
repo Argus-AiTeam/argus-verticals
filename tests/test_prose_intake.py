@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.prose.intake import ProseIntakeError, brief_from_envelope
+from argus_verticals.prose.intake import ProseIntakeError, brief_from_envelope
 
 
 def _env(**kw):

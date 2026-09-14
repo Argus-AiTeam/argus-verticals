@@ -1,7 +1,7 @@
 """Tests for the novelty calibration harness core (measurement, not fabrication)."""
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.evaluations.calibrate_novelty import (
+from argus_verticals.fiction_writing.evaluations.calibrate_novelty import (
     calibrate,
     recommend,
 )

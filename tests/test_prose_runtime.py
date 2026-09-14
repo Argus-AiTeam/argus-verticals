@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.verticals.prose.stages import stage_completion_issues
+from argus_verticals.prose.stages import stage_completion_issues
 
 _DRAFT = "灶台还在那里。\n\n光从窗格里斜下来。\n\n后来老屋拆了。"
 _STATE = {

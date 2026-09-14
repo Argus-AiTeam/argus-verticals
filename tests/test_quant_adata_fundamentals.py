@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from argus_skill.verticals.quant.integrations.adata_cn.fundamentals import (
+from argus_verticals.quant.integrations.adata_cn.fundamentals import (
     _to_adata_code,
     fundamental_factor,
     load_fundamental_panel,

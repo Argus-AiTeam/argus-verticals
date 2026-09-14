@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.ingest import (
+from argus_verticals.fiction_writing.ingest import (
     CraftCardError,
     distill_card,
     plan_ingestion,

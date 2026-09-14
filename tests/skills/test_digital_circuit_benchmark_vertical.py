@@ -3,30 +3,39 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from argus_skill.core.repair_freshness import load_freshness_expectation
 from argus_skill.manager import Manager
 from argus_skill.skills.builtins import iter_vertical_skill_texts
-from argus_skill.skills.vertical_select import VERTICAL_PURPOSES, VERTICALS
+from argus_skill.skills.vertical_select import (
+    available_vertical_purposes,
+    available_verticals,
+)
 from argus_skill.verticals._base import load_vertical, vertical_role_banner
-from argus_skill.verticals.digital_circuit.benchmark.stages import (
+from argus_skill.verticals._registry import vertical_plugin
+
+from argus_verticals.digital_circuit.benchmark.stages import (
     prepare_repair_expectation,
     stage_completion_issues,
     validate_external_scoring_handoff,
 )
-from argus_skill.verticals.digital_circuit.evidence import validate_preflight
+from argus_verticals.digital_circuit.evidence import validate_preflight
 
 
 def test_benchmark_subvertical_is_registered_and_direct() -> None:
-    assert "digital_circuit_benchmark" in VERTICALS
-    assert "single-stage" in VERTICAL_PURPOSES["digital_circuit_benchmark"]
+    assert "digital_circuit_benchmark" in available_verticals()
+    assert "single-stage" in available_vertical_purposes()["digital_circuit_benchmark"]
     mod = load_vertical("digital_circuit_benchmark")
     assert mod.STAGE_ORDER == ("execute",)
     assert mod.CHECKLIST_STAGE_ORDER == ("execute",)
     assert mod.WORKFLOW_MODE == "direct"
     assert mod.REQUIRE_INDEPENDENT_REVIEW is True
     assert Manager._kind_for("digital_circuit_benchmark") == "custom"
-    assert mod.__name__ == "argus_skill.verticals.digital_circuit.benchmark.stages"
+    # The loader may resolve an in-tree copy while Argus still ships one; the
+    # plugin registry must always resolve to this package's module.
+    assert mod.__name__.endswith("digital_circuit.benchmark.stages")
+    plugin = vertical_plugin("digital_circuit_benchmark")
+    if plugin is not None:  # requires the package to be installed
+        assert plugin.module.__name__ == "argus_verticals.digital_circuit.benchmark.stages"
 
 
 def test_benchmark_subvertical_inherits_digital_circuit_skills() -> None:

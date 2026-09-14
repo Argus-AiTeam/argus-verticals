@@ -1,11 +1,11 @@
 """Fiction's reference artifact producer emits a coherent lineage chain."""
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.artifacts import (
+from argus_verticals.fiction_writing.artifacts import (
     FICTION_ARTIFACT_KINDS,
     build_fiction_manifest,
 )
-from argus_skill.verticals.literary.shared.artifact_manifest import lineage
+from argus_verticals.literary.shared.artifact_manifest import lineage
 
 # --------------------------------------------------------------------------- #
 # producer: the canonical fiction chain is valid, traced, and versioned

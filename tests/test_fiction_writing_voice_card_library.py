@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.style import (
+from argus_verticals.fiction_writing.style import (
     StyleProfileError,
     compose_voice_card,
     domain_for_brief,

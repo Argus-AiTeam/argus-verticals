@@ -10,8 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from argus_skill.verticals.quant.analysis.multiple_testing import effective_num_trials
-from argus_skill.verticals.quant.model_toolkit import (
+from argus_verticals.quant.analysis.multiple_testing import effective_num_trials
+from argus_verticals.quant.model_toolkit import (
     available_families,
     build_trainer,
     default_model_space,
@@ -19,8 +19,8 @@ from argus_skill.verticals.quant.model_toolkit import (
     profile_task,
     select_model,
 )
-from argus_skill.verticals.quant.model_toolkit.registry import ModelSpec
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant.model_toolkit.registry import ModelSpec
+from argus_verticals.quant.search_ledger import SearchLedger
 
 
 def _lightgbm_available() -> bool:

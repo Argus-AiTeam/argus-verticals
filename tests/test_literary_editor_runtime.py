@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.verticals.literary_editor.stages import stage_completion_issues
+from argus_verticals.literary_editor.stages import stage_completion_issues
 
 
 def test_edit_completion_enforces_nonempty_and_must_keep(tmp_path: Path) -> None:

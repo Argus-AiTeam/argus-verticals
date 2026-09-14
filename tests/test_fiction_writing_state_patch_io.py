@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.state import (
+from argus_verticals.fiction_writing.state import (
     PatchError,
     apply_patch,
     new_state,
 )
-from argus_skill.verticals.fiction_writing.state_patch_io import (
+from argus_verticals.fiction_writing.state_patch_io import (
     ALLOWED_OPS,
     apply_patch_with_repair,
     build_generation_context,
@@ -33,7 +33,7 @@ def _seed():
 
 
 def test_allowed_ops_match_engine_handlers():
-    from argus_skill.verticals.fiction_writing.state import _HANDLERS
+    from argus_verticals.fiction_writing.state import _HANDLERS
     assert set(ALLOWED_OPS) == set(_HANDLERS)
 
 

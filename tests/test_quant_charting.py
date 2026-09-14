@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from argus_skill.verticals.quant.charting import _prep, candlestick_chart
+from argus_verticals.quant.charting import _prep, candlestick_chart
 
 
 def _ohlcv(n=90, seed=0):

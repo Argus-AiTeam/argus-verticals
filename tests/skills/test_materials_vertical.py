@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from argus_skill.manager import Manager
 from argus_skill.skills.builtins import (
     iter_vertical_skill_texts,
@@ -16,8 +15,8 @@ from argus_skill.skills.stage_machine import (
     resolve_stage_checklist_contract,
 )
 from argus_skill.skills.vertical_select import (
-    VERTICAL_PURPOSES,
-    VERTICALS,
+    available_vertical_purposes,
+    available_verticals,
     persist_vertical,
     require_vertical,
     resolve_vertical,
@@ -48,13 +47,15 @@ MATERIALS_SKILLS = {
 
 
 def test_materials_is_registered_and_loadable() -> None:
-    assert "materials" in VERTICALS
-    assert "materials processing" in VERTICAL_PURPOSES["materials"]
-    assert set(VERTICAL_PURPOSES) == set(VERTICALS)
+    assert "materials" in available_verticals()
+    assert "materials processing" in available_vertical_purposes()["materials"]
+    assert set(available_vertical_purposes()) >= set(available_verticals())
     assert require_vertical("materials") == "materials"
 
     mod = load_vertical("materials")
-    assert mod.__name__ == "argus_skill.verticals.materials.stages"
+    # Argus may resolve its own in-tree copy while it still ships one; the
+    # module path only has to end in this vertical.
+    assert mod.__name__.endswith("materials.stages")
     assert mod.STAGE_ORDER == (
         "scope",
         "grounding",
@@ -202,7 +203,7 @@ def _write_materials_evidence(root: Path) -> None:
 
 
 def test_materials_evidence_gate_requires_real_project_files(tmp_path: Path) -> None:
-    from argus_skill.verticals.materials.evidence import validate_evidence
+    from argus_verticals.materials.evidence import validate_evidence
 
     assert "missing" in " ".join(validate_evidence(tmp_path, "execute"))
     _write_materials_evidence(tmp_path)

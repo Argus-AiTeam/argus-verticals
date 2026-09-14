@@ -6,7 +6,7 @@ aesthetic gate. If the checker were gutted the negatives here go red.
 """
 from __future__ import annotations
 
-from argus_skill.verticals.modern_poetry.form import (
+from argus_verticals.modern_poetry.form import (
     FORM_FINDING_TYPES,
     check_form,
     is_compliant,

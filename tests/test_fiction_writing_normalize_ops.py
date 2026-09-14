@@ -9,7 +9,7 @@ import json
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.state import (
+from argus_verticals.fiction_writing.state import (
     PatchError,
     apply_patch,
     normalize_ops,

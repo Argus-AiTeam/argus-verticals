@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.novelty import (
+from argus_verticals.fiction_writing.novelty import (
     NOVELTY_FINDING_TYPE,
     check_novelty,
     is_original,
 )
-from argus_skill.verticals.fiction_writing.style import (
+from argus_verticals.fiction_writing.style import (
     novelty_budget,
     validate_voice_card,
 )

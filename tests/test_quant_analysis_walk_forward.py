@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.quant.analysis.walk_forward import (
+from argus_verticals.quant.analysis.walk_forward import (
     Fold,
     WalkForwardConfig,
     WalkForwardValidator,

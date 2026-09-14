@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from argus_skill.verticals.quant.analysis import factor_overfit as fo
+from argus_verticals.quant.analysis import factor_overfit as fo
 
 
 def _predictive(seed: int, T: int = 300, S: int = 60, strength: float = 0.05, phi: float = 0.9):

@@ -12,10 +12,10 @@ import warnings
 import numpy as np
 import pytest
 
-from argus_skill.verticals.quant.backtest import BacktestSpec
-from argus_skill.verticals.quant.factors import FactorSpec, InMemoryFactorRegistry
-from argus_skill.verticals.quant.leakage_probe import NaNFutureLeakageProbe
-from argus_skill.verticals.quant.reference_engine import (
+from argus_verticals.quant.backtest import BacktestSpec
+from argus_verticals.quant.factors import FactorSpec, InMemoryFactorRegistry
+from argus_verticals.quant.leakage_probe import NaNFutureLeakageProbe
+from argus_verticals.quant.reference_engine import (
     ToyBacktestEngine,
     ToyPanel,
     make_synthetic_panel,
@@ -186,7 +186,7 @@ def test_missing_panel_is_a_failing_noop():
 
     class _NoPanel:
         def run(self, spec):  # noqa: ARG002
-            from argus_skill.verticals.quant.backtest import BacktestResult
+            from argus_verticals.quant.backtest import BacktestResult
             return BacktestResult(run_id="r", metrics={"turnover": 0.5})
 
     report = NaNFutureLeakageProbe().check(_NoPanel(), spec)

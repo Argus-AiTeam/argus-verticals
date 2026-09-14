@@ -9,12 +9,12 @@ import json
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.revise import (
+from argus_verticals.fiction_writing.revise import (
     FICTION_FINDING_TYPES,
     fiction_revision_plan,
     fiction_revision_plan_from_text,
 )
-from argus_skill.verticals.literary.shared.review_contract import ReviewError
+from argus_verticals.literary.shared.review_contract import ReviewError
 
 
 def _review(findings, verdict="revise"):

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.literary_editor.edit_ops import (
+from argus_verticals.literary_editor.edit_ops import (
     EDIT_FINDING_TYPES,
     EDITOR_MODES,
     EditError,

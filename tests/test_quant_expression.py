@@ -4,17 +4,17 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from argus_skill.verticals.quant import factor_toolkit as ft
-from argus_skill.verticals.quant.backtest import BacktestSpec
-from argus_skill.verticals.quant.executor import ForcingExecutor
-from argus_skill.verticals.quant.factor_toolkit.expression import (
+from argus_verticals.quant import factor_toolkit as ft
+from argus_verticals.quant.backtest import BacktestSpec
+from argus_verticals.quant.executor import ForcingExecutor
+from argus_verticals.quant.factor_toolkit.expression import (
     ExpressionError,
     available_operators,
     evaluate,
     expression_feature,
 )
-from argus_skill.verticals.quant.reference_engine import ToyBacktestEngine
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant.reference_engine import ToyBacktestEngine
+from argus_verticals.quant.search_ledger import SearchLedger
 
 
 def _fields(T=80, S=20, seed=0):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from argus_skill.verticals.fiction_writing.stages import stage_completion_issues
+from argus_verticals.fiction_writing.stages import stage_completion_issues
 
 
 def _write(path: Path, value: object) -> None:

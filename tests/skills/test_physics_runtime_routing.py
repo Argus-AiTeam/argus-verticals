@@ -11,10 +11,9 @@ import json
 from pathlib import Path
 
 import pytest
-
 from argus_skill.skills.vertical_select import (
-    VERTICAL_PURPOSES,
-    VERTICALS,
+    available_vertical_purposes,
+    available_verticals,
     explicit_builtin_vertical,
     persist_vertical,
     require_vertical,
@@ -36,12 +35,13 @@ def _state(root: Path) -> dict:
 def test_physics_is_a_selectable_builtin_vertical() -> None:
     # Requirement (Part 4.1): physics is in the runtime's selectable vertical set,
     # exposed to the Manager's decision prompt, and accepted by require_vertical.
-    assert "physics" in VERTICALS
-    assert "physics" in VERTICAL_PURPOSES
-    assert VERTICAL_PURPOSES["physics"].strip()
+    purposes = available_vertical_purposes()
+    assert "physics" in available_verticals()
+    assert "physics" in purposes
+    assert purposes["physics"].strip()
     assert require_vertical("physics") == "physics"
-    # Purpose keys must stay in sync with VERTICALS (module invariant).
-    assert set(VERTICAL_PURPOSES) == set(VERTICALS)
+    # Every selectable vertical has a menu line (built-in or plugin).
+    assert set(purposes) >= set(available_verticals())
 
 
 def test_legacy_env_hint_is_inspectable_but_does_not_route(
@@ -83,7 +83,9 @@ def test_planner_resolution_chain_reads_physics_role_banner(tmp_path: Path) -> N
     persist_vertical(tmp_path, "physics")
 
     mod = load_vertical(resolve_vertical(tmp_path), project_root=tmp_path)
-    assert mod.__name__ == "argus_skill.verticals.physics.stages"
+    # Argus may resolve its own in-tree copy while it still ships one; the
+    # module path only has to end in this vertical.
+    assert mod.__name__.endswith("physics.stages")
 
     banner = vertical_role_banner(mod, "planner")
     assert "MISSION TYPE: PHYSICS" in banner

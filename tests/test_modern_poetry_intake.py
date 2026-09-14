@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.modern_poetry.intake import (
+from argus_verticals.modern_poetry.intake import (
     ModernPoetryIntakeError,
     brief_from_envelope,
 )

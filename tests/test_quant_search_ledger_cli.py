@@ -21,9 +21,9 @@ from pathlib import Path
 
 import pytest
 
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant.search_ledger import SearchLedger
 
-_MODULE = "argus_skill.verticals.quant.search_ledger"
+_MODULE = "argus_verticals.quant.search_ledger"
 
 
 def _verify(path: Path) -> tuple[int, dict]:
@@ -131,7 +131,7 @@ def test_the_audit_does_not_judge_research_quality() -> None:
     import ast
     import inspect
 
-    from argus_skill.verticals.quant import search_ledger as mod
+    from argus_verticals.quant import search_ledger as mod
 
     tree = ast.parse(inspect.getsource(mod._cli))
     ast.get_docstring(tree.body[0])  # assert it parses as a function with a docstring
@@ -146,7 +146,7 @@ def test_the_audit_does_not_judge_research_quality() -> None:
 def test_reviewer_is_told_the_audit_exists(stage: str) -> None:
     # A tool no role knows about is the state this change is fixing; the quant
     # checklist must name the command, not just the file.
-    from argus_skill.verticals.quant.stages import CHECKLIST_ITEMS
+    from argus_verticals.quant.stages import CHECKLIST_ITEMS
 
     hints = " ".join(
         item.evidence_hint or "" for item in CHECKLIST_ITEMS.get(stage, ())

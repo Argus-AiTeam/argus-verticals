@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import yaml
-
 from argus_skill.domains import BUILTIN_DOMAINS, DOMAIN_PURPOSES
 from argus_skill.manager import Manager
 from argus_skill.skills.builtins import iter_vertical_skill_texts
@@ -13,8 +12,8 @@ from argus_skill.skills.stage_machine import (
     resolve_stage_checklist_contract,
 )
 from argus_skill.skills.vertical_select import (
-    VERTICAL_PURPOSES,
-    VERTICALS,
+    available_vertical_purposes,
+    available_verticals,
     persist_vertical,
     require_vertical,
     resolve_vertical,
@@ -42,14 +41,16 @@ SKILLS = {
 
 
 def test_medical_is_registered_as_a_vertical_not_a_domain() -> None:
-    assert "medical" in VERTICALS
-    assert "medical" in VERTICAL_PURPOSES
+    assert "medical" in available_verticals()
+    assert "medical" in available_vertical_purposes()
     assert "medical" not in BUILTIN_DOMAINS
     assert "medical" not in DOMAIN_PURPOSES
     assert require_vertical("medical") == "medical"
 
     mod = load_vertical("medical")
-    assert mod.__name__ == "argus_skill.verticals.medical.stages"
+    # Argus may resolve its own in-tree copy while it still ships one; the
+    # module path only has to end in this vertical.
+    assert mod.__name__.endswith("medical.stages")
     assert vertical_checklist_stage_order(mod) == STAGES
 
 
@@ -125,7 +126,7 @@ def test_medical_role_banners_and_skills_are_packaged() -> None:
         assert set(yaml.safe_load(front)) == {"name", "description"}, name
 
     target_disease = skills["engineer/target-disease-research.md"]
-    assert "python -m argus_skill.verticals.medical.dossier" in target_disease
+    assert "python -m argus_verticals.medical.dossier" in target_disease
     assert "argus_skill.domains.medical" not in target_disease
 
 
@@ -144,7 +145,7 @@ def test_deliver_stage_requires_valid_dossier(tmp_path: Path) -> None:
         "medical/review.json",
     )
 
-    from argus_skill.verticals.medical.dossier import build_target_disease_dossier
+    from argus_verticals.medical.dossier import build_target_disease_dossier
 
     fixtures = Path(__file__).parents[1] / "domains" / "fixtures"
     pubmed = json.loads((fixtures / "pubmed_esummary.json").read_text())

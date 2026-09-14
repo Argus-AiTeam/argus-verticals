@@ -18,7 +18,7 @@ import copy
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.state import PatchError, apply_patch
+from argus_verticals.fiction_writing.state import PatchError, apply_patch
 
 
 def _seed_one_character():

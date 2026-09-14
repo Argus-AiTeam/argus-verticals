@@ -34,9 +34,9 @@ from typing import Any
 import pandas as pd
 import pytest
 
-from argus_skill.verticals.quant.backtest import BacktestSpec
-from argus_skill.verticals.quant.integrations.finance_argus import qlib_runner
-from argus_skill.verticals.quant.integrations.finance_argus.engine import FinanceArgusEngine
+from argus_verticals.quant.backtest import BacktestSpec
+from argus_verticals.quant.integrations.finance_argus import qlib_runner
+from argus_verticals.quant.integrations.finance_argus.engine import FinanceArgusEngine
 
 # ts_code -> whether it belongs to each fake "universe" (mirrors real qlib
 # D.instruments membership tables, just inlined for the test).

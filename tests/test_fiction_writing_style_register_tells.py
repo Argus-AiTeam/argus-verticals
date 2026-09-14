@@ -6,7 +6,7 @@ tells the user flagged: '过了查重还是 AI 味'.
 """
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.style_lint import check_style
+from argus_verticals.fiction_writing.style_lint import check_style
 
 
 def _classes(findings):

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.fiction_writing.intake import (
+from argus_verticals.fiction_writing.intake import (
     FictionIntakeError,
     brief_from_envelope,
 )

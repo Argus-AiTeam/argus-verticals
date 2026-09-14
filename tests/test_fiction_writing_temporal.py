@@ -7,8 +7,8 @@ round-trip while doing NO arithmetic itself.
 """
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.state import apply_patch, validate_state
-from argus_skill.verticals.fiction_writing.temporal import (
+from argus_verticals.fiction_writing.state import apply_patch, validate_state
+from argus_verticals.fiction_writing.temporal import (
     TEMPORAL_FINDING_TYPE,
     check_temporal_consistency,
 )

@@ -5,9 +5,9 @@ import os
 from pathlib import Path
 
 import pytest
-
 from argus_skill.verticals._base import load_vertical
-from argus_skill.verticals.physics import manuscript
+
+from argus_verticals.physics import manuscript
 
 
 def _write_compiled_paper(root: Path) -> None:

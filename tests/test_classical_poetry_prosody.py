@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.classical_poetry.prosody import (
+from argus_verticals.classical_poetry.prosody import (
     PROSODY_FINDING_TYPES,
     ProsodyError,
     analyze,

@@ -14,8 +14,8 @@ from pathlib import Path
 
 import pytest
 
-import argus_skill.verticals.fiction_writing as fw
-from argus_skill.verticals.fiction_writing.state import (
+import argus_verticals.fiction_writing as fw
+from argus_verticals.fiction_writing.state import (
     PatchError,
     apply_patch,
     validate_state,

@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from argus_skill.verticals.quant.portfolio import book_returns, sharpe_maxdd, to_weights
+from argus_verticals.quant.portfolio import book_returns, sharpe_maxdd, to_weights
 
 
 def test_weights_dollar_neutral_gross_one_and_capped():

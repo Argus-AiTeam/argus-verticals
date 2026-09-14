@@ -6,8 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
-
-from argus_skill.manager._core import Manager
+from argus_skill.manager import Manager
 from argus_skill.skills.builtins import iter_vertical_skill_texts
 from argus_skill.skills.stage_machine import (
     ChecklistLoadState,
@@ -15,8 +14,8 @@ from argus_skill.skills.stage_machine import (
     resolve_stage_checklist_contract,
 )
 from argus_skill.skills.vertical_select import (
-    VERTICAL_PURPOSES,
-    VERTICALS,
+    available_vertical_purposes,
+    available_verticals,
     persist_vertical,
     require_vertical,
 )
@@ -27,10 +26,11 @@ from argus_skill.verticals._base import (
     vertical_role_banner,
     vertical_workflow_mode,
 )
-from argus_skill.verticals.chip_design import environment_audit
-from argus_skill.verticals.chip_design.evidence import VALIDATORS, EvidenceError
-from argus_skill.verticals.chip_design.stages import stage_completion_issues
-from argus_skill.verticals.chip_design.tool_registry import (
+
+from argus_verticals.chip_design import environment_audit
+from argus_verticals.chip_design.evidence import VALIDATORS, EvidenceError
+from argus_verticals.chip_design.stages import stage_completion_issues
+from argus_verticals.chip_design.tool_registry import (
     filter_entries,
     load_registry,
     validate_registry,
@@ -461,9 +461,12 @@ def _complete_project(root: Path, *, delivery_level: str = "rtl_ip") -> Path:
 
 
 def test_chip_design_is_registered_and_staged() -> None:
-    assert "chip_design" in VERTICALS
-    assert set(VERTICAL_PURPOSES) == set(VERTICALS)
-    assert "RTL" in VERTICAL_PURPOSES["chip_design"]
+    # Selectable through Argus's menu, whether Argus ships it built in or
+    # discovers it through this package's entry point.
+    purposes = available_vertical_purposes()
+    assert "chip_design" in available_verticals()
+    assert set(purposes) >= set(available_verticals())
+    assert "RTL" in purposes["chip_design"]
     assert require_vertical("chip_design") == "chip_design"
     module = load_vertical("chip_design")
     assert tuple(module.STAGE_ORDER) == STAGES

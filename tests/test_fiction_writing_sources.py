@@ -1,7 +1,7 @@
 """The committed fiction source registry is valid."""
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.sources import load_fiction_registry
+from argus_verticals.fiction_writing.sources import load_fiction_registry
 
 
 def test_committed_fiction_registry_is_valid():

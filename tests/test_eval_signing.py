@@ -11,7 +11,7 @@ import importlib
 from argus_skill.team import result_provenance as rp
 
 oes = importlib.import_module(
-    "argus_skill.verticals.kernelbench.official_eval_server"
+    "argus_verticals.kernelbench.official_eval_server"
 )
 
 

@@ -7,8 +7,8 @@ import json
 
 import pytest
 
-import argus_skill.verticals.fiction_writing.evaluations.run_evals as rev
-from argus_skill.verticals.fiction_writing.state import (
+import argus_verticals.fiction_writing.evaluations.run_evals as rev
+from argus_verticals.fiction_writing.state import (
     PatchError,
     apply_patch,
     validate_patch,

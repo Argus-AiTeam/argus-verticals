@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.literary.shared.source_registry import (
+from argus_verticals.literary.shared.source_registry import (
     USES_REQUIRING_INGESTION,
     RegistryError,
     assert_use_allowed,

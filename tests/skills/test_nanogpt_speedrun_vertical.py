@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from argus_skill.verticals.nanogpt_speedrun.capstone import validate_capstone
+from argus_verticals.nanogpt_speedrun.capstone import validate_capstone
 
 
 def _write_capstone(root: Path) -> None:

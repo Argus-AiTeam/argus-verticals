@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from argus_skill.manager import Manager
 from argus_skill.skills.builtins import iter_vertical_skill_texts
 from argus_skill.skills.stage_machine import (
@@ -12,8 +11,8 @@ from argus_skill.skills.stage_machine import (
     resolve_stage_checklist_contract,
 )
 from argus_skill.skills.vertical_select import (
-    VERTICAL_PURPOSES,
-    VERTICALS,
+    available_vertical_purposes,
+    available_verticals,
     persist_vertical,
     require_vertical,
     resolve_vertical,
@@ -23,16 +22,17 @@ from argus_skill.verticals._base import (
     vertical_completion_gate,
     vertical_role_banner,
 )
-from argus_skill.verticals.digital_circuit.evidence import (
+
+from argus_verticals.digital_circuit.evidence import (
     EvidenceError,
     validate_verification_results,
 )
 
 
 def test_digital_circuit_is_registered_and_loadable() -> None:
-    assert "digital_circuit" in VERTICALS
-    assert "Verilog/SystemVerilog" in VERTICAL_PURPOSES["digital_circuit"]
-    assert set(VERTICAL_PURPOSES) == set(VERTICALS)
+    assert "digital_circuit" in available_verticals()
+    assert "Verilog/SystemVerilog" in available_vertical_purposes()["digital_circuit"]
+    assert set(available_vertical_purposes()) >= set(available_verticals())
     assert require_vertical("digital_circuit") == "digital_circuit"
 
     mod = load_vertical("digital_circuit")

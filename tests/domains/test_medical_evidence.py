@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from argus_skill.verticals.medical.evidence import (
+from argus_verticals.medical.evidence import (
     EvidenceRecord,
     MedicalScope,
     normalize_clinical_trials,

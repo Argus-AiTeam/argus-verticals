@@ -17,21 +17,21 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from argus_skill.verticals.quant.integrations.adata_cn.cache import cached_fetcher
-from argus_skill.verticals.quant.integrations.adata_cn.fundamentals import (
+from argus_verticals.quant.integrations.adata_cn.cache import cached_fetcher
+from argus_verticals.quant.integrations.adata_cn.fundamentals import (
     fundamental_feature_frame,
     ytd_to_ttm,
 )
-from argus_skill.verticals.quant.integrations.qlib_cn.features import (
+from argus_verticals.quant.integrations.qlib_cn.features import (
     cross_sectional_normalize,
     time_split,
 )
-from argus_skill.verticals.quant.integrations.qlib_cn.model import (
+from argus_verticals.quant.integrations.qlib_cn.model import (
     backtest_predictions,
     rolling_retrain_predict,
     train_predict,
 )
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant.search_ledger import SearchLedger
 
 
 def _require_lightgbm() -> None:
@@ -228,7 +228,7 @@ def test_cross_sectional_normalize_rank_and_zscore():
 
 
 def test_forward_return_label_math(monkeypatch):
-    import argus_skill.verticals.quant.integrations.qlib_cn.features as feat
+    import argus_verticals.quant.integrations.qlib_cn.features as feat
 
     dates = pd.to_datetime(["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"])
     close = np.array([[10.0, 100.0], [11.0, 110.0], [12.0, 99.0], [13.0, 101.0]])

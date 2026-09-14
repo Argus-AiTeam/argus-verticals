@@ -9,8 +9,8 @@ what we tell reviewers to produce.
 """
 from __future__ import annotations
 
-from argus_skill.verticals.fiction_writing.revise import fiction_revision_plan_from_text
-from argus_skill.verticals.fiction_writing.stages import role_banner
+from argus_verticals.fiction_writing.revise import fiction_revision_plan_from_text
+from argus_verticals.fiction_writing.stages import role_banner
 
 # mirrors the corrected reviewer skill's example (verdict + findings envelope,
 # severity decoupled from blocking, vocabulary types, 「」 inner quotes)

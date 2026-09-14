@@ -3,14 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from urllib.error import URLError
 
-from argus_skill.verticals.medical.connectors import (
+from argus_verticals.medical.connectors import (
     build_clinical_trials_url,
     build_pubmed_search_url,
     fetch_clinical_trials,
     fetch_pubmed,
     medical_query_id,
 )
-from argus_skill.verticals.medical.evidence import MedicalScope
+from argus_verticals.medical.evidence import MedicalScope
 
 FIXTURES = Path(__file__).parent / "fixtures"
 NOW = "2026-08-10T12:00:00Z"

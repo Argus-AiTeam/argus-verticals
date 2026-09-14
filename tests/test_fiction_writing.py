@@ -3,10 +3,13 @@ engine. Deterministic, no network, no LLM — the shared-core backbone."""
 from __future__ import annotations
 
 import pytest
-
-from argus_skill.skills.vertical_select import VERTICAL_PURPOSES, VERTICALS
+from argus_skill.skills.vertical_select import (
+    available_vertical_purposes,
+    available_verticals,
+)
 from argus_skill.verticals._base import load_vertical
-from argus_skill.verticals.fiction_writing.state import (
+
+from argus_verticals.fiction_writing.state import (
     PatchError,
     apply_patch,
     new_state,
@@ -18,8 +21,8 @@ from argus_skill.verticals.fiction_writing.state import (
 # vertical contract + registration
 # --------------------------------------------------------------------------- #
 def test_vertical_registered_and_distinct_from_research():
-    assert "fiction_writing" in VERTICALS
-    purpose = VERTICAL_PURPOSES["fiction_writing"].lower()
+    assert "fiction_writing" in available_verticals()
+    purpose = available_vertical_purposes()["fiction_writing"].lower()
     # Must read as creative fiction, and explicitly NOT collide with research.
     assert "fiction" in purpose
     assert "not a" in purpose and "literature review" in purpose

@@ -17,13 +17,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from argus_skill.verticals.quant.backtest import BacktestSpec, run_backtest
-from argus_skill.verticals.quant.integrations.qlib_cn.engine import QlibCnEngine
-from argus_skill.verticals.quant.integrations.qlib_cn.runner import (
+from argus_verticals.quant.backtest import BacktestSpec, run_backtest
+from argus_verticals.quant.integrations.qlib_cn.engine import QlibCnEngine
+from argus_verticals.quant.integrations.qlib_cn.runner import (
     FactorTrial,
     _slice_signal_provider,
 )
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant.search_ledger import SearchLedger
 
 
 def _signal(dates, codes=("SH600000", "SZ000001")):

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from argus_skill.verticals.classical_poetry.intake import (
+from argus_verticals.classical_poetry.intake import (
     PoetryIntakeError,
     brief_from_envelope,
 )

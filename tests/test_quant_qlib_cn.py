@@ -11,18 +11,18 @@ import os
 import numpy as np
 import pytest
 
-from argus_skill.verticals.quant.backtest import (
+from argus_verticals.quant.backtest import (
     BacktestEngine,
     BacktestSpec,
     config_fingerprint,
     run_backtest,
 )
-from argus_skill.verticals.quant.integrations.qlib_cn import (
+from argus_verticals.quant.integrations.qlib_cn import (
     QlibCnEngine,
     factor_to_signal,
 )
-from argus_skill.verticals.quant.integrations.qlib_cn import data as qdata
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant.integrations.qlib_cn import data as qdata
+from argus_verticals.quant.search_ledger import SearchLedger
 
 
 def test_factor_to_signal_shape_and_dropna():
@@ -113,8 +113,8 @@ def test_live_qlib_backtest(tmp_path):
     pytest.importorskip("qlib")
     if not _dump_available():
         pytest.skip("no local qlib cn_data dump")
-    from argus_skill.verticals.quant.factor_toolkit.expression import expression_feature
-    from argus_skill.verticals.quant.integrations.qlib_cn import make_toolkit_signal_provider
+    from argus_verticals.quant.factor_toolkit.expression import expression_feature
+    from argus_verticals.quant.integrations.qlib_cn import make_toolkit_signal_provider
 
     try:
         prov = make_toolkit_signal_provider(
@@ -153,8 +153,8 @@ def test_live_oos_boundary_does_not_crash(tmp_path):
     pytest.importorskip("qlib")
     if not _dump_available():
         pytest.skip("no local qlib cn_data dump")
-    from argus_skill.verticals.quant.factor_toolkit.expression import expression_feature
-    from argus_skill.verticals.quant.integrations.qlib_cn import make_toolkit_signal_provider
+    from argus_verticals.quant.factor_toolkit.expression import expression_feature
+    from argus_verticals.quant.integrations.qlib_cn import make_toolkit_signal_provider
 
     qdata.qlib_init()
     from qlib.data import D

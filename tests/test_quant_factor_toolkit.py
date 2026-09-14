@@ -7,11 +7,11 @@ import tempfile
 import numpy as np
 import pytest
 
-from argus_skill.verticals.quant import factor_toolkit as ft
-from argus_skill.verticals.quant.backtest import BacktestSpec
-from argus_skill.verticals.quant.executor import ForcingExecutor
-from argus_skill.verticals.quant.reference_engine import ToyBacktestEngine
-from argus_skill.verticals.quant.search_ledger import SearchLedger
+from argus_verticals.quant import factor_toolkit as ft
+from argus_verticals.quant.backtest import BacktestSpec
+from argus_verticals.quant.executor import ForcingExecutor
+from argus_verticals.quant.reference_engine import ToyBacktestEngine
+from argus_verticals.quant.search_ledger import SearchLedger
 
 # ── price features ──────────────────────────────────────────────────
 
@@ -192,7 +192,7 @@ def test_default_catalog_has_diverse_directions():
 # ── factor de-duplication (IC filter + correlation prune) ──────────────
 
 def test_deduplicate_factors_ic_filter_and_corr_prune():
-    from argus_skill.verticals.quant.factor_toolkit.selection import deduplicate_factors
+    from argus_verticals.quant.factor_toolkit.selection import deduplicate_factors
 
     names = ["a", "b", "c", "d"]
     ic = {"a": 0.05, "b": 0.048, "c": 0.001, "d": 0.03}  # c is low-signal -> dropped
