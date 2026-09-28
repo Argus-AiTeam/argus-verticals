@@ -69,6 +69,9 @@ def test_knowledge_maps_are_complete_linked_and_inherited():
         assert "description:" in text
         assert inherited[f"engineer/{path.name}"] == text
     assert "manager/chip-scope-selection.md" in inherited
+    for name in ("digital-circuit-signoff-review.md", "chip-design-signoff-review.md"):
+        assert "active workflow profile" in inherited[f"reviewer/{name}"]
+    assert "Fixed-harness children" in inherited["engineer/digital-knowledge-map.md"]
     assert len(_examples()) == 12
 
 

@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "33a5c1acf3cf145604e2f1c442bedf59c141f69a",
+    "commit": "1eafb65722a00daec89944a58bdd354e723630d6",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -46,7 +46,7 @@
         "digital_circuit"
       ],
       "shared": [],
-      "size_bytes": 136088,
+      "size_bytes": 136977,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -103,7 +103,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 92132,
+      "size_bytes": 93117,
       "skill_parents": [],
       "tags": [
         "hardware",

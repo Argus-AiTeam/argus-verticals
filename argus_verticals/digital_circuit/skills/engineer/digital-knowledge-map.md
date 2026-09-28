@@ -35,6 +35,9 @@ instead of duplicating these circuit fundamentals.
 
 The Manager saves a named `workflow_profile` in pipeline state. New tasks choose
 the smallest sufficient profile from the menu; explicit full delivery uses `full`.
+The table below applies to `digital_circuit` itself. `chip_design` has its own
+profile menu. Fixed-harness children such as `digital_circuit_benchmark` retain
+their own workflow: inheriting circuit knowledge does not adopt these profiles.
 
 | Profile | Required stages | Typical request |
 | --- | --- | --- |
