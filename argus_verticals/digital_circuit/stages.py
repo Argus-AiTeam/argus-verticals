@@ -13,8 +13,8 @@ from pathlib import Path
 from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
 
-if not hasattr(VerticalContract, "for_profile"):
-    raise RuntimeError("digital_circuit 1.x requires Argus scoped workflow profile support")
+if not hasattr(VerticalContract, "compose_workflow"):
+    raise RuntimeError("digital_circuit 1.x requires Argus composable workflow support")
 
 # Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
@@ -54,6 +54,13 @@ WORKFLOW_PROFILES = {
         "purpose": "complete circuit delivery including specification, RTL, verification and synthesis",
         "stages": STAGE_ORDER,
     },
+}
+WORKFLOW_STAGE_REQUIREMENTS = {
+    "specification": (),
+    "rtl": ("specification", "verification"),
+    "verification": (),
+    "synthesis": ("verification",),
+    "delivery": ("specification", "rtl", "verification", "synthesis"),
 }
 
 CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
@@ -266,6 +273,10 @@ def stage_completion_issues(
     if stage_name == "verification":
         from .evidence import EvidenceError, validate_verification_results
 
+        if workflow_profile == "custom":
+            source_issues = stage_completion_issues("rtl", root)
+            if source_issues:
+                return source_issues
         try:
             validate_verification_results(root)
         except EvidenceError as exc:
@@ -280,7 +291,7 @@ def stage_completion_issues(
                 root,
                 (
                     ["synthesis/REPORT.md"]
-                    if workflow_profile == "synthesis"
+                    if workflow_profile in {"synthesis", "custom"}
                     else ["synthesis/REPORT.md", "synthesis/NOT_APPLICABLE.md"]
                 ),
                 case_insensitive_patterns=[

@@ -4,7 +4,9 @@
 verification and synthesis, from combinational logic through protocols and CDC.
 
 New tasks select the smallest complete workflow: `specification`, `rtl`,
-`verification`, `synthesis`, or explicit `full`. The full/legacy order remains
+`verification`, `synthesis`, a dependency-checked `custom` combination, or explicit
+`full`. Requesting `rtl + synthesis` includes specification and verification but
+not delivery packaging. The full/legacy order remains
 `specification → rtl → verification → synthesis → delivery`. Selected stages keep
 their evidence checks; omitted stages do not require placeholder artifacts.
 See the [knowledge and workflow map](skills/engineer/digital-knowledge-map.md)
@@ -22,7 +24,7 @@ Extras: none. Tests: `tests/skills/test_digital_circuit_vertical.py`, `tests/ski
 
 Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).
 
-Version 1.x requires Argus workflow-profile support (`VerticalContract.for_profile`).
+Version 1.x requires Argus workflow composition (`VerticalContract.compose_workflow`).
 Older frameworks reject the plugin visibly rather than silently running a
 different flow. Upgrade the framework before this plugin; neither upgrading nor
 installing it migrates existing task scope.

@@ -13,8 +13,8 @@ from pathlib import Path
 from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
 
-if not hasattr(VerticalContract, "for_profile"):
-    raise RuntimeError("chip_design 1.x requires Argus scoped workflow profile support")
+if not hasattr(VerticalContract, "compose_workflow"):
+    raise RuntimeError("chip_design 1.x requires Argus composable workflow support")
 
 # Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
@@ -76,6 +76,17 @@ WORKFLOW_PROFILES = {
         "purpose": "explicit full chip workflow through prototype, benchmark and final target-level review",
         "stages": STAGE_ORDER,
     },
+}
+WORKFLOW_STAGE_REQUIREMENTS = {
+    "definition": (),
+    "architecture": ("definition",),
+    "environment": (),
+    "rtl": ("architecture", "environment", "verification"),
+    "verification": (),
+    "ppa": ("verification",),
+    "prototype": ("ppa",),
+    "benchmark": ("ppa",),
+    "signoff": STAGE_ORDER[:-1],
 }
 
 CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
@@ -327,6 +338,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
 
 def stage_completion_issues(
     stage: str, project_root: Path, *, workflow_profile: str = "full",
+    workflow_stages: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     """Return deterministic issues from the vertical's existing validators."""
     stage_name = (stage or "").strip().lower()
@@ -335,7 +347,9 @@ def stage_completion_issues(
     if stage_name == "environment":
         from .environment_audit import check
 
-        _ok, errors = check(root, workflow_profile=workflow_profile)
+        _ok, errors = check(
+            root, workflow_profile=workflow_profile, workflow_stages=workflow_stages,
+        )
         target = root / "design" / "TARGET.json"
         if not target.is_file() or target.stat().st_size == 0:
             errors.append("environment requires a non-empty design/TARGET.json")
@@ -354,11 +368,16 @@ def stage_completion_issues(
     if validator_name is None:
         return ()
 
-    from .evidence import VALIDATORS, EvidenceError
+    from .evidence import VALIDATORS, EvidenceError, _signoff
 
     issues: list[str] = []
     try:
-        VALIDATORS[validator_name](root)
+        if workflow_profile == "custom" and stage_name == "verification":
+            VALIDATORS["rtl"](root)
+        if stage_name == "signoff":
+            _signoff(root, workflow_profile=workflow_profile, workflow_stages=workflow_stages)
+        else:
+            VALIDATORS[validator_name](root)
     except EvidenceError as exc:
         issues.append(str(exc))
 

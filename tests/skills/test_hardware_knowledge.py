@@ -4,6 +4,7 @@ import random
 import re
 import shutil
 import subprocess
+from itertools import combinations
 from pathlib import Path
 
 import pytest
@@ -112,12 +113,16 @@ def test_explicit_synthesis_task_cannot_use_legacy_not_applicable(tmp_path):
     assert contract.completion_issues("synthesis", tmp_path, state_root=tmp_path)
 
 
-def test_documented_rtl_profile_reaches_real_verified_completion(tmp_path, examples):
+@pytest.mark.parametrize("profile", ["rtl", "custom"])
+def test_documented_rtl_profile_reaches_real_verified_completion(tmp_path, examples, profile):
     _source, blocks = examples
     state, work = tmp_path / "state", tmp_path / "work"
     for directory in ("design", "rtl", "tb", "verification"):
         (work / directory).mkdir(parents=True)
-    persist_vertical(state, "digital_circuit", workflow_profile="rtl")
+    persist_vertical(
+        state, "digital_circuit", workflow_profile=profile,
+        workflow_requested_stages=("rtl",) if profile == "custom" else None,
+    )
     (work / "design/SPEC.md").write_text(
         "# Unsigned saturating adder\n"
         "Two unsigned 8-bit inputs, combinational min(a+b,255), carry flag iff a+b>255. "
@@ -145,6 +150,74 @@ def test_documented_rtl_profile_reaches_real_verified_completion(tmp_path, examp
     assert all(stage["status"] == "done" for stage in final["stages"].values())
     assert not (work / "synthesis").exists()
     assert not (work / ".argus/PIPELINE_STATE.json").exists()
+
+
+@pytest.mark.parametrize("provider", [digital, chip])
+def test_every_hardware_stage_combination_has_a_minimal_closed_scope(provider):
+    from argus.core.vertical_contract import vertical_contract
+
+    contract = vertical_contract("hardware", provider)
+    for count in range(1, len(provider.STAGE_ORDER) + 1):
+        for goals in combinations(provider.STAGE_ORDER, count):
+            composed = contract.compose_workflow(goals)
+            required = set(goals)
+            while True:
+                added = {dep for stage in required for dep in provider.WORKFLOW_STAGE_REQUIREMENTS[stage]}
+                if added <= required:
+                    break
+                required.update(added)
+            assert composed.stage_order == tuple(stage for stage in provider.STAGE_ORDER if stage in required)
+            assert set(composed.checklist_items) == required
+            assert composed.workflow_requested_stages == goals
+            assert composed.completion_gate == contract.completion_gate
+
+
+@pytest.mark.parametrize("goals, expected", [
+    (("rtl", "ppa"), ("definition", "architecture", "environment", "rtl", "verification", "ppa")),
+    (("architecture", "ppa"), ("definition", "architecture", "verification", "ppa")),
+    (("environment",), ("environment",)),
+    (("benchmark",), ("verification", "ppa", "benchmark")),
+    (("signoff",), chip.STAGE_ORDER),
+])
+def test_chip_workflows_can_mix_studies_and_existing_design_work(tmp_path, goals, expected):
+    persist_vertical(tmp_path, "chip_design", workflow_profile="custom", workflow_requested_stages=goals)
+    assert load_vertical_contract("chip_design", tmp_path).stage_order == expected
+
+
+def test_custom_verification_requires_the_design_not_only_a_testbench(tmp_path):
+    (tmp_path / "tb").mkdir()
+    (tmp_path / "tb/test.sv").write_text("module test; endmodule")
+    (tmp_path / "verification").mkdir()
+    (tmp_path / "verification/result.log").write_text("PASS")
+    assert digital.stage_completion_issues("verification", tmp_path, workflow_profile="custom")
+
+
+def test_custom_synthesis_is_real_work_not_legacy_not_applicable(tmp_path):
+    (tmp_path / "synthesis").mkdir()
+    (tmp_path / "synthesis/NOT_APPLICABLE.md").write_text("Legacy simulation-only task")
+    assert digital.stage_completion_issues("synthesis", tmp_path) == ()
+    assert digital.stage_completion_issues("synthesis", tmp_path, workflow_profile="custom")
+
+
+def test_hardware_composition_menus_fit_manager_context_budget():
+    from argus.manager._helpers import (
+        _DEFAULT_FAST_ROUTE_MAX_PROMPT_CHARS,
+        _DEFAULT_GROUNDED_ROUTE_MAX_PROMPT_CHARS,
+    )
+    from argus.roles.prompts.manager import (
+        build_fast_vertical_decision_prompt,
+        build_vertical_decision_prompt,
+    )
+    from argus.skills.vertical_select import available_vertical_purposes
+
+    menu = available_vertical_purposes()
+    for build, cap in [
+        (build_fast_vertical_decision_prompt, _DEFAULT_FAST_ROUTE_MAX_PROMPT_CHARS),
+        (build_vertical_decision_prompt, _DEFAULT_GROUNDED_ROUTE_MAX_PROMPT_CHARS),
+    ]:
+        prompt = build("Build RTL and measure PPA, without a prototype.", verticals_with_purpose=menu)
+        assert "WORKFLOW_STAGES=" in prompt
+        assert len(prompt) < cap
 
 
 @pytest.mark.parametrize("module, capacity", [("dc_fifo4", 4), ("dc_elastic8", 1)])

@@ -33,8 +33,8 @@ instead of duplicating these circuit fundamentals.
 
 ## Choose an outcome, not a compulsory full flow
 
-The Manager saves a named `workflow_profile` in pipeline state. New tasks choose
-the smallest sufficient profile from the menu; explicit full delivery uses `full`.
+The Manager saves a named or `custom` `workflow_profile` in pipeline state. New
+tasks choose the smallest sufficient scope; explicit full delivery uses `full`.
 The table below applies to `digital_circuit` itself. `chip_design` has its own
 profile menu. Fixed-harness children such as `digital_circuit_benchmark` retain
 their own workflow: inheriting circuit knowledge does not adopt these profiles.
@@ -46,6 +46,19 @@ their own workflow: inheriting circuit knowledge does not adopt these profiles.
 | `verification` | verification | Add independent tests to an existing FIFO |
 | `synthesis` | verification, synthesis | Compare two existing adder implementations |
 | `full` | specification, rtl, verification, synthesis, delivery | Deliver reproducible, synthesized RTL IP |
+
+For mixed requests, use `WORKFLOW_PROFILE=custom` and
+`WORKFLOW_STAGES=rtl;synthesis`. The host adds specification and verification,
+preserving canonical order and excluding delivery. RTL always requires its
+specification and verification; synthesis requires verification; delivery requires
+all earlier stages. Selecting verification alone checks existing RTL instead of
+recreating it. Custom synthesis requires real synthesis results, not
+`synthesis/NOT_APPLICABLE.md`. Legacy/full N/A policy is unchanged.
+
+Read `workflow_requested_stages` and effective `workflow_stages` separately.
+Required companions are not optional, and omitted stages are not complete.
+Knowledge topics and stage goals are independent axes: a FIFO task may use
+storage, handshake, parameters and CDC guides without selecting full delivery.
 
 Knowledge-only work records a reviewable `design/SPEC.md`, not invented simulation
 results. A verification-only task still needs actual RTL, an independent oracle,

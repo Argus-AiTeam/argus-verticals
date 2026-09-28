@@ -85,13 +85,28 @@ DELIVERY_REQUIREMENTS: dict[str, tuple[str, ...]] = {
 }
 
 
-def _required_capabilities(level: str, profile: str) -> list[str]:
-    from .stages import WORKFLOW_PROFILES
+def _workflow_stages(profile: str, stages: tuple[str, ...]) -> tuple[str, ...]:
+    from argus.core.vertical_contract import vertical_contract
 
-    if profile not in WORKFLOW_PROFILES:
-        raise ValueError(f"unknown chip workflow profile: {profile!r}")
-    if profile == "rtl":
+    from . import stages as provider
+
+    contract = vertical_contract("chip_design", provider)
+    return contract.for_profile(
+        profile, requested_stages=stages if profile == "custom" else (),
+    ).stage_order
+
+
+def _required_capabilities(
+    level: str, profile: str, effective: tuple[str, ...],
+) -> list[str]:
+    if profile == "rtl" or (
+        profile == "custom"
+        and set(effective) & {"rtl", "verification"}
+        and not set(effective) & {"ppa", "prototype", "benchmark", "signoff"}
+    ):
         return ["simulation", "lint"]
+    if profile == "custom" and not set(effective) & {"environment", "rtl", "verification", "ppa", "prototype", "benchmark", "signoff"}:
+        return []
     return list(DELIVERY_REQUIREMENTS.get(level, ()))
 
 
@@ -294,6 +309,7 @@ def collect(
     target_python: str,
     required: list[str],
     workflow_profile: str = "full",
+    workflow_stages: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     root = project_root.resolve()
     registry = load_registry()
@@ -308,7 +324,8 @@ def collect(
     level = str(scope.get("delivery_level") or "").strip()
     if level not in DELIVERY_REQUIREMENTS:
         raise ValueError(f"unsupported or missing delivery_level: {level!r}")
-    inferred = _required_capabilities(level, workflow_profile)
+    effective_stages = _workflow_stages(workflow_profile, workflow_stages)
+    inferred = _required_capabilities(level, workflow_profile, effective_stages)
     selected = list(dict.fromkeys([*inferred, *required]))
     invalid = sorted(set(selected) - set(CAPABILITY_NAMES))
     if invalid:
@@ -332,6 +349,7 @@ def collect(
         "project_root": ".",
         "delivery_level": level,
         "workflow_profile": workflow_profile,
+        "workflow_stages": list(effective_stages),
         "selected_pdk": selected_pdk,
         "required_capabilities": selected,
         "ready": all(capabilities[name]["ready"] for name in selected),
@@ -397,6 +415,7 @@ def check(
     *,
     target_python: str | None = None,
     workflow_profile: str = "full",
+    workflow_stages: tuple[str, ...] = (),
 ) -> tuple[bool, list[str]]:
     path = project_root / report
     try:
@@ -419,9 +438,14 @@ def check(
     current_level = str(scope.get("delivery_level") or "")
     if level != current_level or level not in DELIVERY_REQUIREMENTS:
         errors.append(f"delivery_level does not match current scope: {level!r}")
-    expected_required = _required_capabilities(current_level, workflow_profile)
+    effective_stages = _workflow_stages(workflow_profile, workflow_stages)
+    expected_required = _required_capabilities(current_level, workflow_profile, effective_stages)
     if payload.get("workflow_profile", "full") != workflow_profile:
         errors.append("workflow_profile does not match the active task")
+    if (
+        workflow_profile == "custom" or "workflow_stages" in payload
+    ) and payload.get("workflow_stages") != list(effective_stages):
+        errors.append("workflow_stages do not match the active task")
     reported_required = payload.get("required_capabilities")
     if not isinstance(reported_required, list):
         reported_required = []
@@ -523,7 +547,8 @@ def main(argv: list[str] | None = None) -> int:
     collect_parser.add_argument("--project-root", default=".")
     collect_parser.add_argument("--target-python", default=sys.executable)
     collect_parser.add_argument("--require", action="append", default=[])
-    collect_parser.add_argument("--workflow-profile", choices=tuple(WORKFLOW_PROFILES), default="full")
+    collect_parser.add_argument("--workflow-profile", choices=(*WORKFLOW_PROFILES, "custom"), default="full")
+    collect_parser.add_argument("--workflow-stages", nargs="+", default=[])
     collect_parser.add_argument("--output", default=str(DEFAULT_REPORT))
     collect_parser.add_argument("--markdown", default=str(DEFAULT_MARKDOWN))
 
@@ -531,7 +556,8 @@ def main(argv: list[str] | None = None) -> int:
     check_parser.add_argument("--project-root", default=".")
     check_parser.add_argument("--report", default=str(DEFAULT_REPORT))
     check_parser.add_argument("--target-python", default=None)
-    check_parser.add_argument("--workflow-profile", choices=tuple(WORKFLOW_PROFILES), default="full")
+    check_parser.add_argument("--workflow-profile", choices=(*WORKFLOW_PROFILES, "custom"), default="full")
+    check_parser.add_argument("--workflow-stages", nargs="+", default=[])
 
     catalog_parser = subparsers.add_parser("catalog")
     catalog_parser.add_argument("--category", action="append", default=[])
@@ -544,6 +570,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "catalog":
         return _catalog(args)
     root = Path(args.project_root).resolve()
+    if args.workflow_stages and args.workflow_profile != "custom":
+        parser.error("--workflow-stages requires --workflow-profile custom")
+    try:
+        effective_stages = _workflow_stages(args.workflow_profile, tuple(args.workflow_stages))
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.command == "collect":
         try:
             payload = collect(
@@ -551,6 +583,7 @@ def main(argv: list[str] | None = None) -> int:
                 target_python=str(Path(args.target_python).expanduser()),
                 required=list(args.require),
                 workflow_profile=args.workflow_profile,
+                workflow_stages=effective_stages,
             )
         except ValueError as exc:
             print(f"FAIL: {exc}", file=sys.stderr)
@@ -569,6 +602,7 @@ def main(argv: list[str] | None = None) -> int:
         Path(args.report),
         target_python=args.target_python,
         workflow_profile=args.workflow_profile,
+        workflow_stages=effective_stages,
     )
     if not ok:
         print("\n".join(f"FAIL: {error}" for error in errors), file=sys.stderr)

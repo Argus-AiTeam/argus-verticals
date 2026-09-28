@@ -27,13 +27,35 @@ ambiguity without asking again.
 | Measure existing design against baselines | `benchmark` | verification, ppa, benchmark |
 | Complete target-level delivery and sign-off | `full` | all nine stages |
 
-Choose the smallest complete matching profile by default, not `full` merely
+Choose the smallest complete matching profile or custom composition by default, not `full` merely
 because the vertical covers chips. Explicit "full flow", full IP delivery,
 GDS/pre-tapeout/tapeout sign-off or equivalent end-to-end requests use `full`.
 A PPA study *targeting* a process is not a request to tape out.
 
+## Composed tasks
+
+When a preset is insufficient, emit `WORKFLOW_PROFILE=custom` and requested goals
+as `WORKFLOW_STAGES=rtl;ppa` (JSON uses a list). The host includes mandatory
+companions; it does not blindly execute the model's stage list.
+
+| Operator request | Requested goals | Effective scope |
+| --- | --- | --- |
+| Create RTL and measure PPA, no board or release | `rtl;ppa` | definition, architecture, environment, rtl, verification, ppa |
+| Architecture study with existing-design PPA | `architecture;ppa` | definition, architecture, verification, ppa |
+| Audit tools without implementing hardware | `environment` | environment |
+| Prototype and benchmark existing RTL | `prototype;benchmark` | verification, ppa, prototype, benchmark |
+| Final target-level certification | `signoff` | all nine stages |
+
+Request creation stages whenever implementing or changing that output; use
+existing-design goals only when the necessary inputs exist. Explain the
+requested goals, automatically added obligations and excluded work before the
+handoff. A conflict such as "create RTL but do not verify" needs clarification,
+not a waived dependency. See `references/workflow.md` for the complete rules.
+The framework exposes the resolved explanation in Manager output and events;
+it does not add an interactive confirmation dialog or guess consent.
+
 Return `WORKFLOW_PROFILE` with the Manager's vertical decision. The framework
-saves the profile and its exact stage order. Selected stages are real gates,
+saves the profile, custom requested goals and exact effective stage order. Selected stages are real gates,
 not a Planner suggestion. Do not encode scope by marking other stages skipped
 or by requesting direct early completion. Existing projects with no profile
 retain their legacy full workflow; upgrading the plugin does not migrate them.

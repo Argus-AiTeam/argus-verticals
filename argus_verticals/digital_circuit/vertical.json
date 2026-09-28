@@ -16,5 +16,5 @@
     "verification"
   ],
   "maintainers": [],
-  "min_argus": "scoped-workflow-profiles"
+  "min_argus": "composable-workflow-profiles"
 }

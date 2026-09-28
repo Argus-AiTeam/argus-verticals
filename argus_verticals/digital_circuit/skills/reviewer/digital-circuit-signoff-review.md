@@ -14,6 +14,12 @@ task still requires executable existing RTL and an independent oracle.
 Legacy no-profile projects retain the full workflow; fixed external benchmarks
 retain their own harness requirements regardless of these circuit profiles.
 
+For `custom`, review requested goals and the complete effective stage list.
+RTL implies specification and verification; synthesis implies verification;
+delivery implies the whole circuit workflow. Reject missing companions, missing
+existing RTL and custom synthesis supported only by N/A notes. Reuse is allowed
+only for evidence that still matches the actual design and claimed behavior.
+
 ## Review protocol
 
 1. Read the original task and frozen hardware specification. Write down, for yourself, the interfaces, clock/reset behavior, cycle timing, parameters, edge cases, and required outputs the work must satisfy.

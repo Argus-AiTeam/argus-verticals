@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "1eafb65722a00daec89944a58bdd354e723630d6",
+    "commit": "49c7f75866c9c98b2d42cb8642cc762f9523b008",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -33,7 +33,7 @@
       "api_version": 1,
       "has_skills": true,
       "maintainers": [],
-      "min_argus": "scoped-workflow-profiles",
+      "min_argus": "composable-workflow-profiles",
       "module": "argus_verticals.chip_design.stages",
       "name": "chip_design",
       "paths": [
@@ -46,7 +46,7 @@
         "digital_circuit"
       ],
       "shared": [],
-      "size_bytes": 136977,
+      "size_bytes": 150748,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -92,7 +92,7 @@
       "api_version": 1,
       "has_skills": true,
       "maintainers": [],
-      "min_argus": "scoped-workflow-profiles",
+      "min_argus": "composable-workflow-profiles",
       "module": "argus_verticals.digital_circuit.stages",
       "name": "digital_circuit",
       "paths": [
@@ -103,7 +103,7 @@
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 93117,
+      "size_bytes": 94886,
       "skill_parents": [],
       "tags": [
         "hardware",

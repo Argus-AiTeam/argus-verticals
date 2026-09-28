@@ -43,3 +43,10 @@ and target prerequisites, even when they do not recreate the architecture.
 The environment-first guide remains the detailed stage checklist; its steps are
 conditional on the active profile. A full workflow is still available and retains
 the target-level evidence requirements.
+
+For mixed deliverables, `custom` composes stage goals with mandatory companions:
+`rtl + ppa` stops after verified PPA, while `architecture + ppa` assumes existing
+RTL and does not recreate it. Module categories are independent of stage scope:
+a memory/DMA task may require protocol, clock/reset and host knowledge without
+needing prototype or final delivery stages. Validate reused input contracts and
+source-bound results rather than treating "outside scope" as "known correct".

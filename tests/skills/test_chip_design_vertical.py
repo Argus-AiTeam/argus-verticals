@@ -89,6 +89,118 @@ def test_environment_cli_carries_profile_and_rejects_unknown(tmp_path, capsys):
     assert exc.value.code == 2
 
 
+@pytest.mark.parametrize("goals, capabilities", [
+    (("rtl",), ["simulation", "lint"]),
+    (("rtl", "ppa"), ["simulation", "lint", "synthesis"]),
+    (("architecture",), []),
+    (("environment",), ["simulation", "lint", "synthesis"]),
+])
+def test_composed_environment_matches_actual_work(tmp_path, goals, capabilities):
+    root = _complete_project(tmp_path)
+    report = environment_audit.collect(
+        root, target_python=sys.executable, required=[],
+        workflow_profile="custom", workflow_stages=goals,
+    )
+    assert report["required_capabilities"] == capabilities
+    _write_json(root / environment_audit.DEFAULT_REPORT, report)
+    assert environment_audit.check(root, workflow_profile="custom", workflow_stages=goals) == (True, [])
+    report["workflow_stages"] = ["environment"]
+    _write_json(root / environment_audit.DEFAULT_REPORT, report)
+    if goals != ("environment",):
+        assert not environment_audit.check(root, workflow_profile="custom", workflow_stages=goals)[0]
+
+
+def test_custom_chip_rtl_and_ppa_finish_without_later_stage_files(tmp_path):
+    from argus.core.pipeline_state import read_pipeline_state
+    from argus.skills.stage_machine import advance_stage, complete_final_stage
+    from argus.skills.vertical_select import vertical_completion_certificate_status
+
+    work = _complete_project(tmp_path / "work")
+    state = tmp_path / "state"
+    for relative in ("prototype/RESULTS.json", "benchmark/RESULTS.json", "signoff/SIGNOFF.json"):
+        (work / relative).unlink()
+    _write_json(work / environment_audit.DEFAULT_REPORT, environment_audit.collect(
+        work, target_python=sys.executable, required=[],
+        workflow_profile="custom", workflow_stages=("rtl", "ppa"),
+    ))
+    persist_vertical(state, "chip_design", workflow_profile="custom", workflow_requested_stages=("rtl", "ppa"))
+    for target in ("architecture", "environment", "rtl", "verification", "ppa"):
+        advance_stage(state, target_stage=target, reason="fixture evidence reviewed", evidence_root=work)
+    complete_final_stage(state, reason="PPA evidence reviewed", evidence_root=work)
+    assert vertical_completion_certificate_status(state, "chip_design")["ok"]
+    assert read_pipeline_state(state)["current_stage"] == "ppa"
+    assert set(read_pipeline_state(state)["stages"]) == {
+        "definition", "architecture", "environment", "rtl", "verification", "ppa",
+    }
+
+
+def test_composed_signoff_keeps_full_evidence_and_checks_its_environment_scope(tmp_path):
+    from argus_verticals.chip_design import evidence
+
+    root = _complete_project(tmp_path)
+    _write_json(root / environment_audit.DEFAULT_REPORT, environment_audit.collect(
+        root, target_python=sys.executable, required=[],
+        workflow_profile="custom", workflow_stages=("signoff",),
+    ))
+    manifest_path = root / "signoff/ARTIFACT_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text())
+    for artifact in manifest["artifacts"]:
+        artifact["sha256"] = _digest(root / artifact["path"])
+    _write_json(manifest_path, manifest)
+    assert stage_completion_issues(
+        "signoff", root, workflow_profile="custom", workflow_stages=STAGES,
+    ) == ()
+    assert evidence.main([
+        "signoff", "--project-root", str(root), "--workflow-profile", "custom",
+        "--workflow-stages", "signoff",
+    ]) == 0
+    with pytest.raises(evidence.EvidenceError, match="complete target-level workflow"):
+        evidence._signoff(root, workflow_profile="custom", workflow_stages=("rtl",))
+    (root / "benchmark/RESULTS.json").unlink()
+    assert stage_completion_issues(
+        "signoff", root, workflow_profile="custom", workflow_stages=STAGES,
+    )
+
+
+def test_composed_environment_cli_is_explicit_and_rejects_missing_goals(tmp_path):
+    root = _complete_project(tmp_path)
+    for command in ("collect", "check"):
+        assert environment_audit.main([
+            command, "--project-root", str(root), "--workflow-profile", "custom",
+            "--workflow-stages", "rtl", "ppa",
+        ]) == 0
+        with pytest.raises(SystemExit) as exc:
+            environment_audit.main([command, "--project-root", str(root), "--workflow-profile", "custom"])
+        assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("tamper", ["capabilities", "missing_stages", "target"])
+def test_custom_readiness_cannot_weaken_the_trusted_scope(tmp_path, tamper):
+    root = _complete_project(tmp_path)
+    report = environment_audit.collect(
+        root, target_python=sys.executable, required=[],
+        workflow_profile="custom", workflow_stages=("rtl", "ppa"),
+    )
+    if tamper == "capabilities":
+        report["required_capabilities"] = ["simulation", "lint"]
+    elif tamper == "missing_stages":
+        report.pop("workflow_stages")
+    else:
+        report["selected_pdk"] = "other-target"
+    _write_json(root / environment_audit.DEFAULT_REPORT, report)
+    assert not environment_audit.check(
+        root, workflow_profile="custom", workflow_stages=("rtl", "ppa"),
+    )[0]
+
+
+def test_custom_verification_rejects_missing_existing_manifest(tmp_path):
+    root = _complete_project(tmp_path)
+    (root / "design/RTL_MANIFEST.json").unlink()
+    assert "RTL_MANIFEST.json" in " ".join(
+        stage_completion_issues("verification", root, workflow_profile="custom")
+    )
+
+
 @pytest.fixture(autouse=True)
 def _functional_tool_probe(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_probe(
