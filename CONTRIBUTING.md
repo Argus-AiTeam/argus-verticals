@@ -73,6 +73,12 @@ Argus". (`ARGUS_SKILL_*` environment variables and `~/.argus-skill` kept their
 spelling.) This package declares no pip dependency on Argus because Argus is
 not on PyPI.
 
+The hardware 1.x verticals additionally require named workflow profiles
+(`VerticalContract.for_profile`). `.github/workflows/tests.yml` pins the matching
+framework commit. Upgrade Argus before those plugins; legacy projects keep their
+saved workflow. Hardware example tests use Icarus Verilog (`iverilog` and `vvp`);
+CI installs it so the documented RTL is executed rather than only linted.
+
 ```bash
 pip install "argus @ git+https://github.com/lbx154/Argus.git@main"
 pip install -e ".[dev,zh-fold]"

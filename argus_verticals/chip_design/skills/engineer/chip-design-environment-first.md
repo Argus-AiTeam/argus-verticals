@@ -15,7 +15,13 @@ workload comparison.
 Treat the environment, reusable IP, compiler/runtime, PDK, constraints, memory
 model, verification oracle, and benchmark protocol as part of the design.
 
-## Required workflow
+## Stage obligations within the active workflow
+
+Read `chip-architecture-map.md` for subsystem-specific guidance. Apply the
+following steps only when their stages are in the saved workflow profile.
+`architecture` stops after architecture; `rtl` stops after verification.
+No-profile legacy projects and explicit `full` retain all nine stages.
+Never create N/A artifacts merely to pass stages that were not selected.
 
 ### 1. Freeze the product and workload
 
@@ -94,6 +100,12 @@ Collect from the exact runtime:
   argus_verticals.chip_design.environment_audit check \
   --project-root .
 ```
+
+For the `rtl` profile, add `--workflow-profile rtl` to both `collect` and `check`.
+That profile requires simulation and lint, not a synthesis/PDK installation for
+work it does not perform. The stage validator checks the report against the
+saved profile; omitting the flag means the legacy/full environment contract.
+Full delivery retains all delivery-level capabilities and fresh tool probes.
 
 A red capability blocks that stage. Prefer project containers/Nix/CI and isolated
 toolchains over mutating shared installations.

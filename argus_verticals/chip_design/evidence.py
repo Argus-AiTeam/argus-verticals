@@ -219,9 +219,13 @@ def _rtl(project_root: Path) -> Path:
 
 
 def _verification(project_root: Path) -> Path:
+    from argus_verticals.digital_circuit.evidence import EvidenceError as CircuitEvidenceError
     from argus_verticals.digital_circuit.evidence import validate_verification_sources
 
-    validate_verification_sources(project_root)
+    try:
+        validate_verification_sources(project_root)
+    except CircuitEvidenceError as exc:
+        raise EvidenceError(str(exc)) from exc
     path, payload = _payload(project_root, "verification/RESULTS.json")
     if _status(payload) not in PASS_STATUSES or _has_failure(payload):
         raise EvidenceError(f"{path}: verification must pass without contradictory failure evidence")

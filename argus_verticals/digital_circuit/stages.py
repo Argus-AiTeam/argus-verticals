@@ -10,7 +10,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
+
+if not hasattr(VerticalContract, "for_profile"):
+    raise RuntimeError("digital_circuit 1.x requires Argus scoped workflow profile support")
 
 # Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
@@ -18,8 +22,9 @@ from argus.skills.stage_machine import ChecklistItem
 # The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
-    "Verilog/SystemVerilog RTL, testbenches, formal verification, "
-    "FPGA/ASIC synthesis, timing, and sign-off"
+    "digital logic and cycle-accurate Verilog/SystemVerilog RTL: combinational/sequential circuits, arithmetic, "
+    "FSMs, FIFOs, interfaces, CDC, verification and synthesis; not CUDA/Triton kernels "
+    "or whole-chip architecture"
 )
 VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
 VERTICAL_SKILL_PARENTS: tuple[str, ...] = ()
@@ -28,6 +33,28 @@ STAGE_ORDER = ("specification", "rtl", "verification", "synthesis", "delivery")
 CHECKLIST_STAGE_ORDER = STAGE_ORDER
 WORKFLOW_MODE = "staged"
 completion_gate = "none"
+WORKFLOW_PROFILES = {
+    "specification": {
+        "purpose": "explain or specify a circuit; no implementation or tool-result claim",
+        "stages": ("specification",),
+    },
+    "rtl": {
+        "purpose": "implement and independently verify RTL; no synthesis or physical claim",
+        "stages": ("specification", "rtl", "verification"),
+    },
+    "verification": {
+        "purpose": "verify or repair verification of existing RTL using current source evidence",
+        "stages": ("verification",),
+    },
+    "synthesis": {
+        "purpose": "verify existing RTL and evaluate synthesis/timing against declared constraints",
+        "stages": ("verification", "synthesis"),
+    },
+    "full": {
+        "purpose": "complete circuit delivery including specification, RTL, verification and synthesis",
+        "stages": STAGE_ORDER,
+    },
+}
 
 CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
     "specification": (
@@ -207,7 +234,9 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
 }
 
 
-def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
+def stage_completion_issues(
+    stage: str, project_root: Path, *, workflow_profile: str = "full",
+) -> tuple[str, ...]:
     """Return deterministic structural issues for the current hardware stage."""
     stage_name = (stage or "").strip().lower()
     root = Path(project_root)
@@ -249,7 +278,11 @@ def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
         try:
             validate_any_file(
                 root,
-                ["synthesis/REPORT.md", "synthesis/NOT_APPLICABLE.md"],
+                (
+                    ["synthesis/REPORT.md"]
+                    if workflow_profile == "synthesis"
+                    else ["synthesis/REPORT.md", "synthesis/NOT_APPLICABLE.md"]
+                ),
                 case_insensitive_patterns=[
                     "reports/**/*synth*.log",
                     "reports/**/*timing*.rpt",

@@ -85,6 +85,16 @@ DELIVERY_REQUIREMENTS: dict[str, tuple[str, ...]] = {
 }
 
 
+def _required_capabilities(level: str, profile: str) -> list[str]:
+    from .stages import WORKFLOW_PROFILES
+
+    if profile not in WORKFLOW_PROFILES:
+        raise ValueError(f"unknown chip workflow profile: {profile!r}")
+    if profile == "rtl":
+        return ["simulation", "lint"]
+    return list(DELIVERY_REQUIREMENTS.get(level, ()))
+
+
 def _run(argv: list[str], *, timeout: float = 20.0) -> dict[str, Any]:
     try:
         result = subprocess.run(
@@ -283,6 +293,7 @@ def collect(
     *,
     target_python: str,
     required: list[str],
+    workflow_profile: str = "full",
 ) -> dict[str, Any]:
     root = project_root.resolve()
     registry = load_registry()
@@ -297,7 +308,7 @@ def collect(
     level = str(scope.get("delivery_level") or "").strip()
     if level not in DELIVERY_REQUIREMENTS:
         raise ValueError(f"unsupported or missing delivery_level: {level!r}")
-    inferred = list(DELIVERY_REQUIREMENTS.get(level, ()))
+    inferred = _required_capabilities(level, workflow_profile)
     selected = list(dict.fromkeys([*inferred, *required]))
     invalid = sorted(set(selected) - set(CAPABILITY_NAMES))
     if invalid:
@@ -307,7 +318,7 @@ def collect(
     for name, bundles in CAPABILITY_TOOL_BUNDLES.items():
         capabilities[name] = _capability(by_id, bundles)
     selected_pdk = _selected_pdk(scope, root)
-    if level in {"gds", "pre_tapeout", "tapeout"} and not selected_pdk:
+    if "pdk" in selected and not selected_pdk:
         raise ValueError(
             "GDS/pre-tapeout/tapeout scope must name exactly one supported target PDK "
             "(sky130, ihp_sg13g2, or gf180mcu)"
@@ -320,6 +331,7 @@ def collect(
         "collected_at": datetime.now(UTC).isoformat(),
         "project_root": ".",
         "delivery_level": level,
+        "workflow_profile": workflow_profile,
         "selected_pdk": selected_pdk,
         "required_capabilities": selected,
         "ready": all(capabilities[name]["ready"] for name in selected),
@@ -358,6 +370,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- Collected: `{payload.get('collected_at', '')}`",
         f"- Delivery level: `{payload.get('delivery_level') or 'unset'}`",
+        f"- Workflow profile: `{payload.get('workflow_profile', 'full')}`",
         f"- Target Python: `{payload.get('runtime', {}).get('python', '')}`",
         f"- Ready: `{str(bool(payload.get('ready'))).lower()}`",
         "",
@@ -383,6 +396,7 @@ def check(
     report: Path = DEFAULT_REPORT,
     *,
     target_python: str | None = None,
+    workflow_profile: str = "full",
 ) -> tuple[bool, list[str]]:
     path = project_root / report
     try:
@@ -405,7 +419,9 @@ def check(
     current_level = str(scope.get("delivery_level") or "")
     if level != current_level or level not in DELIVERY_REQUIREMENTS:
         errors.append(f"delivery_level does not match current scope: {level!r}")
-    expected_required = list(DELIVERY_REQUIREMENTS.get(current_level, ()))
+    expected_required = _required_capabilities(current_level, workflow_profile)
+    if payload.get("workflow_profile", "full") != workflow_profile:
+        errors.append("workflow_profile does not match the active task")
     reported_required = payload.get("required_capabilities")
     if not isinstance(reported_required, list):
         reported_required = []
@@ -419,7 +435,7 @@ def check(
             f"required {expected_required!r}"
         )
     expected_pdk = _selected_pdk(scope, project_root.resolve())
-    if current_level in {"gds", "pre_tapeout", "tapeout"} and not expected_pdk:
+    if "pdk" in expected_required and not expected_pdk:
         errors.append(
             "current GDS/pre-tapeout/tapeout scope does not name one supported target PDK"
         )
@@ -498,6 +514,8 @@ def _catalog(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from .stages import WORKFLOW_PROFILES
+
     parser = argparse.ArgumentParser(prog="chip-design-environment-audit")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -505,6 +523,7 @@ def main(argv: list[str] | None = None) -> int:
     collect_parser.add_argument("--project-root", default=".")
     collect_parser.add_argument("--target-python", default=sys.executable)
     collect_parser.add_argument("--require", action="append", default=[])
+    collect_parser.add_argument("--workflow-profile", choices=tuple(WORKFLOW_PROFILES), default="full")
     collect_parser.add_argument("--output", default=str(DEFAULT_REPORT))
     collect_parser.add_argument("--markdown", default=str(DEFAULT_MARKDOWN))
 
@@ -512,6 +531,7 @@ def main(argv: list[str] | None = None) -> int:
     check_parser.add_argument("--project-root", default=".")
     check_parser.add_argument("--report", default=str(DEFAULT_REPORT))
     check_parser.add_argument("--target-python", default=None)
+    check_parser.add_argument("--workflow-profile", choices=tuple(WORKFLOW_PROFILES), default="full")
 
     catalog_parser = subparsers.add_parser("catalog")
     catalog_parser.add_argument("--category", action="append", default=[])
@@ -530,6 +550,7 @@ def main(argv: list[str] | None = None) -> int:
                 root,
                 target_python=str(Path(args.target_python).expanduser()),
                 required=list(args.require),
+                workflow_profile=args.workflow_profile,
             )
         except ValueError as exc:
             print(f"FAIL: {exc}", file=sys.stderr)
@@ -547,6 +568,7 @@ def main(argv: list[str] | None = None) -> int:
         root,
         Path(args.report),
         target_python=args.target_python,
+        workflow_profile=args.workflow_profile,
     )
     if not ok:
         print("\n".join(f"FAIL: {error}" for error in errors), file=sys.stderr)

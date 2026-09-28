@@ -10,7 +10,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
+
+if not hasattr(VerticalContract, "for_profile"):
+    raise RuntimeError("chip_design 1.x requires Argus scoped workflow profile support")
 
 # Plugin contract read by Argus (argus/verticals/_registry.py): the API
 # version and purpose advertise this vertical to the Manager's menu, the skills
@@ -18,8 +22,9 @@ from argus.skills.stage_machine import ChecklistItem
 # The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_PURPOSE = (
-    "end-to-end digital ASIC/accelerator design from workload and "
-    "microarchitecture through RTL, physical implementation, and sign-off"
+    "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, "
+    "memory/DMA, interconnect and host integration; scoped architecture/RTL/PPA tasks "
+    "or explicit full implementation and sign-off, not GPU software kernels"
 )
 VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
 VERTICAL_SKILL_PARENTS: tuple[str, ...] = ("digital_circuit",)
@@ -42,6 +47,36 @@ CHECKLIST_STAGE_ORDER = STAGE_ORDER
 WORKFLOW_MODE = "proportional"
 completion_gate = "metric"
 REQUIRE_INDEPENDENT_REVIEW = True
+WORKFLOW_PROFILES = {
+    "architecture": {
+        "purpose": "workload and subsystem architecture study; no RTL/PPA/physical implementation claim",
+        "stages": ("definition", "architecture"),
+    },
+    "rtl": {
+        "purpose": "design and verify accelerator RTL; target technology is planned, not physically certified",
+        "stages": ("definition", "architecture", "environment", "rtl", "verification"),
+    },
+    "verification": {
+        "purpose": "independently verify an existing chip subsystem against its frozen contract",
+        "stages": ("verification",),
+    },
+    "ppa": {
+        "purpose": "verify and measure an existing design's PPA; no prototype or final implementation claim",
+        "stages": ("verification", "ppa"),
+    },
+    "prototype": {
+        "purpose": "verify, measure PPA and demonstrate an existing design at its declared prototype level",
+        "stages": ("verification", "ppa", "prototype"),
+    },
+    "benchmark": {
+        "purpose": "verify and fairly benchmark an existing design with current PPA evidence",
+        "stages": ("verification", "ppa", "benchmark"),
+    },
+    "full": {
+        "purpose": "explicit full chip workflow through prototype, benchmark and final target-level review",
+        "stages": STAGE_ORDER,
+    },
+}
 
 CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
     "definition": (
@@ -115,7 +150,8 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
             statement=(
                 "A machine-readable record proves that the simulator, formal, synthesis, FPGA, "
                 "physical-design, PDK, and compiler/runtime capabilities and the sign-off checks "
-                "the delivery level requires are all ready."
+                "the active workflow profile and delivery level require are all ready. "
+                "The rtl profile requires simulation and lint, not omitted implementation tools."
             ),
             evidence_hint="research/ENVIRONMENT_AUDIT.json",
         ),
@@ -289,7 +325,9 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
 }
 
 
-def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
+def stage_completion_issues(
+    stage: str, project_root: Path, *, workflow_profile: str = "full",
+) -> tuple[str, ...]:
     """Return deterministic issues from the vertical's existing validators."""
     stage_name = (stage or "").strip().lower()
     root = Path(project_root)
@@ -297,7 +335,7 @@ def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
     if stage_name == "environment":
         from .environment_audit import check
 
-        _ok, errors = check(root)
+        _ok, errors = check(root, workflow_profile=workflow_profile)
         target = root / "design" / "TARGET.json"
         if not target.is_file() or target.stat().st_size == 0:
             errors.append("environment requires a non-empty design/TARGET.json")
@@ -335,11 +373,13 @@ def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
 def role_banner(role: str) -> str:
     """Frame roles around auditable chip-design evidence."""
     common = (
-        "MISSION TYPE: CHIP / ACCELERATOR DESIGN. Run a hardware flow in which every "
-        "claim rests on checkable evidence, from workload definition through "
-        "architecture, RTL, verification, PPA, prototype, benchmark, and the final "
-        "signoff stage. This is NOT ordinary software work, NOT paper writing, and "
-        "NOT merely RTL generation. Delivery level matters: "
+        "MISSION TYPE: CHIP / ACCELERATOR DESIGN. Each claim requires checkable "
+        "evidence. Use the active workflow profile: architecture, RTL, verification, "
+        "PPA, prototype, benchmark or explicitly full design. If no profile was saved, "
+        "preserve the legacy full flow. Do not demand outputs from omitted stages. "
+        "This is NOT ordinary software work or GPU kernel programming. "
+        "Delivery level describes the target; only completed, reviewed stages may "
+        "be claimed as delivered. "
         "synthesizable IP, FPGA, open-PDK GDS, computer-verified pre-tapeout readiness, "
         "actual tapeout readiness, and fabricated silicon "
         "are different claims. Freeze interfaces, numerical behavior, target technology, "
@@ -372,7 +412,7 @@ def role_banner(role: str) -> str:
             "per operator. After that family contract is certified, keep resource folding, "
             "retiming, and area/timing repair in the RTL loop; do not reopen earlier stages. Use a fast "
             "capability loop for non-milestone operator uplifts: rtl -> verification -> fresh "
-            "Sky130 PPA inside one bounded RTL mission whose Planner task has "
+            "target-matched PPA when included in scope, inside one bounded RTL mission whose Planner task has "
             "`stage_closing=false`; a Reviewer judgment that the work holds completes that task "
             "but does not advance the flow out of rtl. Then schedule the next operator directly. Run prototype, "
             "full benchmark, multi-node PPA, the signoff stage, and a local milestone commit only when "
@@ -394,8 +434,8 @@ def role_banner(role: str) -> str:
             " Batch the remaining operators of one already-understood hardware family into one "
             "definition/architecture contract; never schedule per-operator environment refreshes "
             "when target, tools, IP, licenses, and delivery level are unchanged."
-            " For a non-milestone operator uplift, plan the fast rtl -> verification -> Sky130 "
-            "PPA loop as exactly one bounded RTL task with `stage_closing=false`; include "
+            " For a non-milestone operator uplift, plan rtl -> verification and, when "
+            "included in scope, target-matched PPA as exactly one bounded RTL task with `stage_closing=false`; include "
             "implementation, full regression, canonical PPA, and evidence binding in that task. "
             "Do not emit separate verification-stage or PPA-stage closeout tasks and do not ask "
             "the Manager to advance out of rtl. Leave prototype, full benchmark, and the signoff "

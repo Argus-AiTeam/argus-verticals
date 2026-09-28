@@ -49,6 +49,46 @@ STAGES = (
 )
 
 
+def test_rtl_profile_requires_real_lint_and_simulation_not_synthesis(tmp_path, monkeypatch):
+    root = _complete_project(tmp_path)
+
+    def rtl_only_probe(registry, *, target_python, project_root):
+        return [{
+            "id": "verilator", "available": True,
+            "executables": {"verilator": "/tools/verilator"},
+        }]
+
+    monkeypatch.setattr(environment_audit, "probe_entries", rtl_only_probe)
+    report = environment_audit.collect(
+        root, target_python=sys.executable, required=[], workflow_profile="rtl",
+    )
+    assert report["required_capabilities"] == ["simulation", "lint"]
+    assert report["ready"]
+    assert not report["capabilities"]["synthesis"]["ready"]
+    _write_json(root / environment_audit.DEFAULT_REPORT, report)
+    assert environment_audit.check(root, workflow_profile="rtl") == (True, [])
+    assert not environment_audit.check(root)[0]
+    assert stage_completion_issues("environment", root, workflow_profile="rtl") == ()
+    assert stage_completion_issues("environment", root, workflow_profile="full")
+    monkeypatch.setattr(environment_audit, "probe_entries", lambda *args, **kwargs: [])
+    assert not environment_audit.check(root, workflow_profile="rtl")[0]
+
+
+def test_environment_cli_carries_profile_and_rejects_unknown(tmp_path, capsys):
+    root = _complete_project(tmp_path)
+    assert environment_audit.main([
+        "collect", "--project-root", str(root), "--workflow-profile", "rtl",
+    ]) == 0
+    assert environment_audit.main([
+        "check", "--project-root", str(root), "--workflow-profile", "rtl",
+    ]) == 0
+    assert environment_audit.main(["check", "--project-root", str(root)]) == 1
+    assert "workflow_profile does not match" in capsys.readouterr().err
+    with pytest.raises(SystemExit) as exc:
+        environment_audit.main(["collect", "--workflow-profile", "invented"])
+    assert exc.value.code == 2
+
+
 @pytest.fixture(autouse=True)
 def _functional_tool_probe(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_probe(

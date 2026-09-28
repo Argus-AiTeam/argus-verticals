@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "5f2eff3f88b0eb4154aae7ea7227e0433d534d2f",
+    "commit": "33a5c1acf3cf145604e2f1c442bedf59c141f69a",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -33,20 +33,20 @@
       "api_version": 1,
       "has_skills": true,
       "maintainers": [],
-      "min_argus": "2026-09-14-split",
+      "min_argus": "scoped-workflow-profiles",
       "module": "argus_verticals.chip_design.stages",
       "name": "chip_design",
       "paths": [
         "argus_verticals/chip_design"
       ],
-      "purpose": "end-to-end digital ASIC/accelerator design from workload and microarchitecture through RTL, physical implementation, and sign-off",
-      "purpose_zh": "端到端数字 ASIC/加速器设计：从工作负载与微架构到 RTL、物理实现与签核",
+      "purpose": "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, memory/DMA, interconnect and host integration; scoped architecture/RTL/PPA tasks or explicit full implementation and sign-off, not GPU software kernels",
+      "purpose_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，可选局部任务或完整交付流程",
       "python_requirements": [],
       "requires": [
         "digital_circuit"
       ],
       "shared": [],
-      "size_bytes": 105812,
+      "size_bytes": 136088,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -56,7 +56,7 @@
         "rtl",
         "eda"
       ],
-      "version": "0.1.0"
+      "version": "1.0.0"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -92,18 +92,18 @@
       "api_version": 1,
       "has_skills": true,
       "maintainers": [],
-      "min_argus": "2026-09-14-split",
+      "min_argus": "scoped-workflow-profiles",
       "module": "argus_verticals.digital_circuit.stages",
       "name": "digital_circuit",
       "paths": [
         "argus_verticals/digital_circuit"
       ],
-      "purpose": "Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off",
-      "purpose_zh": "Verilog/SystemVerilog RTL、测试平台、形式验证、FPGA/ASIC 综合、时序与签核",
+      "purpose": "digital logic and cycle-accurate Verilog/SystemVerilog RTL: combinational/sequential circuits, arithmetic, FSMs, FIFOs, interfaces, CDC, verification and synthesis; not CUDA/Triton kernels or whole-chip architecture",
+      "purpose_zh": "体系化数字电路知识与 RTL：组合/时序、算术、FSM、FIFO、协议、CDC、验证和综合，支持按任务范围选择流程",
       "python_requirements": [],
       "requires": [],
       "shared": [],
-      "size_bytes": 55039,
+      "size_bytes": 92132,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -111,7 +111,7 @@
         "verilog",
         "verification"
       ],
-      "version": "0.1.0"
+      "version": "1.0.0"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
