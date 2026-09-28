@@ -13,7 +13,7 @@ concurrency:
 env:
   # Paired framework support: lbx154/Argus#169. Hardware 1.x requires named
   # workflow profiles; pin the reviewed implementation, not a moving branch.
-  ARGUS_REF: a0902ffbe459babf7fcaca99bc276a1b78c01ede
+  ARGUS_REF: 85ec736d608b103a73f14f193598ac633aa690b8
 
 jobs:
   tests:
