@@ -5,6 +5,21 @@ description: "Independently review Verilog/SystemVerilog designs for contract fi
 
 # Digital Circuit Sign-off Review
 
+Read the active workflow profile before applying the protocol below. Only
+selected stages and actual claims require their corresponding evidence.
+The `specification` profile needs a correct, reviewable circuit explanation and
+specification, not invented RTL or simulation results. The `rtl` profile needs
+real RTL verification but not a synthesis/delivery bundle. A verification-only
+task still requires executable existing RTL and an independent oracle.
+Legacy no-profile projects retain the full workflow; fixed external benchmarks
+retain their own harness requirements regardless of these circuit profiles.
+
+For `custom`, review requested goals and the complete effective stage list.
+RTL implies specification and verification; synthesis implies verification;
+delivery implies the whole circuit workflow. Reject missing companions, missing
+existing RTL and custom synthesis supported only by N/A notes. Reuse is allowed
+only for evidence that still matches the actual design and claimed behavior.
+
 ## Review protocol
 
 1. Read the original task and frozen hardware specification. Write down, for yourself, the interfaces, clock/reset behavior, cycle timing, parameters, edge cases, and required outputs the work must satisfy.
@@ -16,7 +31,7 @@ description: "Independently review Verilog/SystemVerilog designs for contract fi
 7. For synthesis claims, inspect the actual tool/version, target, constraints, warnings, timing, utilization/area, latches, loops, undriven nets, and black boxes. A tool missing from the host PATH is no excuse when the project declares an already-local container toolchain.
 8. Cross-check all reported values against raw logs and ensure generated outputs correspond to the submitted RTL revision.
 9. Return `continue` with one prioritized repair plan if any required behavior or claim is unverified.
-10. Return `done` only when the complete source and evidence bundle reproduces from the documented entry point.
+10. Return `done` only when the selected scope is satisfied: a correct reviewable specification for knowledge-only work, or reproducible source and evidence for implementation/verification work. Never promote omitted stages into completed claims.
 
 ## What always sends the work back
 

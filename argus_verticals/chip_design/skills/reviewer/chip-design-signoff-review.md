@@ -5,6 +5,21 @@ description: "Independently review digital chip and accelerator projects for wor
 
 # Chip Design Sign-Off Review
 
+Read the active workflow profile and apply only the corresponding sections below.
+Architecture-only work needs a sound quantitative design, not RTL/PPA/prototype
+files. The `rtl` profile ends at verified RTL and is not the full `rtl_ip`
+delivery claim described below. Existing-design profiles must supply valid
+current prerequisites but do not recreate unchanged upstream work. Full delivery
+and legacy no-profile projects retain the complete target-level requirements.
+Do not request ceremonial N/A files for omitted stages.
+
+For `custom`, inspect requested goals and their resolved companions, not just a
+Manager narrative. RTL/PPA work includes definition, architecture, environment
+and verification but need not prototype, benchmark or certify full delivery.
+Selecting `signoff` includes the full workflow and cannot weaken target-level
+checks. A scope change requires an operator handoff; old evidence is reusable
+only while its inputs, constraints and source bindings remain valid.
+
 Review the raw files and rerun decisive commands only when material evidence is
 missing, stale, contradictory, implausible, or not reproducible from the recorded
 command. Never certify from the Engineer summary alone. A successful canonical
@@ -16,7 +31,9 @@ changes or when the canonical evidence is incomplete or suspect.
 
 ## Delivery-level boundaries
 
-Read `design/CHIP_SCOPE.json` first. Keep these claims distinct:
+Read `design/CHIP_SCOPE.json` first. Its delivery level names the target, not proof
+that this task completed that target. When those results are actually claimed,
+keep the following boundaries distinct:
 
 - `rtl_ip`: synthesizable, verified IP with synthesis/PPA evidence;
 - `fpga`: implemented and measured on named hardware;
@@ -39,6 +56,15 @@ bandwidth efficiency, utilization, and host offload. Check Amdahl leverage befor
 agreeing to a large architectural change.
 
 ## Environment and IP readiness
+
+For an `rtl` task, verify the readiness report with `--workflow-profile rtl`:
+simulation and lint must be ready; future synthesis/physical tools are not
+required. A `full` task still needs every delivery-level capability.
+For `custom`, pass `--workflow-profile custom --workflow-stages <saved goals>`
+to the audit CLI. Compare its effective stages with pipeline state; reject
+missing/altered scope metadata and lowered capability lists. For a composed final
+review, use `chip_design.evidence signoff --workflow-profile custom
+--workflow-stages signoff` with the usual module prefix and project root.
 
 Send the work back when:
 

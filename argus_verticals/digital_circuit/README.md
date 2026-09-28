@@ -1,8 +1,20 @@
 # digital_circuit
 
-**Purpose:** Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off.
+**Purpose:** systematic digital-circuit knowledge and cycle-accurate RTL design,
+verification and synthesis, from combinational logic through protocols and CDC.
 
-Staged workflow `specification → rtl → verification → synthesis → delivery`. The `benchmark/` subpackage is a separate vertical (`digital_circuit_benchmark`) that inherits this skill tree.
+New tasks select the smallest complete workflow: `specification`, `rtl`,
+`verification`, `synthesis`, a dependency-checked `custom` combination, or explicit
+`full`. Requesting `rtl + synthesis` includes specification and verification but
+not delivery packaging. The full/legacy order remains
+`specification → rtl → verification → synthesis → delivery`. Selected stages keep
+their evidence checks; omitted stages do not require placeholder artifacts.
+See the [knowledge and workflow map](skills/engineer/digital-knowledge-map.md)
+for the twelve-topic library, RTL examples, pitfalls and verification methods.
+
+The `benchmark/` subpackage remains a separate fixed-harness vertical
+(`digital_circuit_benchmark`) that inherits this skill tree without changing its
+benchmark contract.
 
 - `stages.py`: contract, checklists, completion checks (uses `argus.verticals.path_evidence`).
 - `evidence.py`: fail-closed evidence checks (interface, preflight, verification sources) also consumed by `chip_design` and `benchmark/`.
@@ -11,3 +23,8 @@ Staged workflow `specification → rtl → verification → synthesis → delive
 Extras: none. Tests: `tests/skills/test_digital_circuit_vertical.py`, `tests/skills/test_digital_circuit_evidence.py`.
 
 Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).
+
+Version 1.x requires Argus workflow composition (`VerticalContract.compose_workflow`).
+Older frameworks reject the plugin visibly rather than silently running a
+different flow. Upgrade the framework before this plugin; neither upgrading nor
+installing it migrates existing task scope.

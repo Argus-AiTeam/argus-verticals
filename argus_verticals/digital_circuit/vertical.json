@@ -1,8 +1,8 @@
 {
   "name": "digital_circuit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "module": "argus_verticals.digital_circuit.stages",
-  "purpose_zh": "Verilog/SystemVerilog RTL、测试平台、形式验证、FPGA/ASIC 综合、时序与签核",
+  "purpose_zh": "体系化数字电路知识与 RTL：组合/时序、算术、FSM、FIFO、协议、CDC、验证和综合，支持按任务范围选择流程",
   "paths": [
     "argus_verticals/digital_circuit"
   ],
@@ -16,5 +16,5 @@
     "verification"
   ],
   "maintainers": [],
-  "min_argus": "2026-09-14-split"
+  "min_argus": "composable-workflow-profiles"
 }

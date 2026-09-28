@@ -1,8 +1,8 @@
 {
   "name": "chip_design",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "module": "argus_verticals.chip_design.stages",
-  "purpose_zh": "端到端数字 ASIC/加速器设计：从工作负载与微架构到 RTL、物理实现与签核",
+  "purpose_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，可选局部任务或完整交付流程",
   "paths": [
     "argus_verticals/chip_design"
   ],
@@ -18,5 +18,5 @@
     "eda"
   ],
   "maintainers": [],
-  "min_argus": "2026-09-14-split"
+  "min_argus": "composable-workflow-profiles"
 }

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from argus.core.file_digest import sha256_file as _sha256
+from argus.core.vertical_contract import VerticalContractError
 
 DELIVERY_LEVELS = {"rtl_ip", "fpga", "gds", "pre_tapeout", "tapeout"}
 PASS_STATUSES = {"pass", "passed", "ready", "success", "proved"}
@@ -219,9 +220,13 @@ def _rtl(project_root: Path) -> Path:
 
 
 def _verification(project_root: Path) -> Path:
+    from argus_verticals.digital_circuit.evidence import EvidenceError as CircuitEvidenceError
     from argus_verticals.digital_circuit.evidence import validate_verification_sources
 
-    validate_verification_sources(project_root)
+    try:
+        validate_verification_sources(project_root)
+    except CircuitEvidenceError as exc:
+        raise EvidenceError(str(exc)) from exc
     path, payload = _payload(project_root, "verification/RESULTS.json")
     if _status(payload) not in PASS_STATUSES or _has_failure(payload):
         raise EvidenceError(f"{path}: verification must pass without contradictory failure evidence")
@@ -398,7 +403,15 @@ def _validate_artifact_manifest(
     return path
 
 
-def _signoff(project_root: Path) -> Path:
+def _signoff(
+    project_root: Path, *, workflow_profile: str = "full",
+    workflow_stages: tuple[str, ...] = (),
+) -> Path:
+    from .environment_audit import _workflow_stages
+    from .stages import STAGE_ORDER
+
+    if _workflow_stages(workflow_profile, workflow_stages) != STAGE_ORDER:
+        raise EvidenceError("final review requires the complete target-level workflow")
     path, payload = _payload(project_root, "signoff/SIGNOFF.json")
     if _status(payload) not in PASS_STATUSES or _has_failure(payload):
         raise EvidenceError(f"{path}: status must pass without contradictory failures")
@@ -464,6 +477,8 @@ def _signoff(project_root: Path) -> Path:
     environment_ok, environment_errors = check_environment(
         project_root,
         environment_path.relative_to(root),
+        workflow_profile=workflow_profile,
+        workflow_stages=workflow_stages,
     )
     if not environment_ok:
         raise EvidenceError(
@@ -599,11 +614,20 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="chip-design-evidence")
     parser.add_argument("check", choices=tuple(VALIDATORS))
     parser.add_argument("--project-root", default=".")
+    parser.add_argument("--workflow-profile", choices=("full", "custom"), default="full")
+    parser.add_argument("--workflow-stages", nargs="+", default=[])
     args = parser.parse_args(argv)
     root = Path(args.project_root).resolve()
+    if args.workflow_stages and args.workflow_profile != "custom":
+        parser.error("--workflow-stages requires --workflow-profile custom")
+    if args.check != "signoff" and (args.workflow_profile != "full" or args.workflow_stages):
+        parser.error("workflow options apply only to the final review check")
     try:
-        path = VALIDATORS[args.check](root)
-    except EvidenceError as exc:
+        path = (
+            _signoff(root, workflow_profile=args.workflow_profile, workflow_stages=tuple(args.workflow_stages))
+            if args.check == "signoff" else VALIDATORS[args.check](root)
+        )
+    except (EvidenceError, VerticalContractError) as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1
     print(f"OK: validated {path.relative_to(root)}")

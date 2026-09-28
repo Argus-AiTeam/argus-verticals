@@ -15,7 +15,16 @@ workload comparison.
 Treat the environment, reusable IP, compiler/runtime, PDK, constraints, memory
 model, verification oracle, and benchmark protocol as part of the design.
 
-## Required workflow
+## Stage obligations within the active workflow
+
+Read `chip-architecture-map.md` for subsystem-specific guidance. Apply the
+following steps only when their stages are in the saved workflow profile.
+`architecture` stops after architecture; `rtl` stops after verification.
+No-profile legacy projects and explicit `full` retain all nine stages.
+Never create N/A artifacts merely to pass stages that were not selected.
+For `custom`, use the saved effective `workflow_stages`, not only requested
+goals: required companions still need evidence. Full is milestone coverage,
+not a claim that design is a one-pass waterfall; see `references/workflow.md`.
 
 ### 1. Freeze the product and workload
 
@@ -94,6 +103,21 @@ Collect from the exact runtime:
   argus_verticals.chip_design.environment_audit check \
   --project-root .
 ```
+
+For the `rtl` profile, add `--workflow-profile rtl` to both `collect` and `check`.
+That profile requires simulation and lint, not a synthesis/PDK installation for
+work it does not perform. The stage validator checks the report against the
+saved profile; omitting the flag means the legacy/full environment contract.
+Full delivery retains all delivery-level capabilities and fresh tool probes.
+
+For a composed RTL/PPA task, add
+`--workflow-profile custom --workflow-stages rtl ppa` to both commands.
+Use the actual saved goals or effective stages; never substitute a smaller
+scope to pass readiness. Reports contain the effective stages, and acceptance
+compares them against trusted pipeline scope. RTL/verification-only custom work
+needs simulation/lint; PPA, prototype or benchmark work retains target-level
+implementation capabilities. An environment-only study audits the full declared
+target. Missing toolchains remain blockers, not evidence of design failure.
 
 A red capability blocks that stage. Prefer project containers/Nix/CI and isolated
 toolchains over mutating shared installations.
@@ -204,10 +228,14 @@ architecture, target, and toolchain stay fixed reopens `rtl`; it does not reopen
 definition, architecture, or environment.
 
 Use the fast capability loop for non-milestone operator uplifts:
-RTL→verification→fresh Sky130 PPA. Run prototype, full benchmark, multi-node PPA,
+RTL→verification→fresh target-matched PPA. Run prototype, full benchmark, multi-node PPA,
 sign-off, and a local milestone commit only for a complete target hardware
 workload, a complete model/system demonstration, or an operator-requested
 release. Intermediate operator groups are checkpoints, not release milestones.
 Reference
 prior certified results by hash instead of rewriting them, and never reuse a
 verification/PPA/benchmark result whose recorded RTL-manifest source binding is stale.
+For a new custom RTL/PPA task, required definition, architecture and environment
+stages are still present; unchanged accepted evidence may satisfy them after
+review. Reuse does not automatically mark a stage done. A change to goals needs
+a new operator-authorized handoff, not an internal stage-list edit.
