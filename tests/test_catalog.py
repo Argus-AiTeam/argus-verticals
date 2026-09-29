@@ -442,6 +442,7 @@ def _expected_members(name: str) -> list[str]:
 @pytest.mark.parametrize("vertical,stage,directory", [
     ("analog_mixed_signal", "simulation", "analog"),
     ("rf_design", "analysis", "rf"),
+    ("pcb_design", "verification", "pcb"),
 ])
 def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path, vertical: str, stage: str, directory: str) -> None:
     import os
@@ -453,6 +454,8 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
 
     if vertical == "analog_mixed_signal" and shutil.which("ngspice") is None:
         pytest.skip("ngspice is required for the archive-only executable check")
+    if vertical == "pcb_design" and shutil.which("kicad-cli") is None:
+        pytest.skip("KiCad 9 is required for the archive-only executable check")
     dist, payload = release
     local_catalog = json.loads(json.dumps(payload))
     for entry in local_catalog["verticals"].values():
@@ -509,7 +512,11 @@ for command in (execute[0], check[0]):
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout
 record = json.loads((project / directory / "results/RESULTS.json").read_text())
-assert len(record["runs" if directory == "analog" else "studies"]) == 6
+if directory == "pcb":
+    assert [row["kind"] for row in record["commands"]] == ["erc", "drc", "gerbers", "drill"]
+    assert record["kicad_version"].startswith("9.")
+else:
+    assert len(record["runs" if directory == "analog" else "studies"]) == 6
 print("Store-only native execution and read-only check passed")
 """
     result = subprocess.run(
