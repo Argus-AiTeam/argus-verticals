@@ -89,6 +89,11 @@ execute native operating-point, DC, AC and transient analyses and compare
 waveform measurements against independent circuit equations. Keep parser-only
 fixtures distinct from genuine simulator output and test altered physical
 parameters against unchanged acceptance bounds.
+RF tests use the declared `rf` extra (`numpy`, `scikit-rf`) and independent
+attenuator, resistor, line and matching equations. Preserve port/reference
+conventions and distinguish full-matrix passivity from individual port-power
+checks. Archive-only tests use a fresh interpreter so editable source installs
+cannot silently stand in for Store packages.
 `WORKFLOW_STAGE_REQUIREMENTS` describes companion obligations for custom scopes,
 not a reordered execution graph. Preserve preset/full orders, validate reused
 inputs, and test closure and evidence for each new combination. These changes are

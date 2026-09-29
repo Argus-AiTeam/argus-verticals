@@ -1,0 +1,6 @@
+! Original synthetic matched attenuator; voltage-wave transmission is 0.5.
+! This file is an analytic model, not a VNA measurement.
+# GHz S RI R 50
+0.5 0 0 0.5 0 0.5 0 0 0
+1.0 0 0 0.5 0 0.5 0 0 0
+1.5 0 0 0.5 0 0.5 0 0 0
