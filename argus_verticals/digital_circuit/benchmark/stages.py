@@ -25,6 +25,7 @@ from argus_verticals.digital_circuit.stages import role_banner as _digital_circu
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
 # The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
+VERTICAL_ROUTING_PATH = ("hardware", "digital_circuit", "benchmark")
 VERTICAL_PURPOSE = (
     "single-stage fixed-harness RTL benchmark: interface, RTL, "
     "local verification, pre-score elaboration, and attempt handoff"

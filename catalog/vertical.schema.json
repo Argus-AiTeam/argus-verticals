@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Argus-AiTeam/argus-verticals/blob/main/catalog/vertical.schema.json",
   "title": "Argus vertical manifest (vertical.json)",
-  "description": "Store metadata for one vertical in argus-verticals. Lives next to the vertical's stages.py. The one-line purpose is NOT repeated here: scripts/build_catalog.py reads VERTICAL_PURPOSE, VERTICAL_SKILL_PARENTS and the presence of VERTICAL_SKILLS from stages.py and merges them into catalog.json.",
+  "description": "Store metadata for one vertical in argus-verticals. Lives next to stages.py. The generator reads VERTICAL_PURPOSE, VERTICAL_SKILL_PARENTS, optional VERTICAL_ROUTING_PATH and the presence of VERTICAL_SKILLS from stages.py. These derived fields belong in catalog.json, not this manifest. routing_path is category/domain/optional specialty, independent of knowledge dependencies.",
   "type": "object",
   "additionalProperties": false,
   "required": [

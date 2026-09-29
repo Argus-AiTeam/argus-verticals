@@ -21,6 +21,7 @@ if not hasattr(VerticalContract, "compose_workflow"):
 # root is seeded like a built-in's, and parents' skill trees are seeded first.
 # The stage/checklist contract itself is argus/core/vertical_contract.py.
 ARGUS_VERTICAL_API_VERSION = 1
+VERTICAL_ROUTING_PATH = ("hardware", "chip_design")
 VERTICAL_PURPOSE = (
     "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, "
     "memory/DMA, interconnect and host integration; scoped architecture/RTL/PPA tasks "

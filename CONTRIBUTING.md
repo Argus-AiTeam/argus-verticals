@@ -74,14 +74,26 @@ spelling.) This package declares no pip dependency on Argus because Argus is
 not on PyPI.
 
 The hardware 1.x verticals additionally require composable workflow profiles
-(`VerticalContract.compose_workflow`). `.github/workflows/tests.yml` pins the matching
-framework commit. Upgrade Argus before those plugins; legacy projects keep their
-saved workflow. Hardware example tests use Icarus Verilog (`iverilog` and `vvp`);
-CI installs it so the documented RTL is executed rather than only linted.
+(`VerticalContract.compose_workflow`). The verification specialty and FPGA domain
+also require `VerticalPlugin.routing_path`; `.github/workflows/tests.yml` pins
+the companion framework revision from lbx154/Argus#172. Upgrade Argus before
+those plugins; legacy projects keep their saved workflow. Hardware example tests
+use Icarus Verilog (`iverilog` and `vvp`); the iCE40 implementation tests also
+use Yosys, nextpnr-ice40 and IceStorm (`icepack`). CI installs these tools so
+documented RTL and native implementation are executed, not only linted.
 `WORKFLOW_STAGE_REQUIREMENTS` describes companion obligations for custom scopes,
 not a reordered execution graph. Preserve preset/full orders, validate reused
 inputs, and test closure and evidence for each new combination. These changes are
-part of the same unreleased hardware 1.0.0 upgrade.
+part of the hardware 1.0.0 upgrade released in repository release v0.2.0.
+
+Hardware expansion uses `VERTICAL_ROUTING_PATH`, for example
+`("hardware", "digital_circuit", "benchmark")`. Domain and optional specialty
+must join to the entry-point name. The generator owns `routing_path` in the
+catalog: do not duplicate it in `vertical.json`. Classification, explicit skill
+parents, and independent workflow contracts are separate. Skill parents are
+direct, not recursive, and existing parent-first duplicate precedence remains.
+Do not create a vertical for every circuit primitive; use topic skills unless
+the specialty owns an independently requested result and acceptance method.
 
 ```bash
 pip install "argus @ git+https://github.com/lbx154/Argus.git@main"
