@@ -347,6 +347,49 @@ def test_read_only_checker_preserves_project_bytes(reference):
     assert after == before
 
 
+def test_real_native_erc_follows_local_hierarchical_sheets(planned):
+    plan = load(planned)
+    plan["checks"] = plan["checks"][:1]
+    plan["fabrication"] = None
+    save(planned, plan)
+    root_id = "11111111-1111-4111-8111-111111111111"
+    sheet_id = "66666666-6666-4666-8666-666666666666"
+    root = planned / "design/coupon.kicad_sch"
+    child = planned / "design/sub/child.kicad_sch"
+    child.parent.mkdir()
+    child.write_text(root.read_text().replace(
+        f'(path "/{root_id}" (reference', f'(path "/{root_id}/{sheet_id}" (reference',
+    ))
+    root.write_text(f'''(kicad_sch (version 20250114) (generator "eeschema")
+      (uuid "{root_id}") (paper "A4") (lib_symbols)
+      (sheet (at 50.8 50.8) (size 25.4 12.7)
+        (stroke (width 0) (type default)) (fill (color 0 0 0 0)) (uuid "{sheet_id}")
+        (property "Sheetname" "Child" (at 50.8 49.53 0) (effects (font (size 1.27 1.27)) (justify left bottom)))
+        (property "Sheetfile" "sub/child.kicad_sch" (at 50.8 64.77 0) (effects (font (size 1.27 1.27)) (justify left top)))
+        (instances (project "coupon" (path "/{root_id}" (page "2")))))
+      (sheet_instances (path "/" (page "1"))))\n''')
+    assert run_analysis(planned)["erc"] == {"error": 0, "warning": 0, "exclusion": 0}
+    assert "design/sub/child.kicad_sch" in load(planned, RESULTS)["inputs"]
+    report = load(planned, "pcb/results/native/erc.json")
+    assert {sheet["path"] for sheet in report["sheets"]} == {"/", "/Child/"}
+
+
+@pytest.mark.parametrize("requirement", ["features", "holes"])
+def test_original_manufacturing_bounds_are_not_silently_relaxed(planned, requirement):
+    plan = load(planned)
+    plan["checks"] = []
+    if requirement == "features":
+        plan["fabrication"]["layers"]["F.Cu"] = 4
+    else:
+        plan["fabrication"]["drill_hits"]["pth"] = 3
+    save(planned, plan)
+    with pytest.raises(EvidenceError, match="below required|expected exactly"):
+        run_analysis(planned)
+    result = load(planned, RESULTS)
+    assert result["status"] == "failed"
+    assert len(result["outputs"]) >= 7
+
+
 def test_tool_unavailability_is_explicit(planned, monkeypatch):
     monkeypatch.setenv("PATH", "")
     with pytest.raises(EvidenceError, match="KiCad 9 CLI is required"):
