@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Merged hardware routing and bounded-task support from lbx154/Argus#172.
-  ARGUS_REF: 690aa69945c1cc25114a8892c27e41369f20db83
+  # Hardware routing plus the concrete Manager-target fix found by the analog trial.
+  ARGUS_REF: daa71b3ef4c51147497312145c4da52473bf36c9
 
 jobs:
   tests:

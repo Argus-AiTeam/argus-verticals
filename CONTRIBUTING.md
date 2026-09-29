@@ -76,9 +76,11 @@ not on PyPI.
 The hardware 1.x verticals additionally require composable workflow profiles
 (`VerticalContract.compose_workflow`). The verification specialty and FPGA domain
 also require `VerticalPlugin.routing_path`, as does the analog/mixed-signal
-domain; `.github/workflows/tests.yml` pins the merged framework revision from
-lbx154/Argus#172. Upgrade Argus before
-those plugins; legacy projects keep their saved workflow. Hardware example tests
+domain; `.github/workflows/tests.yml` pins the exact framework revision including
+hardware routing and concrete Manager decision targets. The latter prevents a
+literal prompt placeholder from turning an explicit completion into an invalid
+target. Upgrade Argus before those plugins; legacy projects keep their saved
+workflow. Hardware example tests
 use Icarus Verilog (`iverilog` and `vvp`); the iCE40 implementation tests also
 use Yosys, nextpnr-ice40 and IceStorm (`icepack`). CI installs these tools so
 documented RTL and native implementation are executed, not only linted.
