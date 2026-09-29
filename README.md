@@ -24,6 +24,7 @@ this package's `pyproject.toml` points at a `stages.py` module that declares:
 | `VERTICAL_PURPOSE` | the one-line menu entry the Manager reads when it decides which vertical a task belongs to |
 | `VERTICAL_SKILLS` (optional) | path to the vertical's `skills/` tree; Argus seeds it exactly like a built-in's |
 | `VERTICAL_SKILL_PARENTS` | verticals whose skill trees are seeded before this one's (for example `kernelbench` inherits `kernel_engineering`) |
+| `VERTICAL_ROUTING_PATH` (optional) | category, domain and optional specialty; navigation/routing only, not workflow or knowledge inheritance |
 
 Once the package is installed, a discovered vertical is treated like a
 built-in: same Manager menu, same Skill seeding, same stage machine, same
@@ -75,6 +76,16 @@ install this package into the Python environment Argus runs from to add these.
 
 ## Verticals
 
+Hardware routing separates category, primary domain and independent specialty.
+The current review batch adds `digital_circuit_verification` and `fpga_design`.
+The agreed broader taxonomy also reserves separate **conceptual areas** for
+analog/mixed-signal, RF, PCB, packaging and power electronics. They are not
+registered or advertised as supported verticals yet: each needs its own tools,
+evidence interpretation and executable references before publication.
+The existing `chip_design` architecture model remains accelerator-oriented in
+this batch; a general control-SoC model and independent physical/DFT execution
+are still separate work, not capabilities implied by the taxonomy.
+
 | entry point | module | purpose (as shown in the Manager's menu) | skill parents |
 |---|---|---|---|
 | `ale_last_exam` | `argus_verticals.ale_last_exam` | Agents' Last Exam long-horizon professional workflow in a real sandbox with hidden-reference, artifact-first GUI+CLI delivery | |
@@ -82,6 +93,8 @@ install this package into the Python environment Argus runs from to add these.
 | `classical_poetry` | `argus_verticals.classical_poetry` | compose or check classical Chinese 近体诗/古体/词 with reproducible 押韵/平仄 prosody and literary review | |
 | `digital_circuit` | `argus_verticals.digital_circuit` | Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off | |
 | `digital_circuit_benchmark` | `argus_verticals.digital_circuit.benchmark` | single-stage fixed-harness RTL benchmark: interface, RTL, local verification, pre-score elaboration, and attempt handoff | `digital_circuit` |
+| `digital_circuit_verification` | `argus_verticals.digital_circuit.verification` | independent configuration/scenario regression and nonvacuous formal checks | `digital_circuit` |
+| `fpga_design` | `argus_verticals.fpga_design` | scoped FPGA work with single-clock iCE40 implementation and measured board acceptance | `digital_circuit`, `digital_circuit_verification` |
 | `fiction_writing` | `argus_verticals.fiction_writing` | write or continue original fiction narrative prose while preserving characters, world, and timeline; not a literature review or research task | |
 | `kernelbench` | `argus_verticals.kernelbench` | maximize correctness-checked SOL score/speedup for GPU kernels on B200 SOL-ExecBench/KernelBench | `kernel_engineering` (Argus built-in) |
 | `literary_editor` | `argus_verticals.literary_editor` | rewrite, expand, polish, proofread, or critique an existing literary text while preserving edit scope and source facts | |

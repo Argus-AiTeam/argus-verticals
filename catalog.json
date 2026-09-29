@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "49c7f75866c9c98b2d42cb8642cc762f9523b008",
+    "commit": "387f23cc84337b59ca9ff4c10efe08f2ed719e94",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -19,6 +19,7 @@
       "purpose_zh": "Agents' Last Exam 长程专业工作流：在真实沙箱中按隐藏参考答案、以产物优先的方式完成 GUI+CLI 交付",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 14683,
       "skill_parents": [],
@@ -45,8 +46,12 @@
       "requires": [
         "digital_circuit"
       ],
+      "routing_path": [
+        "hardware",
+        "chip_design"
+      ],
       "shared": [],
-      "size_bytes": 150748,
+      "size_bytes": 150800,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -56,7 +61,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -75,6 +80,7 @@
         "PyYAML>=6"
       ],
       "requires": [],
+      "routing_path": [],
       "shared": [
         "argus_verticals/literary/shared"
       ],
@@ -102,8 +108,12 @@
       "purpose_zh": "体系化数字电路知识与 RTL：组合/时序、算术、FSM、FIFO、协议、CDC、验证和综合，支持按任务范围选择流程",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [
+        "hardware",
+        "digital_circuit"
+      ],
       "shared": [],
-      "size_bytes": 94886,
+      "size_bytes": 95271,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -111,7 +121,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
@@ -129,8 +139,13 @@
       "requires": [
         "digital_circuit"
       ],
+      "routing_path": [
+        "hardware",
+        "digital_circuit",
+        "benchmark"
+      ],
       "shared": [],
-      "size_bytes": 13329,
+      "size_bytes": 13398,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -138,6 +153,39 @@
         "hardware",
         "rtl",
         "benchmark"
+      ],
+      "version": "0.1.1"
+    },
+    "digital_circuit_verification": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "vertical-routing-paths",
+      "module": "argus_verticals.digital_circuit.verification.stages",
+      "name": "digital_circuit_verification",
+      "paths": [
+        "argus_verticals/digital_circuit/verification"
+      ],
+      "purpose": "independent RTL verification specialty: requirement-to-test matrices, parameter/seed regressions, protocol scoreboards and nonvacuous formal checks; not RTL implementation, analog simulation, timing closure or fixed-harness benchmark submission",
+      "purpose_zh": "独立数字验证专项：需求覆盖矩阵、参数和种子回归、协议计分板、形式证明及非空洞性检查",
+      "python_requirements": [],
+      "requires": [
+        "digital_circuit"
+      ],
+      "routing_path": [
+        "hardware",
+        "digital_circuit",
+        "verification"
+      ],
+      "shared": [],
+      "size_bytes": 33298,
+      "skill_parents": [
+        "digital_circuit"
+      ],
+      "tags": [
+        "hardware",
+        "verification",
+        "formal"
       ],
       "version": "0.1.0"
     },
@@ -161,6 +209,7 @@
         "PyYAML>=6"
       ],
       "requires": [],
+      "routing_path": [],
       "shared": [
         "argus_verticals/literary/shared"
       ],
@@ -170,6 +219,40 @@
         "literary",
         "fiction",
         "writing"
+      ],
+      "version": "0.1.0"
+    },
+    "fpga_design": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "vertical-routing-paths",
+      "module": "argus_verticals.fpga_design.stages",
+      "name": "fpga_design",
+      "paths": [
+        "argus_verticals/fpga_design"
+      ],
+      "purpose": "FPGA board projects, resource inference, pin/clock constraints and bring-up; executable single-clock iCE40 implementation and hardware measurements, scoped RTL verification or full board delivery; not ASIC physical design or GPU kernels",
+      "purpose_zh": "FPGA 工程、资源推断、引脚和时钟约束及板级调试；首个可执行实现流程限定单时钟 iCE40，上板需真实测量",
+      "python_requirements": [],
+      "requires": [
+        "digital_circuit",
+        "digital_circuit_verification"
+      ],
+      "routing_path": [
+        "hardware",
+        "fpga_design"
+      ],
+      "shared": [],
+      "size_bytes": 29772,
+      "skill_parents": [
+        "digital_circuit",
+        "digital_circuit_verification"
+      ],
+      "tags": [
+        "hardware",
+        "fpga",
+        "verification"
       ],
       "version": "0.1.0"
     },
@@ -187,6 +270,7 @@
       "purpose_zh": "在 B200 SOL-ExecBench/KernelBench 上最大化通过正确性检查的 GPU 内核 SOL 得分/加速比",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 86947,
       "skill_parents": [
@@ -217,6 +301,7 @@
         "PyYAML>=6"
       ],
       "requires": [],
+      "routing_path": [],
       "shared": [
         "argus_verticals/literary/shared"
       ],
@@ -243,6 +328,7 @@
       "purpose_zh": "材料科学与材料加工，跨原子、微观组织、连续介质、CAD/CAE 与实验尺度",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 47101,
       "skill_parents": [],
@@ -267,6 +353,7 @@
       "purpose_zh": "生物医药证据执行：靶点-疾病机制、人类遗传学、临床前转化、临床试验、安全性、失败项目、竞争管线，产出可审计的非诊断决策档案并独立评审；不是通用论文流水线",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 61826,
       "skill_parents": [],
@@ -295,6 +382,7 @@
         "PyYAML>=6"
       ],
       "requires": [],
+      "routing_path": [],
       "shared": [
         "argus_verticals/literary/shared"
       ],
@@ -321,6 +409,7 @@
       "purpose_zh": "在 nanochat 的 train.py 上最小化 val_bpb（bits-per-byte，约 300 秒，1 张 GPU）",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 40378,
       "skill_parents": [],
@@ -348,6 +437,7 @@
       "requires": [
         "speedrun"
       ],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 18146,
       "skill_parents": [
@@ -375,6 +465,7 @@
       "purpose_zh": "针对真实物理系统、在有界证据下进行理论、模拟、数据分析、文献或实验设计",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 48828,
       "skill_parents": [],
@@ -403,6 +494,7 @@
         "PyYAML>=6"
       ],
       "requires": [],
+      "routing_path": [],
       "shared": [
         "argus_verticals/literary/shared"
       ],
@@ -438,6 +530,7 @@
         "torch>=2.2"
       ],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 337967,
       "skill_parents": [],
@@ -463,6 +556,7 @@
       "purpose_zh": "墙钟预算内的单指标脚本/基准优化：搭建、优化、测量、报告；不写论文",
       "python_requirements": [],
       "requires": [],
+      "routing_path": [],
       "shared": [],
       "size_bytes": 59945,
       "skill_parents": [],

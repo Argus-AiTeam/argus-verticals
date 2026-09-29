@@ -31,6 +31,12 @@ Read existing RTL verification and error-guided repair skills for the exact
 evidence formats. `chip_design` inherits this library; it adds system concerns
 instead of duplicating these circuit fundamentals.
 
+For independent regression infrastructure and formal execution, use the
+[verification specialty](../../verification/), registered as
+`digital_circuit_verification`. Its protocol/CSR/DMA, configuration-matrix and
+CDC/formal-review skills extend this foundation without making every circuit
+task run a full verification campaign.
+
 ## Choose an outcome, not a compulsory full flow
 
 The Manager saves a named or `custom` `workflow_profile` in pipeline state. New

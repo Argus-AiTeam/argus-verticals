@@ -84,6 +84,24 @@ PYPROJECT_REQUIREMENTS: set[str] = {
     for requirement in extra
 }
 
+@pytest.mark.parametrize("raw", ["hardware/digital_circuit", ("hardware",), ("Hardware", "digital_circuit"), ("hardware", 7)])
+def test_invalid_provider_routing_path_is_rejected(tmp_path, raw):
+    source = tmp_path / "stages.py"
+    source.write_text(
+        "VERTICAL_PURPOSE = 'test purpose'\nVERTICAL_SKILL_PARENTS = ()\n"
+        f"ARGUS_VERTICAL_API_VERSION = 1\nVERTICAL_ROUTING_PATH = {raw!r}\n"
+    )
+    with pytest.raises(build_catalog.CatalogError, match="VERTICAL_ROUTING_PATH"):
+        build_catalog.read_plugin_attributes(source)
+
+
+def test_catalog_derives_specialty_path_separately_from_skill_parents():
+    attributes = build_catalog.read_plugin_attributes(
+        PACKAGE_ROOT / "digital_circuit/verification/stages.py"
+    )
+    assert attributes["routing_path"] == ["hardware", "digital_circuit", "verification"]
+    assert attributes["skill_parents"] == ["digital_circuit"]
+
 
 def _module_dir(module: str) -> Path:
     return REPO_ROOT.joinpath(*module.split(".")[:-1])
@@ -320,6 +338,7 @@ def test_generator_reads_plugin_attributes_without_importing(tmp_path: Path) -> 
         "skill_parents": ["digital_circuit"],
         "has_skills": True,
         "api_version": 1,
+        "routing_path": [],
     }
 
     bad = tmp_path / "bad.py"

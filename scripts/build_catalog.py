@@ -47,7 +47,7 @@ GITHUB_REPO = "Argus-AiTeam/argus-verticals"
 CATALOG_SCHEMA_VERSION = 1
 
 # Fields the manifest may not carry because the generator derives them.
-DERIVED_FIELDS = ("purpose", "skill_parents", "has_skills", "api_version", "size_bytes", "archive")
+DERIVED_FIELDS = ("purpose", "skill_parents", "has_skills", "api_version", "size_bytes", "archive", "routing_path")
 
 # Files never shipped or counted.
 EXCLUDED_DIR_NAMES = frozenset({"__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache"})
@@ -232,12 +232,22 @@ def read_plugin_attributes(stages_path: Path) -> dict[str, Any]:
     if not isinstance(api_version, int) or isinstance(api_version, bool):
         raise CatalogError(f"{_rel(stages_path)}: ARGUS_VERTICAL_API_VERSION must be an int")
 
+    route_node = _module_constant(tree, "VERTICAL_ROUTING_PATH", stages_path)
+    routing_path = _literal(route_node, "VERTICAL_ROUTING_PATH", stages_path) if route_node is not None else ()
+    if not isinstance(routing_path, (tuple, list)) or (
+        routing_path and (
+            len(routing_path) not in (2, 3)
+            or any(not isinstance(part, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,47}", part) for part in routing_path)
+        )
+    ):
+        raise CatalogError(f"{_rel(stages_path)}: invalid VERTICAL_ROUTING_PATH")
     has_skills = _module_constant(tree, "VERTICAL_SKILLS", stages_path) is not None
     return {
         "purpose": " ".join(purpose.split()),
         "skill_parents": list(parents),
         "has_skills": has_skills,
         "api_version": api_version,
+        "routing_path": list(routing_path),
     }
 
 
@@ -376,6 +386,8 @@ def build_index() -> dict[str, Any]:
             if any(shared == p or shared.startswith(f"{p}/") for paths in all_paths.values() for p in paths):
                 problems.append(f"{name}: shared directory {shared!r} is (inside) a vertical; use requires")
         attributes = read_plugin_attributes(module_dir(manifest["module"]) / "stages.py")
+        if attributes["routing_path"] and "_".join(attributes["routing_path"][1:]) != name:
+            problems.append(f"{name}: routing_path domain/specialty must join to the vertical name")
         for parent in attributes["skill_parents"]:
             if parent in by_name and parent not in manifest["requires"]:
                 problems.append(f"{name}: skill parent {parent!r} is a catalog vertical; add it to requires")

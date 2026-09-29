@@ -1,0 +1,13 @@
+{
+  "name": "digital_circuit_verification",
+  "version": "0.1.0",
+  "module": "argus_verticals.digital_circuit.verification.stages",
+  "purpose_zh": "独立数字验证专项：需求覆盖矩阵、参数和种子回归、协议计分板、形式证明及非空洞性检查",
+  "paths": ["argus_verticals/digital_circuit/verification"],
+  "requires": ["digital_circuit"],
+  "shared": [],
+  "python_requirements": [],
+  "tags": ["hardware", "verification", "formal"],
+  "maintainers": [],
+  "min_argus": "vertical-routing-paths"
+}
