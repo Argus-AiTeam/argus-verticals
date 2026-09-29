@@ -77,11 +77,11 @@ def render_role_prompt_fragment(
     return (
         guidance
         + "\nEngineer and Reviewer must run this read-only check from the execution "
-        "project before handoff/approval. [] with exit code 0 accepts record "
+        "project before submitting or approving results. [] with exit code 0 accepts record "
         "consistency only; independent review of actual work remains required:\n\n"
         f"```bash\n{evidence_check_command('fpga_design', stage)}\n```\n"
-        "Repair reported issues and rerun affected checks; report real blockers, "
-        "never weaken acceptance or edit pipeline completion state.\n"
+        "Repair reported issues and rerun affected checks; explain what prevents completion, "
+        "never weaken acceptance or forge completion records.\n"
     )
 
 

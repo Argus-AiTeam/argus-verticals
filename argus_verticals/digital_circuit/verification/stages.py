@@ -57,7 +57,7 @@ def render_role_prompt_fragment(
         "Apply only the selected scope. The record examples below are schemas, not "
         "execution evidence or instructions to run omitted stages.\n\n"
         + verification_evidence_contract()
-        + "\nEngineer: produce these records from actual execution before handoff. "
+        + "\nEngineer: produce these records from actual execution before submitting results for review. "
         "Reviewer: independently inspect the oracle and run the checker before "
         "returning done. Manager/Planner: preserve these acceptance requirements. "
         "A passing simulation or a RESULTS.md report alone is not completion.\n"
@@ -66,8 +66,8 @@ def render_role_prompt_fragment(
         "record checks passed, not that oracle independence has been established:\n\n"
         f"```bash\n{evidence_check_command('digital_circuit_verification', stage)}\n```\n"
         "Repair reported issues and rerun affected checks before approval. If a "
-        "required tool or requirement is unavailable, report that blocker; never "
-        "fabricate records, weaken the validator, or edit pipeline completion state.\n"
+        "required tool or requirement is unavailable, explain what is missing; never "
+        "fabricate records, weaken the validator, or forge completion records.\n"
     )
 
 

@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "c61455ef09ee57aaa1da6dfbd5db6a1e6ad5207f",
+    "commit": "4e346efbeed591640a6f72b1d084b49956330dd1",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -178,7 +178,7 @@
         "verification"
       ],
       "shared": [],
-      "size_bytes": 39991,
+      "size_bytes": 40011,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -244,7 +244,7 @@
         "fpga_design"
       ],
       "shared": [],
-      "size_bytes": 31341,
+      "size_bytes": 31362,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"

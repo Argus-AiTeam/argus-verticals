@@ -13,7 +13,7 @@ concurrency:
 env:
   # Paired review support: lbx154/Argus#172. New hardware providers require
   # explicit routing paths; pin the companion implementation, not a moving branch.
-  ARGUS_REF: 3d0348aea196674fbc38e3a744e9cea026a1a95e
+  ARGUS_REF: 4fd8b99ae049fb69566111234441a7dd3962567e
 
 jobs:
   tests:
