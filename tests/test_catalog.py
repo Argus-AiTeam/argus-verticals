@@ -444,6 +444,7 @@ def _expected_members(name: str) -> list[str]:
     ("rf_design", "analysis", "rf"),
     ("pcb_design", "verification", "pcb"),
     ("package_design", "thermal", "package"),
+    ("power_electronics", "simulation", "power"),
 ])
 def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path, vertical: str, stage: str, directory: str) -> None:
     import os
@@ -453,7 +454,7 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
 
     import argus
 
-    if vertical == "analog_mixed_signal" and shutil.which("ngspice") is None:
+    if vertical in {"analog_mixed_signal", "power_electronics"} and shutil.which("ngspice") is None:
         pytest.skip("ngspice is required for the archive-only executable check")
     if vertical == "pcb_design" and shutil.which("kicad-cli") is None:
         pytest.skip("KiCad 9 is required for the archive-only executable check")
@@ -522,6 +523,9 @@ elif directory == "package":
     assert len(record["runs"]) == 4
     assert record["versions"]["gmsh"].startswith("4.")
     assert record["versions"]["calculix"].startswith("2.")
+elif directory == "power":
+    assert len(record["runs"]) == 4
+    assert int(record["ngspice_version"].split(".")[0]) >= 42
 else:
     assert len(record["runs" if directory == "analog" else "studies"]) == 6
 print("Store-only native execution and read-only check passed")

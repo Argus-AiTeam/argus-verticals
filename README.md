@@ -86,9 +86,10 @@ matching models, explicit port/reference handling and two-port cascades.
 DRC/parity and Gerber/Excellon generation with temporary native replay.
 `package_design` adds semiconductor-package knowledge and bounded native
 Gmsh/CalculiX steady thermal studies, including mesh-refined die/substrate spreading.
-The agreed broader taxonomy still reserves **power electronics** as a conceptual
-area, not a registered or advertised supported vertical: it needs its own tools,
-evidence interpretation and executable references before publication.
+`power_electronics` adds power-conversion knowledge and bounded native ngspice
+Buck/Boost startup, ripple and resistive-load studies, including stored-energy
+accounting and time-step comparisons. These complete the eight primary domain
+registrations, not industrial coverage of every subject within those domains.
 The existing `chip_design` architecture model remains accelerator-oriented in
 this batch; a general control-SoC model and independent physical/DFT execution
 are still separate work, not capabilities implied by the taxonomy.
@@ -114,6 +115,7 @@ are still separate work, not capabilities implied by the taxonomy.
 | `physics` | `argus_verticals.physics` | theory, simulation, data analysis, literature, or experiment design for a real physical system with bounded evidence | |
 | `pcb_design` | `argus_verticals.pcb_design` | PCB engineering and selected native KiCad checks, parity and manufacturing-file generation; no physical qualification | |
 | `package_design` | `argus_verticals.package_design` | semiconductor-package knowledge and scoped native Gmsh/CalculiX bonded-stack thermal studies; no physical qualification | |
+| `power_electronics` | `argus_verticals.power_electronics` | power-conversion knowledge and scoped native ngspice Buck/Boost transient studies; no physical energizing | |
 | `prose` | `argus_verticals.prose` | compose or revise literary essays, memoir, or 抒情/叙事散文/随笔; not verse or plot-driven fiction | |
 | `quant` | `argus_verticals.quant` | equity factor research (IC/ICIR, backtest, Sharpe) producing a reviewer-certified report, not a generic metric loop | |
 | `rf_design` | `argus_verticals.rf_design` | RF knowledge and scoped Touchstone, matching, reference-change and cascade studies using scikit-rf | |
@@ -128,6 +130,8 @@ each with a JSON schema.
 `argus_verticals/hardware/shared/` similarly shares file/copy/numeric record
 utilities between independent hardware domains, without inheriting their
 knowledge, stages or acceptance methods.
+`argus_verticals/hardware/spice/` shares the native waveform reader and scalar
+measurements between analog and power domains, without sharing their workflows.
 
 Each vertical directory has its own `README.md` with its modules, the extras
 it needs, and the tests that cover it.

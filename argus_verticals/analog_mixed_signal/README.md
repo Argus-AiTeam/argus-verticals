@@ -57,6 +57,10 @@ provider loader.
 The checker does not depend on optional skill retrieval. Shared file/copy/number
 checks are bundled from `argus_verticals.hardware.shared`; they do not import
 digital verification rules or select a parent workflow.
+The native reader and scalar measurements now live in
+`argus_verticals.hardware.spice.raw`, shared with the independent power domain.
+Existing `analog_mixed_signal.raw` imports remain compatible; analysis behavior
+and the analog workflow are unchanged.
 
 ## Executable references and limits
 
