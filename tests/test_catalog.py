@@ -439,6 +439,67 @@ def _expected_members(name: str) -> list[str]:
     return sorted(members)
 
 
+def test_analog_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path) -> None:
+    import os
+    import shutil
+
+    import argus
+
+    if shutil.which("ngspice") is None:
+        pytest.skip("ngspice is required for the archive-only executable check")
+    dist, payload = release
+    local_catalog = json.loads(json.dumps(payload))
+    for entry in local_catalog["verticals"].values():
+        entry["archive"]["url"] = (dist / entry["archive"]["file"]).as_uri()
+    catalog_path = tmp_path / "catalog.json"
+    catalog_path.write_text(json.dumps(local_catalog), encoding="utf-8")
+    env = {key: value for key, value in os.environ.items() if not key.startswith("ARGUS_SKILL_")}
+    env.update({
+        "ARGUS_SKILL_HOME": str(tmp_path / "home"),
+        "ARGUS_VERTICAL_CATALOG": str(catalog_path),
+        "PYTHONPATH": str(Path(argus.__file__).resolve().parents[1]),
+    })
+    script = """
+import json
+import re
+import shlex
+import subprocess
+from pathlib import Path
+from argus.verticals import store
+from argus.verticals._base import load_vertical_contract
+
+installed = store.install("analog_mixed_signal", wait=True)
+assert installed["status"] == "done", installed
+load_vertical_contract("analog_mixed_signal")
+from argus_verticals.analog_mixed_signal import stages
+from argus_verticals.analog_mixed_signal.run_reference import prepare_reference
+from argus_verticals.hardware.shared import evidence
+assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve())
+assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
+project = Path.cwd() / "circuit"
+prepare_reference(project)
+prompt = stages.render_role_prompt_fragment(
+    role="engineer", operation="mission", stage="simulation", scope="", project_root=project,
+)
+commands = re.findall(r"```bash\\n(.*?)\\n```", prompt, re.DOTALL)
+execute = [command for command in commands if "run_analysis(Path.cwd())" in command]
+check = [command for command in commands if "completion_issues" in command]
+assert len(execute) == len(check) == 1
+for command in (execute[0], check[0]):
+    result = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, (result.stdout, result.stderr)
+assert result.stdout.strip() == "[]", result.stdout
+assert len(json.loads((project / "analog/results/RESULTS.json").read_text())["runs"]) == 6
+print("Store-only native execution and read-only check passed")
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script], cwd=tmp_path, env=env,
+        capture_output=True, text=True, timeout=90,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Store-only native execution and read-only check passed" in result.stdout
+
+
 def test_release_builds_one_archive_per_vertical(release: tuple[Path, dict]) -> None:
     dist, payload = release
     expected = {f"{name}-{m['version']}.zip" for name, m in MANIFESTS.items()}

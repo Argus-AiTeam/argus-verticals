@@ -77,9 +77,11 @@ install this package into the Python environment Argus runs from to add these.
 ## Verticals
 
 Hardware routing separates category, primary domain and independent specialty.
-The current review batch adds `digital_circuit_verification` and `fpga_design`.
+The digital verification specialty and FPGA domain are joined by
+`analog_mixed_signal`, whose initial executable support is scoped ngspice
+operating-point, DC, AC and transient analysis, not a PDK or physical-design flow.
 The agreed broader taxonomy also reserves separate **conceptual areas** for
-analog/mixed-signal, RF, PCB, packaging and power electronics. They are not
+RF, PCB, packaging and power electronics. They are not
 registered or advertised as supported verticals yet: each needs its own tools,
 evidence interpretation and executable references before publication.
 The existing `chip_design` architecture model remains accelerator-oriented in
@@ -89,6 +91,7 @@ are still separate work, not capabilities implied by the taxonomy.
 | entry point | module | purpose (as shown in the Manager's menu) | skill parents |
 |---|---|---|---|
 | `ale_last_exam` | `argus_verticals.ale_last_exam` | Agents' Last Exam long-horizon professional workflow in a real sandbox with hidden-reference, artifact-first GUI+CLI delivery | |
+| `analog_mixed_signal` | `argus_verticals.analog_mixed_signal` | analog/mixed-signal knowledge and scoped native ngspice analysis with explicit model limits | |
 | `chip_design` | `argus_verticals.chip_design` | end-to-end digital ASIC/accelerator design from workload and microarchitecture through RTL, physical implementation, and sign-off | `digital_circuit` |
 | `classical_poetry` | `argus_verticals.classical_poetry` | compose or check classical Chinese 近体诗/古体/词 with reproducible 押韵/平仄 prosody and literary review | |
 | `digital_circuit` | `argus_verticals.digital_circuit` | Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off | |
@@ -113,6 +116,10 @@ the five literary verticals (fiction_writing, classical_poetry, modern_poetry,
 prose, literary_editor) share: the task envelope, the structured review
 contract, the artifact manifest, the source registry and its provenance log,
 each with a JSON schema.
+
+`argus_verticals/hardware/shared/` similarly shares file/copy/numeric record
+utilities between independent hardware domains, without inheriting their
+knowledge, stages or acceptance methods.
 
 Each vertical directory has its own `README.md` with its modules, the extras
 it needs, and the tests that cover it.

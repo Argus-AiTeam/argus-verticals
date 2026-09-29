@@ -1,0 +1,6 @@
+Behavioral feedback amplifier operating point
+.include models/amplifier.inc
+.temp 27
+.op
+.save v(in) v(out) v(fb)
+.end

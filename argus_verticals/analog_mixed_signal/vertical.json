@@ -1,0 +1,13 @@
+{
+  "name": "analog_mixed_signal",
+  "version": "0.1.0",
+  "module": "argus_verticals.analog_mixed_signal.stages",
+  "purpose_zh": "模拟与混合信号电路：偏置、反馈、滤波、模型和接口；可选 ngspice 直流、交流与瞬态分析",
+  "paths": ["argus_verticals/analog_mixed_signal"],
+  "requires": [],
+  "shared": ["argus_verticals/hardware/shared"],
+  "python_requirements": [],
+  "tags": ["hardware", "analog", "spice"],
+  "maintainers": [],
+  "min_argus": "vertical-routing-paths"
+}

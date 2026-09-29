@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "4e346efbeed591640a6f72b1d084b49956330dd1",
+    "commit": "4e469deb1c342d105f588e471223fe50f795075d",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -27,6 +27,36 @@
         "benchmark",
         "agents",
         "sandbox"
+      ],
+      "version": "0.1.0"
+    },
+    "analog_mixed_signal": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "vertical-routing-paths",
+      "module": "argus_verticals.analog_mixed_signal.stages",
+      "name": "analog_mixed_signal",
+      "paths": [
+        "argus_verticals/analog_mixed_signal"
+      ],
+      "purpose": "analog/mixed-signal circuits: bias, small-signal gain, feedback, op-amps, filters, noise, device models and data-converter interfaces; executable ngspice operating-point, DC sweep, AC and transient analysis, not RTL verification, RF/EM, PCB layout or foundry sign-off",
+      "purpose_zh": "模拟与混合信号电路：偏置、反馈、滤波、模型和接口；可选 ngspice 直流、交流与瞬态分析",
+      "python_requirements": [],
+      "requires": [],
+      "routing_path": [
+        "hardware",
+        "analog_mixed_signal"
+      ],
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 77888,
+      "skill_parents": [],
+      "tags": [
+        "hardware",
+        "analog",
+        "spice"
       ],
       "version": "0.1.0"
     },
@@ -177,8 +207,10 @@
         "digital_circuit",
         "verification"
       ],
-      "shared": [],
-      "size_bytes": 40011,
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 41010,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -187,7 +219,7 @@
         "verification",
         "formal"
       ],
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     "fiction_writing": {
       "api_version": 1,

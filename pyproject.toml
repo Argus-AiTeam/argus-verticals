@@ -80,6 +80,7 @@ Repository = "https://github.com/Argus-AiTeam/argus-verticals"
 # conformance test (tests/test_contract_conformance.py) enforces that.
 [project.entry-points."argus.verticals"]
 ale_last_exam = "argus_verticals.ale_last_exam.stages"
+analog_mixed_signal = "argus_verticals.analog_mixed_signal.stages"
 chip_design = "argus_verticals.chip_design.stages"
 classical_poetry = "argus_verticals.classical_poetry.stages"
 digital_circuit = "argus_verticals.digital_circuit.stages"
