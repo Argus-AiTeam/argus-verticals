@@ -439,14 +439,15 @@ def _expected_members(name: str) -> list[str]:
     return sorted(members)
 
 
-@pytest.mark.parametrize("vertical,stage,directory", [
-    ("analog_mixed_signal", "simulation", "analog"),
-    ("rf_design", "analysis", "rf"),
-    ("pcb_design", "verification", "pcb"),
-    ("package_design", "thermal", "package"),
-    ("power_electronics", "simulation", "power"),
+@pytest.mark.parametrize("vertical,stage,directory,reference", [
+    ("analog_mixed_signal", "simulation", "analog", "run_reference"),
+    ("rf_design", "analysis", "rf", "run_reference"),
+    ("pcb_design", "verification", "pcb", "run_reference"),
+    ("package_design", "thermal", "package", "run_reference"),
+    ("power_electronics", "simulation", "power", "run_reference"),
+    ("power_electronics", "simulation", "power", "run_robustness_reference"),
 ])
-def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path, vertical: str, stage: str, directory: str) -> None:
+def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path, vertical: str, stage: str, directory: str, reference: str) -> None:
     import os
     import shutil
     import sysconfig
@@ -493,12 +494,12 @@ from pathlib import Path
 from argus.verticals import store
 from argus.verticals._base import load_vertical_contract
 
-vertical, stage, directory = sys.argv[1:]
+vertical, stage, directory, reference = sys.argv[1:]
 installed = store.install(vertical, wait=True)
 assert installed["status"] == "done", installed
 load_vertical_contract(vertical)
 stages = importlib.import_module(f"argus_verticals.{vertical}.stages")
-prepare_reference = importlib.import_module(f"argus_verticals.{vertical}.run_reference").prepare_reference
+prepare_reference = importlib.import_module(f"argus_verticals.{vertical}.{reference}").prepare_reference
 from argus_verticals.hardware.shared import evidence
 assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve())
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
@@ -524,14 +525,18 @@ elif directory == "package":
     assert record["versions"]["gmsh"].startswith("4.")
     assert record["versions"]["calculix"].startswith("2.")
 elif directory == "power":
-    assert len(record["runs"]) == 4
+    assert len(record["runs"]) == (10 if reference == "run_robustness_reference" else 4)
     assert int(record["ngspice_version"].split(".")[0]) >= 42
+    if reference == "run_robustness_reference":
+        assessment = json.loads((project / directory / "results/ASSESSMENT.json").read_text())
+        assert assessment["task_accepted"] and assessment["status"] == "passed"
+        assert assessment["coverage"]["expected_scenarios"] == 5
 else:
     assert len(record["runs" if directory == "analog" else "studies"]) == 6
 print("Store-only native execution and read-only check passed")
 """
     result = subprocess.run(
-        [str(python), "-c", script, vertical, stage, directory], cwd=tmp_path, env=env,
+        [str(python), "-c", script, vertical, stage, directory, reference], cwd=tmp_path, env=env,
         capture_output=True, text=True, timeout=90,
     )
     assert result.returncode == 0, result.stdout + result.stderr

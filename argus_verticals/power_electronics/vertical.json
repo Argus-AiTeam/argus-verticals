@@ -1,8 +1,8 @@
 {
   "name": "power_electronics",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.power_electronics.stages",
-  "purpose_zh": "电力电子：变换器、功率器件、磁性元件与控制保护知识；ngspice Buck/Boost 启动、纹波、负载阶跃与功率平衡",
+  "purpose_zh": "电力电子：变换器、功率器件、磁性元件与控制保护知识；ngspice Buck/Boost 启动、纹波、负载阶跃、功率平衡与多工况裕量诊断",
   "paths": ["argus_verticals/power_electronics"],
   "requires": [],
   "shared": ["argus_verticals/hardware/shared", "argus_verticals/hardware/spice"],

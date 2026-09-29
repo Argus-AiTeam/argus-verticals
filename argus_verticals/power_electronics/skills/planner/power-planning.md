@@ -19,3 +19,11 @@ a smaller maximum step and compare the quantities that matter to the user's
 question, including relevant excursions and ripple, not only mean output.
 If a requested physical effect is outside the adapter, explain that boundary
 without turning unrelated knowledge into an executable claim.
+
+For an operating envelope, preserve the separately supplied goal and numeric
+specification. Separate fixed nominal design choices from operating/tolerance
+axes. Plan the full cross-product, nominal case and both step resolutions;
+do not omit an expensive corner. Keep required headroom and a comparison for
+every checked metric in the original specification. A fixed-design diagnosis
+has no design variables; a design task must use one allowed choice set for
+the entire envelope. Count scenario/point budgets before execution.

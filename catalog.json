@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "13cfb87276c2560aebe18051355b95bca8471bfb",
+    "commit": "967a5792b40cb65636b13ddad53fa3da1a081232",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -584,8 +584,8 @@
       "paths": [
         "argus_verticals/power_electronics"
       ],
-      "purpose": "Power electronics: DC-DC converters, power switches and rectifiers, magnetics, control and protection, losses, filters and layout constraints; native ngspice Buck/Boost startup, switching ripple and load-step studies; not general analog signal processing, PCB fabrication, RF networks or physical energizing",
-      "purpose_zh": "电力电子：变换器、功率器件、磁性元件与控制保护知识；ngspice Buck/Boost 启动、纹波、负载阶跃与功率平衡",
+      "purpose": "Power electronics: DC-DC converters, power switches and rectifiers, magnetics, control and protection, losses, filters and layout constraints; native ngspice Buck/Boost startup, ripple, load-step and finite operating/tolerance studies with margins; not general analog signal processing, PCB fabrication, RF networks or physical energizing",
+      "purpose_zh": "电力电子：变换器、功率器件、磁性元件与控制保护知识；ngspice Buck/Boost 启动、纹波、负载阶跃、功率平衡与多工况裕量诊断",
       "python_requirements": [
         "numpy>=1.26"
       ],
@@ -598,14 +598,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 84166,
+      "size_bytes": 131337,
       "skill_parents": [],
       "tags": [
         "hardware",
         "power",
         "spice"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "prose": {
       "api_version": 1,

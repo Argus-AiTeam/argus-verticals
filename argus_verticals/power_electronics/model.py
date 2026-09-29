@@ -70,7 +70,11 @@ def read_model(root: Path, relative: object) -> dict:
     path = text(relative, "model")
     if Path(path).as_posix() != path or path.startswith(RESULTS_DIR + "/"):
         raise EvidenceError("model: use a canonical input path outside results")
-    model = fields(record(root, path), {*MODEL_BOUNDS, "topology", "source", "validity", "limitations"}, "model")
+    return validate_model_values(record(root, path))
+
+
+def validate_model_values(value: object) -> dict:
+    model = fields(value, {*MODEL_BOUNDS, "topology", "source", "validity", "limitations"}, "model")
     if model.get("topology") not in ("buck", "boost"):
         raise EvidenceError("model topology must be buck or boost")
     text(model.get("source"), "model source")
@@ -79,6 +83,10 @@ def read_model(root: Path, relative: object) -> dict:
     for key, limits in MODEL_BOUNDS.items():
         bounded(model.get(key), key, *limits)
     return model
+
+
+def estimated_points(duration: float, maximum_step: float, frequency: float) -> float:
+    return duration / maximum_step + 40 * duration * frequency
 
 
 def declared_models(plan: dict) -> list[str]:
@@ -103,7 +111,7 @@ def _run(run: dict, model: dict) -> None:
     period = 1 / bounded(run.get("frequency_hz"), "frequency_hz", 1e3, 5e5)
     duration = bounded(run.get("duration_s"), "duration_s", 20 * period, min(1, 1000 * period))
     step = bounded(run.get("max_step_s"), "max_step_s", period / 1000, period / 50)
-    if duration / step + 40 * duration / period > 80000:
+    if estimated_points(duration, step, 1 / period) > 80000:
         raise EvidenceError("requested simulation exceeds the conservative 80000-point estimate")
     load = bounded(run.get("load_resistance_ohm"), "load_resistance_ohm", 0.1, 1e4)
     change = run.get("load_step")
@@ -146,6 +154,35 @@ def _run(run: dict, model: dict) -> None:
                 raise EvidenceError("steady interval must not intersect the load transition")
 
 
+def validate_checks(run: dict, requirements: dict) -> set[str]:
+    checks = run.get("checks")
+    if not isinstance(checks, list) or not 1 <= len(checks) <= 32:
+        raise EvidenceError("each run needs 1-32 original numerical checks")
+    check_ids, used_windows, covered = [], set(), set()
+    for check in checks:
+        fields(check, {"id", "requirement", "window", "metric", "unit", "minimum", "maximum"}, "check")
+        check_ids.append(identifier(check.get("id")))
+        requirement = identifier(check.get("requirement"))
+        if requirement not in requirements:
+            raise EvidenceError("check references an unknown requirement")
+        covered.add(requirement)
+        window = identifier(check.get("window"))
+        if window not in run["windows"]:
+            raise EvidenceError("check references an unknown observation window")
+        used_windows.add(window)
+        metric = check.get("metric")
+        if not isinstance(metric, str) or metric not in METRICS or check.get("unit") != METRICS[metric]:
+            raise EvidenceError("check metric or unit is unsupported")
+        low = number(check.get("minimum"), "minimum", minimum=-math.inf)
+        high = number(check.get("maximum"), "maximum", minimum=-math.inf)
+        if low > high:
+            raise EvidenceError("minimum exceeds maximum")
+    names(check_ids, "check ids")
+    if used_windows != set(run["windows"]):
+        raise EvidenceError("every observation window needs a numerical check")
+    return covered
+
+
 def validate_plan(root: Path) -> tuple[dict, dict, list[str]]:
     plan = validate_specification(root)
     declared = declared_models(plan)
@@ -163,31 +200,7 @@ def validate_plan(root: Path) -> tuple[dict, dict, list[str]]:
         if relative not in models:
             models[relative] = read_model(root, relative)
         _run(run, models[relative])
-        checks = run.get("checks")
-        if not isinstance(checks, list) or not 1 <= len(checks) <= 32:
-            raise EvidenceError("each run needs 1-32 original numerical checks")
-        check_ids, used_windows = [], set()
-        for check in checks:
-            fields(check, {"id", "requirement", "window", "metric", "unit", "minimum", "maximum"}, "check")
-            check_ids.append(identifier(check.get("id")))
-            requirement = identifier(check.get("requirement"))
-            if requirement not in plan["requirements"]:
-                raise EvidenceError("check references an unknown requirement")
-            covered.add(requirement)
-            window = identifier(check.get("window"))
-            if window not in run["windows"]:
-                raise EvidenceError("check references an unknown observation window")
-            used_windows.add(window)
-            metric = check.get("metric")
-            if not isinstance(metric, str) or metric not in METRICS or check.get("unit") != METRICS[metric]:
-                raise EvidenceError("check metric or unit is unsupported")
-            low = number(check.get("minimum"), "minimum", minimum=-math.inf)
-            high = number(check.get("maximum"), "maximum", minimum=-math.inf)
-            if low > high:
-                raise EvidenceError("minimum exceeds maximum")
-        names(check_ids, "check ids")
-        if used_windows != set(run["windows"]):
-            raise EvidenceError("every observation window needs a numerical check")
+        covered.update(validate_checks(run, plan["requirements"]))
     names(ids, "run ids")
     if covered != set(plan["requirements"]):
         raise EvidenceError("every numerical requirement needs a declared check")

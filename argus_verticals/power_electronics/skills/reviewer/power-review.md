@@ -20,3 +20,15 @@ Keep known simplifications visible: omitted device charge/recovery, magnetic
 effects, control, layout and thermal coupling cannot be certified by these
 waveforms. Request focused corrections while preserving settled numerical
 evidence; a completed report is not permission for physical operation.
+
+For operating-envelope work, inspect the separate original specification.
+Verify the Cartesian product plus nominal, a common design across corners,
+both resolutions for every scenario, and explicit comparisons for every
+checked quantity. Recompute the worst observed headroom and its actual
+scenario; a nominal pass does not excuse a failing combination.
+
+Read engineering status separately from task acceptance. A valid diagnostic
+conclusion may be "requirements not met"; a design task may not complete on
+that basis. Missing coverage, invalid physical measurements and failed
+refinement invalidate either conclusion. The goal and original limits must
+not have been changed after seeing failures.

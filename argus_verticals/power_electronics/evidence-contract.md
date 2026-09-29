@@ -51,7 +51,7 @@ C is 1e-7..0.01 F; series/on resistances are 1e-4..10 ohm; off resistance is
 
 ## Plan, observation windows and original limits
 
-`power/PLAN.json` has nonempty `objective`, a `requirements` ID-to-description
+The original single-condition mode of `power/PLAN.json` has nonempty `objective`, a `requirements` ID-to-description
 map, a nonempty distinct `limitations` string list, 1-8 declared `models`,
 1-8 `runs`, and 1-32 `convergence` comparisons. IDs are a lowercase letter
 followed by at most 31 lowercase letters, digits or underscores. Numeric
@@ -170,6 +170,143 @@ checks native completion, units, windows and original limits, and independently
 re-executes ngspice in temporary directories. Every saved waveform variable and
 sample must match replay; wall-clock headers and performance logs are not
 numeric evidence. The project remains unchanged.
+
+## Operating-envelope mode: fixed goal, full sampled coverage and margins
+
+Alternatively, keep the plan's `objective`, `requirements`, `limitations`
+and `models`, but replace `runs` and `convergence` with:
+
+```json
+{"robustness": {"specification": "design/operating.json", "design": {"duty": 0.5304}}}
+```
+
+Do not mix the two modes. The project-relative operating specification is a
+separate original input, supplied or agreed before execution, outside results.
+Do not rewrite it to make an unsuccessful task finish. Specification/model
+scopes validate this complete declared study without running ngspice.
+The following is an illustrative **design** specification, not universal limits:
+
+```json
+{
+  "goal": "design",
+  "source": "Original agreed finite operating study",
+  "limitations": ["No full-interval or physical guarantee"],
+  "model": "design/buck.json",
+  "conditions": {
+    "input_voltage_v": 12,
+    "duty_cycle": 0.5304,
+    "frequency_hz": 50000,
+    "load_resistance_ohm": 5,
+    "duration_s": 0.002,
+    "windows": {"settled": {"kind": "steady", "interval_s": [0.0016, 0.002]}}
+  },
+  "design_variables": {
+    "duty": {
+      "target": "run.duty_cycle", "unit": "1",
+      "source": "Allowed common fixed-duty decision",
+      "minimum": 0.52, "maximum": 0.54
+    }
+  },
+  "axes": [
+    {"id": "supply", "target": "run.input_voltage_v", "unit": "V",
+     "source": "Declared source samples", "values": [11.8, 12.2]},
+    {"id": "capacitance", "target": "model.capacitance_f", "unit": "1",
+     "source": "Declared capacitor tolerance", "factors": [0.8, 1.2]}
+  ],
+  "maximum_steps_s": [2e-7, 1e-7],
+  "checks": [{
+    "id": "voltage", "requirement": "regulation", "window": "settled",
+    "metric": "output_mean_v", "unit": "V",
+    "minimum": 5.8, "maximum": 6.2, "margin_lower": 0.02, "margin_upper": 0.02
+  }],
+  "convergence": [
+    {"window": "settled", "metric": "output_mean_v", "max_delta": 0.005}
+  ]
+}
+```
+
+The plan must describe `regulation` in its requirements. `conditions` uses the
+same physical fields and windows as a run, including optional `load_step`,
+but has no per-run ID, model, checks or step size. All physical/model/window
+bounds from the original mode still apply to every resolved sample.
+
+The original specification fixes **one goal**:
+
+| Goal | Design freedom | Task acceptance |
+|---|---|---|
+| `diagnose` | `design_variables: {}` and plan `design: {}`; use the supplied circuit/conditions unchanged | Complete valid evidence may conclude that limits or margins fail |
+| `design` | Select exactly the declared variables, identically for every sample | All original checks and required margins must pass everywhere |
+
+Neither goal accepts missing coverage, invalid energy/steady-window
+measurements, failed native execution/replay, non-growing sample counts or
+failed time-step comparisons. These mean the conclusion is not established,
+not that a bad design has been successfully diagnosed.
+
+Each design variable supplies a `target`, exact `unit`, nonempty `source` and
+either 1-8 distinct allowed `values` or inclusive `minimum`/`maximum`.
+No undeclared plan choices or duplicate targets are allowed. Targets are
+`model.<numeric model field>` with its physical unit, or
+`run.input_voltage_v` (V), `run.duty_cycle` (1), `run.frequency_hz` (Hz),
+`run.load_resistance_ohm` / `run.load_step.resistance_ohm` (ohm).
+A load-step target requires a declared actual step.
+
+Declare 1-8 axes with distinct `id` and `target`, a `source`, and exactly one
+of `values` (absolute physical values, correct physical unit) or `factors`
+(positive multipliers, unit `1`, applied to the selected nominal quantity).
+Each axis has 2-8 distinct finite values. Factors require a positive nominal
+value and cannot multiply Celsius temperature; use absolute `degC` values.
+An absolute axis cannot replace a selected design variable; a relative
+component tolerance may multiply an allowed selected nominal component.
+
+The runner evaluates the full Cartesian product, not one-at-a-time samples,
+plus the nominal point. A grid point identical to nominal is counted once.
+There are at most 17 scenarios including nominal; oversized requests fail
+without dropping combinations. Every scenario gets coarse and fine native
+runs, with fine maximum step at most half coarse and genuinely more samples.
+Every checked `(window, metric)` requires an explicit refinement comparison.
+The aggregate point estimate is at most 1,500,000.
+
+Every check keeps the original bounds and optionally `margin_lower` and
+`margin_upper` (nonnegative, default zero, same unit as the metric).
+Lower headroom is `value - minimum`; upper headroom is `maximum - value`.
+Requested margins must fit inside the original interval and be met at
+both resolutions of every scenario. No rounding tolerance turns a negative
+headroom into a pass. Worst **observed** headroom identifies its scenario and
+run; it is not a proof of a global worst case.
+
+`RESULTS.json` uses `operation: "ngspice-converter-corners"` and additionally
+records `goal`, common `design`, all resolved `scenarios` and
+`execution_complete`. Original plan/specification/model bytes and every
+native input/output are retained as independent copies.
+`power/results/ASSESSMENT.json` records engineering `status` (`passed`,
+`failed`, or `incomplete`), `goal`, `conclusion_valid`, `task_accepted`,
+expected/completed/measured coverage, per-run measurements, all check
+headrooms, time-step comparisons and structured failures.
+
+**A completed diagnosis can have `RESULTS.status: "complete"` and
+`ASSESSMENT.status: "failed"` with `task_accepted: true`. This means the
+diagnostic task finished and the circuit did not meet its requirements.**
+The report must say so explicitly. `validate_simulation` / the stage checker
+enforce task acceptance. `robustness.inspect_study(Path(...))` independently
+replays and returns a completed positive or negative assessment without
+requiring task acceptance. Saved assessments are not trusted without replay.
+
+Limit/margin failures are collected after all runs, rather than stopping at
+the first failed corner. Invalid measurements remain diagnostic entries but
+prevent task acceptance. Native execution/schema/integrity/resource failures
+stop with explicit errors and retained partial files; no fabricated numerical
+result replaces them. Existing results are never overwritten.
+Each execution or replay phase has a 600-second budget; original native
+outputs total at most 512 MiB, with independent retained copies additional.
+Each native call still has a 120-second/64-MiB maximum, further reduced by
+the remaining execution budget. Replay uses temporary per-run outputs and
+the same per-native limits.
+
+Coverage is strictly a finite sample statement, not continuous-range
+robustness, a yield/probability estimate or physical qualification. Component
+factors are explicit model perturbations, not manufacturer distributions.
+Temperature affects the native diode, but constant L/C and resistances gain
+no undocumented temperature coefficients. No electrothermal feedback is added.
 
 ## Explicit exclusions
 
