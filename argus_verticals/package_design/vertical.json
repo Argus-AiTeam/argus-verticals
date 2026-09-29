@@ -1,0 +1,13 @@
+{
+  "name": "package_design",
+  "version": "0.1.0",
+  "module": "argus_verticals.package_design.stages",
+  "purpose_zh": "半导体封装、键合倒装、基板中介层与芯粒集成知识；可选 Gmsh／CalculiX 理想粘结叠层稳态热传导",
+  "paths": ["argus_verticals/package_design"],
+  "requires": [],
+  "shared": ["argus_verticals/hardware/shared"],
+  "python_requirements": ["numpy>=1.26"],
+  "tags": ["hardware", "package", "thermal"],
+  "maintainers": [],
+  "min_argus": "vertical-routing-paths"
+}

@@ -99,6 +99,11 @@ The original local-library coupon exercises real ERC, DRC with parity and
 Gerber/Excellon generation. Deliberate defects must fail native checks; changing
 both saved output copies must still fail independent temporary replay. Keep
 unsupported zones/advanced drills explicit rather than trusting stale fill.
+Package thermal tests require native `gmsh` and `ccx` (`calculix-ccx` on Ubuntu)
+plus the `package` numpy extra. Preserve actual mesh/solver output, conserved
+surface loads and native heat balance. Check independent series-resistance
+equations and actual refinement for lateral spreading; two meshes are not a
+proof of absolute discretization error. Failed original bounds stay failed.
 `WORKFLOW_STAGE_REQUIREMENTS` describes companion obligations for custom scopes,
 not a reordered execution graph. Preserve preset/full orders, validate reused
 inputs, and test closure and evidence for each new combination. These changes are
