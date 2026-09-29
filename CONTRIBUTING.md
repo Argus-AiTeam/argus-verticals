@@ -104,6 +104,13 @@ plus the `package` numpy extra. Preserve actual mesh/solver output, conserved
 surface loads and native heat balance. Check independent series-resistance
 equations and actual refinement for lateral spreading; two meshes are not a
 proof of absolute discretization error. Failed original bounds stay failed.
+Power-converter tests use native ngspice >=42 and the `power` numpy extra.
+Preserve adaptive sample times, source-current signs and stored L/C energy;
+transient input/output mismatch is not automatically dissipation. Check actual
+startup/load changes, steady-cycle behavior, original CCM references and
+time-step comparisons. Native execution has explicit time/output-size bounds.
+`argus_verticals/hardware/spice/` is the shared native reader, not a provider;
+analog's previous `raw` imports remain compatible without workflow inheritance.
 `WORKFLOW_STAGE_REQUIREMENTS` describes companion obligations for custom scopes,
 not a reordered execution graph. Preserve preset/full orders, validate reused
 inputs, and test closure and evidence for each new combination. These changes are

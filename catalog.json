@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "0dbc3fd5f76c2a41dea7476d5fa61cf0bd75b362",
+    "commit": "13cfb87276c2560aebe18051355b95bca8471bfb",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -49,16 +49,17 @@
         "analog_mixed_signal"
       ],
       "shared": [
-        "argus_verticals/hardware/shared"
+        "argus_verticals/hardware/shared",
+        "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 77888,
+      "size_bytes": 78862,
       "skill_parents": [],
       "tags": [
         "hardware",
         "analog",
         "spice"
       ],
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     "chip_design": {
       "api_version": 1,
@@ -570,6 +571,39 @@
         "physics",
         "simulation",
         "research"
+      ],
+      "version": "0.1.0"
+    },
+    "power_electronics": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "vertical-routing-paths",
+      "module": "argus_verticals.power_electronics.stages",
+      "name": "power_electronics",
+      "paths": [
+        "argus_verticals/power_electronics"
+      ],
+      "purpose": "Power electronics: DC-DC converters, power switches and rectifiers, magnetics, control and protection, losses, filters and layout constraints; native ngspice Buck/Boost startup, switching ripple and load-step studies; not general analog signal processing, PCB fabrication, RF networks or physical energizing",
+      "purpose_zh": "电力电子：变换器、功率器件、磁性元件与控制保护知识；ngspice Buck/Boost 启动、纹波、负载阶跃与功率平衡",
+      "python_requirements": [
+        "numpy>=1.26"
+      ],
+      "requires": [],
+      "routing_path": [
+        "hardware",
+        "power_electronics"
+      ],
+      "shared": [
+        "argus_verticals/hardware/shared",
+        "argus_verticals/hardware/spice"
+      ],
+      "size_bytes": 84166,
+      "skill_parents": [],
+      "tags": [
+        "hardware",
+        "power",
+        "spice"
       ],
       "version": "0.1.0"
     },
