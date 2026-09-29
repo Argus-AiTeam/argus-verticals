@@ -15,6 +15,7 @@ from argus_verticals.digital_circuit.verification.evidence import (
     EvidenceError,
     validate_formal,
     validate_simulation,
+    verification_evidence_contract,
 )
 from argus_verticals.digital_circuit.verification.run_reference import run_reference
 
@@ -57,10 +58,14 @@ def test_missing_simulation_does_not_complete(tmp_path):
         complete_final_stage(tmp_path, reason="unexecuted")
 
 
-@pytest.mark.parametrize("mutation", ["missing_run", "duplicate_run", "bad_exit", "zero_checks", "false_pass", "changed_source", "changed_plan", "self_snapshot", "external_snapshot"])
+@pytest.mark.parametrize("mutation", ["missing_plan", "legacy_shape", "missing_run", "duplicate_run", "bad_exit", "zero_checks", "false_pass", "changed_source", "changed_plan", "self_snapshot", "external_snapshot"])
 def test_regression_rejects_incomplete_or_contradictory_evidence(work, tmp_path, mutation):
     result = json.loads((work / "verification/RESULTS.json").read_text())
-    if mutation == "missing_run":
+    if mutation == "missing_plan":
+        (work / "verification/PLAN.json").unlink()
+    elif mutation == "legacy_shape":
+        result = {"configurations": [{"result": "PASS", "cycles": 500}]}
+    elif mutation == "missing_run":
         result["runs"].pop()
     elif mutation == "duplicate_run":
         result["runs"].append(result["runs"][0])
@@ -87,6 +92,30 @@ def test_regression_rejects_incomplete_or_contradictory_evidence(work, tmp_path,
     (work / "verification/RESULTS.json").write_text(json.dumps(result))
     with pytest.raises(EvidenceError):
         validate_simulation(work)
+
+
+@pytest.mark.parametrize("role, operation", [
+    ("manager", "stage_decision"), ("planner", "plan_preview"),
+    ("engineer", "mission"), ("reviewer", "evaluate"),
+])
+@pytest.mark.parametrize("stage", ["plan", "simulation", "formal", "review"])
+def test_runtime_roles_receive_the_canonical_evidence_contract(tmp_path, role, operation, stage):
+    from argus.roles.prompts import ChecklistMode, RoleName, RolePromptRequest, resolve_role_prompt
+
+    state = tmp_path / "state"
+    persist_vertical(
+        state, "digital_circuit_verification",
+        workflow_profile="full" if stage == "review" else stage,
+    )
+    prompt = resolve_role_prompt(RolePromptRequest(
+        role=RoleName(role), operation=operation, project_root=state,
+        stage=stage, checklist_mode=ChecklistMode.STAGE,
+    ))
+    assert verification_evidence_contract() in prompt.role_banner
+    assert stages.evidence_check_command("digital_circuit_verification", stage) in prompt.role_banner
+    assert "Reviewer: independently inspect the oracle and run the checker" in prompt.role_banner
+    assert "not the internal session-state directory" in prompt.role_banner
+    assert prompt.stage_order == (stages.STAGE_ORDER if stage == "review" else (stage,))
 
 
 def test_private_rtl_mutation_is_detected_by_the_real_scoreboard(work):

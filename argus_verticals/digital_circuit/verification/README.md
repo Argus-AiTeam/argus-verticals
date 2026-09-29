@@ -18,7 +18,9 @@ an explicit upgrade message.
 | `full` | plan, simulation, formal, review | Both methods and a review of their limits |
 
 Custom combinations use the existing Argus scope mechanism. Simulation and
-formal goals require a valid existing plan, not its recreation. Review requires
+formal goals require a valid plan manifest. Reuse an applicable existing plan;
+when absent, prepare the manifest from the supplied requirements within the
+selected execution stage, without adding a standalone plan stage. Review requires
 both methods; choose a narrower scope rather than inventing N/A formal results.
 This specialty does not establish CDC structural safety, STA closure, DFT
 coverage, analog behavior, or certification.
@@ -49,28 +51,14 @@ implementation in `skills/engineer_scripts/`.
 
 ## Execution record
 
-`verification/PLAN.json` names nonempty `sources`, `testbenches`,
-`configurations`, `cases`, and `requirements` mapping requirements to cases.
-Cases use lowercase underscore identifiers. Configuration names must explicitly
-identify the parameters and seed; the reviewer checks the corresponding compile
-and simulation arguments rather than trusting a label.
-
-`verification/RESULTS.json` contains `inputs` (project-relative source-to-snapshot
-file mapping) and `runs`. Each run has the exact `configuration`, argument-vector
-`command`, integer zero `exit_code`, and `log`. An instrumented independent
-scoreboard emits one `CHECK <case> <positive-comparison-count>` for each planned
-case and `PASS regression` only after comparisons finish. Repeated/missing
-configurations, zero checks, contradictory failure output and changed inputs
-prevent completion. Testbench and plan changes invalidate prior results too.
-Counters measure executed comparisons, not code coverage or proof completeness.
-
-Formal plans additionally declare `formal.mode` (`bmc` or `prove`), positive
-`depth`, `assertions`, `covers`, and an `assumptions` list with `expression` and
-`reason` (explicit `[]` is allowed). `verification/FORMAL.json` records `inputs`
-and exact assertion/cover maps. Each entry includes `mode`, `depth`, `command`,
-`exit_code`, and a successful native SymbiYosys `log`; every cover also names a
-nonempty `witness`. Preserve the property harness and SBY configuration in the
-plan's inputs. A bounded success is never presented as an unbounded proof.
+The canonical [evidence contract](evidence-contract.md) defines the exact plan,
+simulation and formal record shapes with examples. The provider injects this
+same document into the Manager, Planner, Engineer and Reviewer stage prompts;
+acceptance requirements do not depend on optional skill retrieval. It also
+supplies a read-only check using Argus's own Python and vertical loader, which
+works with Store-only installations without manual namespace setup. Engineer
+and Reviewer must run it from the execution project before approval. A
+Reviewer `done` or passing simulation alone cannot replace provider acceptance.
 
 These checks establish consistency and reject incomplete execution records;
 they cannot establish that an arbitrary testbench is independent, that manually

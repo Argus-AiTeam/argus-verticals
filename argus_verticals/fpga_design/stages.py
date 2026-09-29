@@ -4,7 +4,12 @@ from pathlib import Path
 from argus.skills.stage_machine import ChecklistItem
 from argus.verticals._registry import VerticalPlugin
 
-from argus_verticals.digital_circuit.verification.evidence import EvidenceError, project_file
+from argus_verticals.digital_circuit.verification.evidence import (
+    EvidenceError,
+    evidence_check_command,
+    project_file,
+    verification_evidence_contract,
+)
 
 from .evidence import (
     validate_bringup,
@@ -50,6 +55,34 @@ CHECKLIST_ITEMS = {
     "bringup": (ChecklistItem("bringup.measurements", "The authorized physical device produces the declared observations using the current bitstream.", "bringup/RESULTS.json and measurement output"),),
     "delivery": (ChecklistItem("delivery.reproduction", "The board result is reproducible and its timing, electrical and environmental limits are stated.", "delivery/README.md"),),
 }
+
+
+def render_role_prompt_fragment(
+    *, role: str, operation: str, stage: str, scope: str, project_root: Path | None,
+) -> str:
+    if stage not in STAGE_ORDER:
+        return ""
+    guidance = (
+        f"## FPGA evidence contract: {stage}\n"
+        "Apply only the selected scope. Read the provider's canonical record/tool "
+        f"contract at {Path(__file__).with_name('README.md')} before execution or "
+        "approval. No build or permission string authorizes board programming.\n"
+    )
+    if stage == "verification":
+        guidance += (
+            "\n" + verification_evidence_contract()
+            + "\nAlso snapshot design/FPGA_TARGET.json and every target source in "
+            "RESULTS.json inputs. Target/source changes invalidate the result.\n"
+        )
+    return (
+        guidance
+        + "\nEngineer and Reviewer must run this read-only check from the execution "
+        "project before handoff/approval. [] with exit code 0 accepts record "
+        "consistency only; independent review of actual work remains required:\n\n"
+        f"```bash\n{evidence_check_command('fpga_design', stage)}\n```\n"
+        "Repair reported issues and rerun affected checks; report real blockers, "
+        "never weaken acceptance or edit pipeline completion state.\n"
+    )
 
 
 def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:

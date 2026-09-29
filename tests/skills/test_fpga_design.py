@@ -57,6 +57,26 @@ def snapshot(root, relative, directory="verification/inputs"):
     return copy
 
 
+@pytest.mark.parametrize("role, operation", [
+    ("manager", "stage_decision"), ("planner", "plan_preview"),
+    ("engineer", "mission"), ("reviewer", "evaluate"),
+])
+def test_fpga_verification_reuses_the_same_runtime_record_contract(tmp_path, role, operation):
+    from argus.roles.prompts import ChecklistMode, RoleName, RolePromptRequest, resolve_role_prompt
+
+    from argus_verticals.digital_circuit.verification.evidence import verification_evidence_contract
+
+    persist_vertical(tmp_path, "fpga_design", workflow_profile="verification")
+    prompt = resolve_role_prompt(RolePromptRequest(
+        role=RoleName(role), operation=operation, project_root=tmp_path,
+        stage="verification", checklist_mode=ChecklistMode.STAGE,
+    ))
+    assert verification_evidence_contract() in prompt.role_banner
+    assert "Also snapshot design/FPGA_TARGET.json" in prompt.role_banner
+    assert stages.evidence_check_command("fpga_design", "verification") in prompt.role_banner
+    assert prompt.stage_order == ("verification",)
+
+
 @pytest.fixture(scope="module")
 def verified(tmp_path_factory):
     if not all(shutil.which(tool) for tool in ("iverilog", "vvp")):

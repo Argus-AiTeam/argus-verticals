@@ -4,7 +4,23 @@ from __future__ import annotations
 import json
 import math
 import re
+import shlex
+import sys
 from pathlib import Path
+
+
+def verification_evidence_contract() -> str:
+    return Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
+
+
+def evidence_check_command(vertical: str, stage: str) -> str:
+    script = (
+        "from pathlib import Path; "
+        "from argus.verticals._base import load_vertical_contract; "
+        f"issues = load_vertical_contract({vertical!r}).completion_issues({stage!r}, Path.cwd()); "
+        "print(list(issues)); raise SystemExit(bool(issues))"
+    )
+    return f"{shlex.quote(sys.executable)} -c {shlex.quote(script)}"
 
 
 class EvidenceError(ValueError):

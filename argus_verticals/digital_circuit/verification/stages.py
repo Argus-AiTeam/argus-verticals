@@ -6,10 +6,12 @@ from argus.verticals._registry import VerticalPlugin
 
 from .evidence import (
     EvidenceError,
+    evidence_check_command,
     project_file,
     validate_formal,
     validate_plan,
     validate_simulation,
+    verification_evidence_contract,
 )
 
 if "routing_path" not in VerticalPlugin.__dataclass_fields__:
@@ -43,6 +45,30 @@ CHECKLIST_ITEMS = {
     "formal": (ChecklistItem("formal.properties", "Properties pass and meaningful covers are reached under explained assumptions.", "verification/FORMAL.json and cover traces"),),
     "review": (ChecklistItem("review.limits", "Results distinguish tested cases, bounded checks and proofs; exclusions remain explicit.", "verification/REVIEW.md"),),
 }
+
+
+def render_role_prompt_fragment(
+    *, role: str, operation: str, stage: str, scope: str, project_root: Path | None,
+) -> str:
+    if stage not in STAGE_ORDER:
+        return ""
+    return (
+        f"## Verification evidence contract: {stage}\n"
+        "Apply only the selected scope. The record examples below are schemas, not "
+        "execution evidence or instructions to run omitted stages.\n\n"
+        + verification_evidence_contract()
+        + "\nEngineer: produce these records from actual execution before handoff. "
+        "Reviewer: independently inspect the oracle and run the checker before "
+        "returning done. Manager/Planner: preserve these acceptance requirements. "
+        "A passing simulation or a RESULTS.md report alone is not completion.\n"
+        "Run this read-only check from the execution project directory, not the "
+        "internal session-state directory; [] with exit code 0 means the stage's "
+        "record checks passed, not that oracle independence has been established:\n\n"
+        f"```bash\n{evidence_check_command('digital_circuit_verification', stage)}\n```\n"
+        "Repair reported issues and rerun affected checks before approval. If a "
+        "required tool or requirement is unavailable, report that blocker; never "
+        "fabricate records, weaken the validator, or edit pipeline completion state.\n"
+    )
 
 
 def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:

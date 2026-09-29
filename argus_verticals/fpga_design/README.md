@@ -45,7 +45,10 @@ part/package, oscillator, pin connections, I/O-bank voltage and load before
 programming. Supported part flags are `hx1k`, `hx8k`, `lp8k`, `up5k`.
 `sources` are plain project-relative `.v`/`.sv` paths without whitespace.
 
-Use the verification specialty's `PLAN.json` / `RESULTS.json` contract. The
+Use the verification specialty's [evidence contract](../digital_circuit/verification/evidence-contract.md)
+for `PLAN.json` / `RESULTS.json`. Its canonical text is included in every role's
+verification-stage prompt, along with a read-only check of this FPGA provider.
+The
 result's input snapshots must additionally include the target and every target
 source. Changing a clock target or source invalidates that result. The included
 FIFO regression demonstrates the RTL/verification path; adapt the top-level
