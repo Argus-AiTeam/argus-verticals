@@ -32,6 +32,11 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
+# RF network analysis, separate from full-wave electromagnetic solvers.
+rf = [
+  "numpy>=1.26",
+  "scikit-rf>=2.1,<3",
+]
 # Quantitative analysis and model tooling.
 quant = [
   "numpy>=1.26",
@@ -68,6 +73,7 @@ dev = [
   "scikit-learn>=1.4",
   "matplotlib>=3.8",
   "mplfinance>=0.12.10b0",
+  "scikit-rf>=2.1,<3",
 ]
 
 [project.urls]
@@ -98,6 +104,7 @@ nanogpt_speedrun = "argus_verticals.nanogpt_speedrun.stages"
 physics = "argus_verticals.physics.stages"
 prose = "argus_verticals.prose.stages"
 quant = "argus_verticals.quant.stages"
+rf_design = "argus_verticals.rf_design.stages"
 speedrun = "argus_verticals.speedrun.stages"
 
 [tool.hatch.build.targets.wheel]

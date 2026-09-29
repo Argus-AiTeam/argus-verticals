@@ -80,8 +80,10 @@ Hardware routing separates category, primary domain and independent specialty.
 The digital verification specialty and FPGA domain are joined by
 `analog_mixed_signal`, whose initial executable support is scoped ngspice
 operating-point, DC, AC and transient analysis, not a PDK or physical-design flow.
+`rf_design` adds independent scikit-rf network studies: Touchstone data,
+matching models, explicit port/reference handling and two-port cascades.
 The agreed broader taxonomy also reserves separate **conceptual areas** for
-RF, PCB, packaging and power electronics. They are not
+PCB, packaging and power electronics. They are not
 registered or advertised as supported verticals yet: each needs its own tools,
 evidence interpretation and executable references before publication.
 The existing `chip_design` architecture model remains accelerator-oriented in
@@ -109,6 +111,7 @@ are still separate work, not capabilities implied by the taxonomy.
 | `physics` | `argus_verticals.physics` | theory, simulation, data analysis, literature, or experiment design for a real physical system with bounded evidence | |
 | `prose` | `argus_verticals.prose` | compose or revise literary essays, memoir, or 抒情/叙事散文/随笔; not verse or plot-driven fiction | |
 | `quant` | `argus_verticals.quant` | equity factor research (IC/ICIR, backtest, Sharpe) producing a reviewer-certified report, not a generic metric loop | |
+| `rf_design` | `argus_verticals.rf_design` | RF knowledge and scoped Touchstone, matching, reference-change and cascade studies using scikit-rf | |
 | `speedrun` | `argus_verticals.speedrun` | single-metric script/benchmark optimization under a wall-clock budget: setup, optimize, measure, report; no paper | |
 
 `argus_verticals/literary/shared/` is not a vertical. It is the helper package

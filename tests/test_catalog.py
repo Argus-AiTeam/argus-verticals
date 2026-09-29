@@ -47,7 +47,7 @@ ENTRY_POINT_GROUP = "argus.verticals"
 RELEASE_TAG = "v9.9.9-test"
 
 # Import name -> distribution name where they differ.
-IMPORT_TO_DISTRIBUTION = {"sklearn": "scikit-learn", "yaml": "PyYAML"}
+IMPORT_TO_DISTRIBUTION = {"sklearn": "scikit-learn", "skrf": "scikit-rf", "yaml": "PyYAML"}
 STDLIB = set(sys.stdlib_module_names)
 # Imports that are not pip requirements of a vertical: the Argus framework
 # (``argus``; its pre-rename spelling ``argus_skill`` is deliberately absent so
@@ -439,7 +439,11 @@ def _expected_members(name: str) -> list[str]:
     return sorted(members)
 
 
-def test_analog_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path) -> None:
+@pytest.mark.parametrize("vertical,stage,directory", [
+    ("analog_mixed_signal", "simulation", "analog"),
+    ("rf_design", "analysis", "rf"),
+])
+def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path, vertical: str, stage: str, directory: str) -> None:
     import os
     import shutil
     import sysconfig
@@ -447,7 +451,7 @@ def test_analog_archive_executes_and_checks_in_fresh_store_only_processes(releas
 
     import argus
 
-    if shutil.which("ngspice") is None:
+    if vertical == "analog_mixed_signal" and shutil.which("ngspice") is None:
         pytest.skip("ngspice is required for the archive-only executable check")
     dist, payload = release
     local_catalog = json.loads(json.dumps(payload))
@@ -473,25 +477,28 @@ def test_analog_archive_executes_and_checks_in_fresh_store_only_processes(releas
     })
     script = """
 import json
+import importlib
 import re
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 from argus.verticals import store
 from argus.verticals._base import load_vertical_contract
 
-installed = store.install("analog_mixed_signal", wait=True)
+vertical, stage, directory = sys.argv[1:]
+installed = store.install(vertical, wait=True)
 assert installed["status"] == "done", installed
-load_vertical_contract("analog_mixed_signal")
-from argus_verticals.analog_mixed_signal import stages
-from argus_verticals.analog_mixed_signal.run_reference import prepare_reference
+load_vertical_contract(vertical)
+stages = importlib.import_module(f"argus_verticals.{vertical}.stages")
+prepare_reference = importlib.import_module(f"argus_verticals.{vertical}.run_reference").prepare_reference
 from argus_verticals.hardware.shared import evidence
 assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve())
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
 project = Path.cwd() / "circuit"
 prepare_reference(project)
 prompt = stages.render_role_prompt_fragment(
-    role="engineer", operation="mission", stage="simulation", scope="", project_root=project,
+    role="engineer", operation="mission", stage=stage, scope="", project_root=project,
 )
 commands = re.findall(r"```bash\\n(.*?)\\n```", prompt, re.DOTALL)
 execute = [command for command in commands if "run_analysis(Path.cwd())" in command]
@@ -501,11 +508,12 @@ for command in (execute[0], check[0]):
     result = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout
-assert len(json.loads((project / "analog/results/RESULTS.json").read_text())["runs"]) == 6
+record = json.loads((project / directory / "results/RESULTS.json").read_text())
+assert len(record["runs" if directory == "analog" else "studies"]) == 6
 print("Store-only native execution and read-only check passed")
 """
     result = subprocess.run(
-        [str(python), "-c", script], cwd=tmp_path, env=env,
+        [str(python), "-c", script, vertical, stage, directory], cwd=tmp_path, env=env,
         capture_output=True, text=True, timeout=90,
     )
     assert result.returncode == 0, result.stdout + result.stderr
