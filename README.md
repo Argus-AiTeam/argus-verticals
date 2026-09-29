@@ -84,9 +84,10 @@ operating-point, DC, AC and transient analysis, not a PDK or physical-design flo
 matching models, explicit port/reference handling and two-port cascades.
 `pcb_design` adds independent PCB knowledge and selected native KiCad 9 ERC,
 DRC/parity and Gerber/Excellon generation with temporary native replay.
-The agreed broader taxonomy also reserves separate **conceptual areas** for
-packaging and power electronics. They are not
-registered or advertised as supported verticals yet: each needs its own tools,
+`package_design` adds semiconductor-package knowledge and bounded native
+Gmsh/CalculiX steady thermal studies, including mesh-refined die/substrate spreading.
+The agreed broader taxonomy still reserves **power electronics** as a conceptual
+area, not a registered or advertised supported vertical: it needs its own tools,
 evidence interpretation and executable references before publication.
 The existing `chip_design` architecture model remains accelerator-oriented in
 this batch; a general control-SoC model and independent physical/DFT execution
@@ -112,6 +113,7 @@ are still separate work, not capabilities implied by the taxonomy.
 | `nanogpt_speedrun` | `argus_verticals.nanogpt_speedrun` | minimize wall-clock time to reach val_loss<=3.28 on modded-nanogpt (8xH100) | `speedrun` |
 | `physics` | `argus_verticals.physics` | theory, simulation, data analysis, literature, or experiment design for a real physical system with bounded evidence | |
 | `pcb_design` | `argus_verticals.pcb_design` | PCB engineering and selected native KiCad checks, parity and manufacturing-file generation; no physical qualification | |
+| `package_design` | `argus_verticals.package_design` | semiconductor-package knowledge and scoped native Gmsh/CalculiX bonded-stack thermal studies; no physical qualification | |
 | `prose` | `argus_verticals.prose` | compose or revise literary essays, memoir, or 抒情/叙事散文/随笔; not verse or plot-driven fiction | |
 | `quant` | `argus_verticals.quant` | equity factor research (IC/ICIR, backtest, Sharpe) producing a reviewer-certified report, not a generic metric loop | |
 | `rf_design` | `argus_verticals.rf_design` | RF knowledge and scoped Touchstone, matching, reference-change and cascade studies using scikit-rf | |

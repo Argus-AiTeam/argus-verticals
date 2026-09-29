@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "ffc8a25a7aab32ac7b5dd46d81cf9509fc9a941d",
+    "commit": "0dbc3fd5f76c2a41dea7476d5fa61cf0bd75b362",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -480,6 +480,38 @@
         "training",
         "speedrun",
         "gpu"
+      ],
+      "version": "0.1.0"
+    },
+    "package_design": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "vertical-routing-paths",
+      "module": "argus_verticals.package_design.stages",
+      "name": "package_design",
+      "paths": [
+        "argus_verticals/package_design"
+      ],
+      "purpose": "Semiconductor package engineering: die attach, wire bond, flip chip and bumps, package substrates, interposers, chiplets, thermal paths, mechanical and assembly constraints; executable Gmsh/CalculiX steady heat conduction through ideal bonded package stacks; not PCB fabrication, RTL, RF network calculation, general structural FEA or physical qualification",
+      "purpose_zh": "半导体封装、键合倒装、基板中介层与芯粒集成知识；可选 Gmsh／CalculiX 理想粘结叠层稳态热传导",
+      "python_requirements": [
+        "numpy>=1.26"
+      ],
+      "requires": [],
+      "routing_path": [
+        "hardware",
+        "package_design"
+      ],
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 73533,
+      "skill_parents": [],
+      "tags": [
+        "hardware",
+        "package",
+        "thermal"
       ],
       "version": "0.1.0"
     },

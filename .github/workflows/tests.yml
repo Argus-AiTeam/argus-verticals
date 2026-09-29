@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install executable hardware reference tools
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends iverilog yosys nextpnr-ice40 fpga-icestorm ngspice
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends iverilog yosys nextpnr-ice40 fpga-icestorm ngspice gmsh calculix-ccx
       - name: Install the pinned official KiCad 9 package
         run: |
           curl --fail --location --retry 3 --output /tmp/kicad.deb https://ppa.launchpadcontent.net/kicad/kicad-9.0-releases/ubuntu/pool/main/k/kicad/kicad_9.0.9~ubuntu24.04.1_amd64.deb

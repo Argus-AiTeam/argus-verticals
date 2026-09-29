@@ -32,6 +32,9 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
+package = [
+  "numpy>=1.26",
+]
 pcb = [
   "sexpdata>=1.0.2,<2",
 ]
@@ -107,6 +110,7 @@ nanochat = "argus_verticals.nanochat.stages"
 nanogpt_speedrun = "argus_verticals.nanogpt_speedrun.stages"
 physics = "argus_verticals.physics.stages"
 pcb_design = "argus_verticals.pcb_design.stages"
+package_design = "argus_verticals.package_design.stages"
 prose = "argus_verticals.prose.stages"
 quant = "argus_verticals.quant.stages"
 rf_design = "argus_verticals.rf_design.stages"
