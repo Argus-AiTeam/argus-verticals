@@ -442,6 +442,8 @@ def _expected_members(name: str) -> list[str]:
 def test_analog_archive_executes_and_checks_in_fresh_store_only_processes(release: tuple[Path, dict], tmp_path: Path) -> None:
     import os
     import shutil
+    import sysconfig
+    import venv
 
     import argus
 
@@ -453,6 +455,16 @@ def test_analog_archive_executes_and_checks_in_fresh_store_only_processes(releas
         entry["archive"]["url"] = (dist / entry["archive"]["file"]).as_uri()
     catalog_path = tmp_path / "catalog.json"
     catalog_path.write_text(json.dumps(local_catalog), encoding="utf-8")
+    isolated = tmp_path / "interpreter"
+    venv.EnvBuilder(with_pip=False).create(isolated)
+    python = isolated / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    site_packages = Path(subprocess.check_output(
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        text=True,
+    ).strip())
+    # Share dependency wheels without executing the parent's editable-project .pth files.
+    dependency_paths = sorted({sysconfig.get_path("purelib"), sysconfig.get_path("platlib")})
+    (site_packages / "dependency-wheels.pth").write_text("\n".join(dependency_paths) + "\n", encoding="utf-8")
     env = {key: value for key, value in os.environ.items() if not key.startswith("ARGUS_SKILL_")}
     env.update({
         "ARGUS_SKILL_HOME": str(tmp_path / "home"),
@@ -493,7 +505,7 @@ assert len(json.loads((project / "analog/results/RESULTS.json").read_text())["ru
 print("Store-only native execution and read-only check passed")
 """
     result = subprocess.run(
-        [sys.executable, "-c", script], cwd=tmp_path, env=env,
+        [str(python), "-c", script], cwd=tmp_path, env=env,
         capture_output=True, text=True, timeout=90,
     )
     assert result.returncode == 0, result.stdout + result.stderr
