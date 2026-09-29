@@ -94,6 +94,11 @@ attenuator, resistor, line and matching equations. Preserve port/reference
 conventions and distinguish full-matrix passivity from individual port-power
 checks. Archive-only tests use a fresh interpreter so editable source installs
 cannot silently stand in for Store packages.
+PCB tests require KiCad 9 `kicad-cli` and the declared `pcb` extra (`sexpdata`).
+The original local-library coupon exercises real ERC, DRC with parity and
+Gerber/Excellon generation. Deliberate defects must fail native checks; changing
+both saved output copies must still fail independent temporary replay. Keep
+unsupported zones/advanced drills explicit rather than trusting stale fill.
 `WORKFLOW_STAGE_REQUIREMENTS` describes companion obligations for custom scopes,
 not a reordered execution graph. Preserve preset/full orders, validate reused
 inputs, and test closure and evidence for each new combination. These changes are

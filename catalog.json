@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "d06f2f2940683ff77ba786fe2d37e81c7d8a3c97",
+    "commit": "ffc8a25a7aab32ac7b5dd46d81cf9509fc9a941d",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -480,6 +480,38 @@
         "training",
         "speedrun",
         "gpu"
+      ],
+      "version": "0.1.0"
+    },
+    "pcb_design": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "vertical-routing-paths",
+      "module": "argus_verticals.pcb_design.stages",
+      "name": "pcb_design",
+      "paths": [
+        "argus_verticals/pcb_design"
+      ],
+      "purpose": "PCB and printed circuit board engineering: schematics, components and footprints, stackup, placement, routing, return paths and fabrication preparation; executable KiCad ERC/DRC, schematic-board parity, Gerber and Excellon drill outputs; not RTL, IC layout, RF network calculation, package design, field-solved SI/PI or physical qualification",
+      "purpose_zh": "PCB 原理图、器件封装、叠层布局布线与制造准备；可选 KiCad 原生 ERC/DRC、图板一致性和 Gerber/钻孔输出",
+      "python_requirements": [
+        "sexpdata>=1.0.2,<2"
+      ],
+      "requires": [],
+      "routing_path": [
+        "hardware",
+        "pcb_design"
+      ],
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 79606,
+      "skill_parents": [],
+      "tags": [
+        "hardware",
+        "pcb",
+        "kicad"
       ],
       "version": "0.1.0"
     },

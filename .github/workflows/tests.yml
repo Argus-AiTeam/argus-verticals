@@ -16,7 +16,7 @@ env:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +25,12 @@ jobs:
           python-version: "3.12"
       - name: Install executable hardware reference tools
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends iverilog yosys nextpnr-ice40 fpga-icestorm ngspice
+      - name: Install the pinned official KiCad 9 package
+        run: |
+          curl --fail --location --retry 3 --output /tmp/kicad.deb https://ppa.launchpadcontent.net/kicad/kicad-9.0-releases/ubuntu/pool/main/k/kicad/kicad_9.0.9~ubuntu24.04.1_amd64.deb
+          echo "b7e6d33867631dc44385067b703b4c39eadede2037a260790b19495fe17e43f0  /tmp/kicad.deb" | sha256sum --check
+          sudo apt-get install -y --no-install-recommends /tmp/kicad.deb
+          test "$(kicad-cli version)" = "9.0.9"
       - name: Install Argus (framework) and this package with its dev extras
         run: |
           python -m pip install --upgrade pip
