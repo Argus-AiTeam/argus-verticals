@@ -11,9 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Paired review support: lbx154/Argus#172. New hardware providers require
-  # explicit routing paths; pin the companion implementation, not a moving branch.
-  ARGUS_REF: 4fd8b99ae049fb69566111234441a7dd3962567e
+  # Hardware routing plus the concrete Manager-target fix found by the analog trial.
+  ARGUS_REF: daa71b3ef4c51147497312145c4da52473bf36c9
 
 jobs:
   tests:
@@ -24,8 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install executable digital and FPGA reference tools
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends iverilog yosys nextpnr-ice40 fpga-icestorm
+      - name: Install executable hardware reference tools
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends iverilog yosys nextpnr-ice40 fpga-icestorm ngspice
       - name: Install Argus (framework) and this package with its dev extras
         run: |
           python -m pip install --upgrade pip

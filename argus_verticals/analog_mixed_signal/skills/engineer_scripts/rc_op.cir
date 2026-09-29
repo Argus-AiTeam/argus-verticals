@@ -1,0 +1,6 @@
+Ideal RC operating point
+.include models/rc.inc
+.temp 27
+.op
+.save v(in) v(out)
+.end

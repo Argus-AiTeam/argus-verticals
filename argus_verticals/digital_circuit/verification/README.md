@@ -4,6 +4,9 @@
 `hardware / digital_circuit`. It reuses `digital_circuit` knowledge but never
 inherits its RTL-creation or synthesis stages. Its code dependency is that parent
 vertical; FPGA projects reuse this specialty's execution record checks.
+Common file/copy/numeric checks live in `argus_verticals.hardware.shared` and
+are bundled by its manifest. Existing imports from this specialty's `evidence`
+module remain valid; shared code does not imply any workflow inheritance.
 `vertical.json` declares its store version and dependency. It requires an Argus
 build exposing `VerticalPlugin.routing_path`; older frameworks reject it with
 an explicit upgrade message.
