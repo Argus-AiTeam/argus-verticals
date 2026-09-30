@@ -99,6 +99,12 @@ resonant gain and transient overshoot match independent equations, while a
 window containing multiple rising crossings is rejected as an invalid
 single-crossing measurement rather than accepted as a negative diagnosis.
 
+Version 0.2.2 also names the installed provider and actual Argus task runtime
+root in role context. The native CLI's scratch directory is not a replacement
+for that runtime state; overriding it creates a separate validation history.
+Decimal products retain all operand digits, including integer factors, before
+binary conversion so strict model bounds do not depend on intermediate rounding.
+
 New studies retain the exact generated circuit for each sample and resolution.
 Independent validation recreates it from original inputs and replays every
 waveform. Subsequent checks compare byte copies in external Argus runtime state;

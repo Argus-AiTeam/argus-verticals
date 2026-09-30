@@ -252,9 +252,12 @@ def resolve_study(root: Path) -> Study:
             if factor and value == 0:
                 raise EvidenceError("relative factors must be positive")
             if factor:
-                # Two shortest binary64 decimal representations need at most 34 product digits.
-                with localcontext(prec=34):
-                    value = float(Decimal(str(nominal[parameter])) * Decimal(str(value)))
+                base_decimal = Decimal(str(nominal[parameter]))
+                factor_decimal = Decimal(str(value))
+                # Integer operands can exceed the digits in a binary64 round-trip representation.
+                precision = len(base_decimal.as_tuple().digits) + len(factor_decimal.as_tuple().digits)
+                with localcontext(prec=precision):
+                    value = float(base_decimal * factor_decimal)
             resolved.append(valid_value(parameter, value))
         if len(set(resolved)) != len(resolved):
             raise EvidenceError("resolved axis values must remain distinct")

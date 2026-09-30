@@ -1,6 +1,6 @@
 {
   "name": "analog_mixed_signal",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "module": "argus_verticals.analog_mixed_signal.stages",
   "purpose_zh": "模拟与混合信号电路：偏置、反馈、滤波、模型和接口；ngspice 直流、交流、瞬态、多工况裕量诊断与数值收敛",
   "paths": ["argus_verticals/analog_mixed_signal"],

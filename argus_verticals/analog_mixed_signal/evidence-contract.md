@@ -287,3 +287,10 @@ independent byte copies, not timestamps or a project-local passed flag.
 Report-only edits still require independent review, but no new native replay.
 Without trusted external state, the checker always replays. Do not write runtime
 validation records as project work.
+
+Use the supplied read-only command without overriding `ARGUS_SKILL_SESSION_ROOT`.
+Its inherited value belongs to the Argus task, not the native CLI's own session
+or scratch directory. Creating a second cache there cannot satisfy the host's
+accepted-check history and forces another native replay. If implementation
+inspection is needed, use the installed provider source location above rather
+than searching other projects or session histories.

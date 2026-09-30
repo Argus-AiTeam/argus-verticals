@@ -1,4 +1,5 @@
 """Independent analog work with selected methods and explicit model limits."""
+import os
 import shlex
 import sys
 from pathlib import Path
@@ -58,6 +59,12 @@ def render_role_prompt_fragment(
     if stage not in STAGE_ORDER:
         return ""
     contract = Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
+    runtime_root = os.environ.get("ARGUS_SKILL_SESSION_ROOT")
+    locations = f"Installed analog provider source: `{Path(__file__).resolve().parent}`.\n"
+    if runtime_root:
+        locations += f"Argus task runtime root: `{Path(runtime_root).resolve()}`. Keep the inherited ARGUS_SKILL_SESSION_ROOT unchanged.\n"
+    else:
+        locations += "No Argus task runtime root is configured; standalone operating-envelope checks perform full native replay.\n"
     execution = ""
     if stage in {"simulation", "review"}:
         script = (
@@ -74,7 +81,7 @@ def render_role_prompt_fragment(
     return (
         f"## Analog work: {stage}\nApply only the selected scope and requested analysis kinds. "
         "The examples below define record formats, not extra work to perform.\n\n"
-        + contract + execution
+        + locations + "\n" + contract + execution
         + "\nEngineer: create records from actual execution. Reviewer: independently "
         "check circuit assumptions, model validity, numerical tolerances and native results "
         "before approving them. Manager/Planner must preserve the stated acceptance conditions.\n"

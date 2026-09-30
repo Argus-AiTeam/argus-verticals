@@ -457,6 +457,19 @@ def test_relative_sample_on_decimal_boundary_is_not_rejected_or_widened(planned)
         resolve_study(planned)
 
 
+def test_integer_factor_keeps_enough_precision_at_a_binary_midpoint(planned):
+    path = planned / "design/parameters.inc"
+    path.write_text(path.read_text().replace(".param input_v=1\n", ".param input_v=1e-60\n"))
+    spec = load(planned, "design/operating.json")
+    spec["parameters"]["input_v"].update(nominal=1e-60, minimum=0, maximum=1)
+    # The exact product is just above the midpoint between 1 and its next binary64 value.
+    factor = (2**53 + 1) * 5**53 * 10**7 + 1
+    spec["axes"] = [{"id": "input", "parameter": "input_v", "unit": "1", "factors": [1, factor], "source": "original"}]
+    save(planned, "design/operating.json", spec)
+    with pytest.raises(EvidenceError, match="outside declared model validity"):
+        resolve_study(planned)
+
+
 def repeated_inputs(root, depth=8):
     plan = load(root, PLAN)
     for index in range(depth):
@@ -617,3 +630,26 @@ def test_real_ringing_does_not_turn_multiple_crossings_into_a_valid_diagnosis(tm
     assert not report["conclusion_valid"] and not report["task_accepted"]
     failures = [row for row in report["failures"] if row["kind"] == "invalid_measurement"]
     assert len(failures) == 6 and all("expected one crossing" in row["reason"] for row in failures)
+
+
+@pytest.mark.parametrize("role", ["engineer", "reviewer"])
+def test_role_context_names_the_real_runtime_not_cli_scratch(planned, tmp_path, monkeypatch, role):
+    runtime = tmp_path / "argus-task-state"
+    monkeypatch.setenv("ARGUS_SKILL_SESSION_ROOT", str(runtime))
+    prompt = stages.render_role_prompt_fragment(
+        role=role, operation="mission", stage="simulation", scope="", project_root=planned,
+    )
+    assert f"Argus task runtime root: `{runtime}`" in prompt
+    assert f"Installed analog provider source: `{Path(stages.__file__).resolve().parent}`" in prompt
+    assert "without overriding `ARGUS_SKILL_SESSION_ROOT`" in prompt
+    assert "not the native CLI's own session" in prompt
+    assert not runtime.exists()
+
+
+def test_standalone_role_context_does_not_invent_runtime_state(planned, monkeypatch):
+    monkeypatch.delenv("ARGUS_SKILL_SESSION_ROOT", raising=False)
+    prompt = stages.render_role_prompt_fragment(
+        role="reviewer", operation="mission", stage="review", scope="", project_root=planned,
+    )
+    assert "No Argus task runtime root is configured" in prompt
+    assert "standalone operating-envelope checks perform full native replay" in prompt

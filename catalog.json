@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "95bc91bbf54b6dc929caa6f6def4c5c9a041fca6",
+    "commit": "849af6c759bef06a2192aaef75c530f6547d16f8",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -52,14 +52,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 145945,
+      "size_bytes": 147475,
       "skill_parents": [],
       "tags": [
         "hardware",
         "analog",
         "spice"
       ],
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     "chip_design": {
       "api_version": 1,
