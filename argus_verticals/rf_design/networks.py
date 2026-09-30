@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import platform
 import re
 import warnings
 from pathlib import Path
@@ -152,7 +153,8 @@ def _primitive(node: dict, identity: str) -> rf.Network:
             else:
                 raise EvidenceError("element.connection: choose series or shunt")
             a = a @ section
-    return rf.Network(f=frequency, a=a, z0=z0, s_def="power", name=identity)
+    # A vector is ambiguous when frequency count equals port count; keep port references explicit.
+    return rf.Network(f=frequency, a=a, z0=np.broadcast_to(z0, (len(frequency), 2)), s_def="power", name=identity)
 
 
 def _renormalize_real(network: rf.Network, reference: np.ndarray) -> None:
@@ -165,7 +167,7 @@ def _renormalize_real(network: rf.Network, reference: np.ndarray) -> None:
     network.s = np.linalg.solve(
         incident.transpose(0, 2, 1), reflected.transpose(0, 2, 1),
     ).transpose(0, 2, 1)
-    network.z0 = reference
+    network.z0 = np.broadcast_to(reference, network.z0.shape)
 
 
 def build_networks(root: Path, definitions: object, targets: list[str] | None = None) -> tuple[dict[str, rf.Network], list[str]]:
@@ -246,9 +248,13 @@ def build_networks(root: Path, definitions: object, targets: list[str] | None = 
     return built, sorted(files)
 
 
-def measure(network: rf.Network, check: dict) -> tuple[float, str]:
+def measurement(network: rf.Network, check: dict) -> tuple[float, str, float]:
     metric = check["metric"]
     unit = "1"
+    frequency = network.f
+    low, high = (check["at_hz"], check["at_hz"]) if check["statistic"] == "at" else check["window_hz"]
+    if not frequency[0] <= low <= high <= frequency[-1]:
+        raise EvidenceError("measurement lies outside the saved frequency grid")
     if metric == "sigma_max":
         values = np.linalg.svd(network.s, compute_uv=False)[:, 0]
     elif metric == "reciprocity_error":
@@ -268,6 +274,10 @@ def measure(network: rf.Network, check: dict) -> tuple[float, str]:
         elif metric == "s_magnitude":
             values = np.abs(signal)
         elif metric == "s_db":
+            # Only selected samples and the brackets needed for scalar interpolation contribute.
+            first = max(0, int(np.searchsorted(frequency, low, side="right"))-1)
+            stop = int(np.searchsorted(frequency, high, side="left"))+1
+            frequency, signal = frequency[first:stop], signal[first:stop]
             if np.any(signal == 0):
                 raise EvidenceError("dB is not finite at a zero S parameter; use s_magnitude for exact nulls")
             values, unit = 20 * np.log10(np.abs(signal)), "dB"
@@ -279,12 +289,48 @@ def measure(network: rf.Network, check: dict) -> tuple[float, str]:
         raise EvidenceError("nonfinite RF measurement")
 
     def at(position: float) -> float:
-        if not network.f[0] <= position <= network.f[-1]:
-            raise EvidenceError("measurement lies outside the saved frequency grid")
-        return float(np.interp(position, network.f, values))
+        return float(np.interp(position, frequency, values))
 
     if check["statistic"] == "at":
-        return at(check["at_hz"]), unit
-    low, high = check["window_hz"]
-    samples = np.concatenate(([at(low)], values[(network.f > low) & (network.f < high)], [at(high)]))
-    return float(np.min(samples) if check["statistic"] == "min" else np.max(samples)), unit
+        return at(check["at_hz"]), unit, float(check["at_hz"])
+    selected = (frequency > low) & (frequency < high)
+    samples = np.concatenate(([at(low)], values[selected], [at(high)]))
+    frequencies = np.concatenate(([low], frequency[selected], [high]))
+    index = np.argmin(samples) if check["statistic"] == "min" else np.argmax(samples)
+    return float(samples[index]), unit, float(frequencies[index])
+
+
+def measure(network: rf.Network, check: dict) -> tuple[float, str]:
+    value, unit, _ = measurement(network, check)
+    return value, unit
+
+
+def versions() -> dict[str, str]:
+    return {"python": platform.python_version(), "numpy": np.__version__, "scikit-rf": rf.__version__}
+
+
+def write_network(path: Path, network: rf.Network) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    network.frequency.unit = "hz"
+    data = network.write_touchstone(
+        filename=path, return_string=True, version="2.0", form="ri",
+        write_noise=False, encoding="utf-8",
+        format_spec_A="{:.17g}", format_spec_B="{:.17g}", format_spec_freq="{:.17g}",
+    )
+    if not isinstance(data, str) or not data.strip():
+        raise EvidenceError("scikit-rf did not produce Touchstone output")
+    if len(data.encode("utf-8")) > MAX_FILE_BYTES:
+        raise EvidenceError("exported network exceeds the 32 MiB limit")
+    path.write_text(data, encoding="utf-8")
+
+
+def check_export(root: Path, relative: str, expected: rf.Network) -> rf.Network:
+    exported = read_touchstone(root, relative)
+    if (
+        not np.array_equal(exported.f, expected.f)
+        or not np.array_equal(exported.z0, expected.z0)
+        or exported.s.shape != expected.s.shape
+        or not np.allclose(exported.s, expected.s, rtol=1e-11, atol=1e-12)
+    ):
+        raise EvidenceError(f"{relative}: exported data disagrees with recomputation from current inputs")
+    return exported

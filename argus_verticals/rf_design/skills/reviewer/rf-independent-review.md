@@ -27,3 +27,11 @@ does not establish global causality, active-device stability, noise, radiation,
 layout, calibration quality or safe hardware operation. Request a concrete
 repair when needed; never fabricate measurements or change completion state
 to compensate for missing evidence.
+
+For robustness, compare case coverage with the original Cartesian axes,
+including nominal, and check both grids, common design, worst-frequency
+witnesses and required headroom. Independently check selected complex S values
+against circuit equations. A valid negative diagnosis may complete; a design
+with any failed original limit or required margin may not. Missing/undefined
+measurements and failed refinement invalidate either conclusion. Do not replace
+an honest negative diagnosis with fabricated passing results.
