@@ -180,6 +180,15 @@ def test_closure_keeps_every_enabled_copper_layer(planned):
         validate_plan(planned)
 
 
+@pytest.mark.parametrize("design", [None, 1, []])
+def test_invalid_design_in_refill_scope_is_an_explicit_issue(planned, design):
+    plan = load(planned)
+    plan.update(design=design, checks=[], fabrication=None)
+    save(planned, plan)
+    with pytest.raises(EvidenceError, match="selected board operation"):
+        validate_plan(planned, all_design=True)
+
+
 @pytest.mark.parametrize("location", ["project", "custom_rules"])
 def test_native_refill_obeys_original_edge_clearance(planned, location):
     if location == "custom_rules":

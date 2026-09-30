@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "1ecb3c0fc20de5eabee0f8f45ee7ebeb681777ed",
+    "commit": "7cdf9a5262fe7dac1d246ddf420ebde823bbbe6a",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -539,7 +539,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 101188,
+      "size_bytes": 101229,
       "skill_parents": [],
       "tags": [
         "hardware",

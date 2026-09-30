@@ -274,7 +274,8 @@ def validate_plan(root: Path, *, all_design: bool = False) -> tuple[dict, list[s
     if not checks and fab is None and not all_design:
         raise EvidenceError("select at least one native check or fabrication export")
     if plan.get("zone_refill") and not (
-        any(c["kind"] == "drc" for c in checks) or fab is not None or all_design and "board" in plan.get("design", {})
+        any(c["kind"] == "drc" for c in checks) or fab is not None
+        or all_design and isinstance(plan.get("design"), dict) and "board" in plan["design"]
     ):
         raise EvidenceError("zone_refill needs a selected board operation, not ERC alone")
     inputs, layers = input_closure(root, plan, all_design=all_design)
