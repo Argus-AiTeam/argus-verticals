@@ -5,6 +5,7 @@ import json
 import math
 import shutil
 import time
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
@@ -55,6 +56,28 @@ def _budget(deadline: float, size: int) -> None:
         raise EvidenceError("RF robustness exceeds its 180-second or 128-MiB aggregate budget")
 
 
+def headroom(value: float, check: dict) -> dict:
+    exact = Fraction(str(value))
+    lower = exact-Fraction(str(check["minimum"]))
+    upper = Fraction(str(check["maximum"]))-exact
+    lower_surplus = lower-Fraction(str(check.get("margin_lower", 0)))
+    upper_surplus = upper-Fraction(str(check.get("margin_upper", 0)))
+    try:
+        distances = dict(zip(
+            ("lower_headroom", "upper_headroom", "lower_margin_surplus", "upper_margin_surplus"),
+            map(float, (lower, upper, lower_surplus, upper_surplus)),
+        ))
+    except OverflowError as exc:
+        raise EvidenceError("RF headroom overflowed; use a meaningful measurement scale") from exc
+    if not all(math.isfinite(v) for v in distances.values()):
+        raise EvidenceError("RF headroom overflowed; use a meaningful measurement scale")
+    return {
+        **distances,
+        "within_limits": check["minimum"] <= value <= check["maximum"],
+        "required_margins_met": lower_surplus >= 0 and upper_surplus >= 0,
+    }
+
+
 def _collect(root: Path, study: Study) -> dict:
     result = record(root, RESULTS)
     if result.get("operation") != OPERATION or result.get("execution_complete") is not True:
@@ -102,17 +125,10 @@ def _collect(root: Path, study: Study) -> dict:
                     failures.append({"kind": "invalid_measurement", "case": identity, "study": item["id"],
                                      "check": check["id"], "reason": str(exc)})
                     continue
-                lower, upper = value-check["minimum"], check["maximum"]-value
-                lower_surplus, upper_surplus = lower-check.get("margin_lower", 0), upper-check.get("margin_upper", 0)
-                if not all(math.isfinite(v) for v in (lower, upper, lower_surplus, upper_surplus)):
-                    raise EvidenceError("RF headroom overflowed; use a meaningful measurement scale")
                 observation = {
                     "case": identity, "scenario": scenario["id"], "resolution": resolution,
                     "parameters": scenario["parameters"], "frequency_hz": frequency, "value": value,
-                    "lower_headroom": lower, "upper_headroom": upper,
-                    "lower_margin_surplus": lower_surplus, "upper_margin_surplus": upper_surplus,
-                    "within_limits": check["minimum"] <= value <= check["maximum"],
-                    "required_margins_met": lower >= check.get("margin_lower", 0) and upper >= check.get("margin_upper", 0),
+                    **headroom(value, check),
                 }
                 observations[key].append(observation)
                 values[check["id"]] = {"value": value, "frequency_hz": frequency}

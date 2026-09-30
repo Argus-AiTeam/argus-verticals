@@ -101,6 +101,10 @@ common choices, exact decimal tolerance products, worst-frequency/headroom
 witnesses, numerical refinement failure and complete Cartesian coverage.
 Test unequal port references when frequency count equals port count: library
 vector-shape inference must not reinterpret them as frequency-dependent values.
+Test inclusive decimal headroom and one-floating-step failures on both sides
+without epsilon widening. Selected-band dB checks must ignore unrelated nulls
+but reject zeros in the window or interpolation brackets; phase keeps its
+original global unwrap branch.
 PCB tests require KiCad 9 `kicad-cli` and the declared `pcb` extra (`sexpdata`).
 The original local-library coupon exercises real ERC, DRC with parity and
 Gerber/Excellon generation. Deliberate defects must fail native checks; changing

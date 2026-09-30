@@ -70,6 +70,12 @@ nine-point fine grid. The four combinations plus nominal produce ten real
 network calculations. These are finite samples, not guaranteed continuous-band
 performance, a global tolerance bound, statistical yield or physical qualification.
 
+The 0.2.1 follow-up fixes exact-decimal headroom boundaries without relaxing
+limits, and limits dB zero checks to the selected frequencies and their
+interpolation support. Full-grid phase unwrapping remains unchanged. Existing
+assessments are not rewritten to the new arithmetic; retain them and run a
+fresh study when upgrading.
+
 ## Independent executable references
 
 Six studies use original, explicitly synthetic models:

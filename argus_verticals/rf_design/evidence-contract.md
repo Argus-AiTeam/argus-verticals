@@ -117,6 +117,10 @@ metric in frequency. They never extrapolate. Extrema and passivity comparisons
 cover the sampled network, not unsampled resonances or global causality.
 An exactly zero S parameter has no finite dB/phase value: use magnitude bounds
 for exact ideal matches or isolation, not an arbitrary logarithmic floor.
+For dB, zero samples invalidate only the selected point/window and any
+bracketing samples needed for scalar interpolation. An unrelated out-of-band
+zero does not invalidate a finite in-band dB measurement. Phase retains its
+original full-grid unwrapping branch and requires a nonzero signal over that grid.
 
 ## Actual calculation and retained results
 
@@ -261,6 +265,12 @@ Both resolutions must meet design limits and margins. Headroom can be negative;
 it is never clipped to suggest passing. The report identifies the observed
 frequency, scenario, resolution and physical component values at each worst
 lower/upper headroom.
+Headroom and margin comparisons use exact arithmetic on the decimal
+representations of the measured scalar and original limits/margins, then
+serialize distances as floats. Thus 0.7-0.5 meets an inclusive 0.2 margin
+without an epsilon allowance; the next representable value above 0.5 still
+fails that upper margin. This does not increase solver precision or relax
+original engineering bounds.
 
 All supported ideal networks must remain passive and reciprocal at every saved
 sample: largest full-S singular value <=1+1e-9 and reciprocity error <=1e-9.
@@ -304,5 +314,8 @@ Input size is limited to 4 MiB, aggregate evaluated scattering entries to
 2000000, and generated model/network payload to 128 MiB before retained copies.
 Execution and inspection each have a 180-second aggregate budget.
 No validation cache or changed native-output tolerance is introduced.
+Version 0.2.1 changes decimal margin reporting and dB selection. Preserve old
+assessment records under their generating provider; make fresh results when
+using the new arithmetic rather than editing retained summaries in place.
 Include passed and missed requirements in `rf/REVIEW.md`; diagnosis completion
 must never be described as proof that the circuit meets its limits.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import shutil
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
@@ -277,8 +278,9 @@ def test_worst_frequency_and_headroom_are_recomputed_from_saved_complex_fields(r
     index = np.argmax(np.abs(network.s[:, 0, 0]))
     assert worst["frequency_hz"] == network.f[index]
     assert worst["value"] == abs(network.s[index, 0, 0])
-    assert worst["upper_headroom"] == 0.25-worst["value"]
-    assert worst["upper_margin_surplus"] == worst["upper_headroom"]-0.01
+    expected = Fraction("0.25")-Fraction(str(worst["value"]))
+    assert worst["upper_headroom"] == float(expected)
+    assert worst["upper_margin_surplus"] == float(expected-Fraction("0.01"))
 
 
 def test_model_review_and_readonly_evidence_are_distinct(reference):

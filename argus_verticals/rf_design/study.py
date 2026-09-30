@@ -191,7 +191,8 @@ def resolve_study(root: Path) -> Study:
                 raise EvidenceError("robustness check positions must be explicit original frequency samples")
             lower, upper = (number(check.get(key, 0), key) for key in ("margin_lower", "margin_upper"))
             span = check["maximum"] - check["minimum"]
-            if not math.isfinite(span) or lower+upper > span:
+            exact_span = Fraction(str(check["maximum"])) - Fraction(str(check["minimum"]))
+            if not math.isfinite(span) or Fraction(str(lower))+Fraction(str(upper)) > exact_span:
                 raise EvidenceError("required margins do not fit inside original bounds")
             number(check.get("max_delta"), "frequency refinement max_delta")
     entries = len(scenarios) * sum((3*len(network.f)-1)*network.nports**2 for network in networks.values())

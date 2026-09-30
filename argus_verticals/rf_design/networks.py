@@ -251,6 +251,10 @@ def build_networks(root: Path, definitions: object, targets: list[str] | None = 
 def measurement(network: rf.Network, check: dict) -> tuple[float, str, float]:
     metric = check["metric"]
     unit = "1"
+    frequency = network.f
+    low, high = (check["at_hz"], check["at_hz"]) if check["statistic"] == "at" else check["window_hz"]
+    if not frequency[0] <= low <= high <= frequency[-1]:
+        raise EvidenceError("measurement lies outside the saved frequency grid")
     if metric == "sigma_max":
         values = np.linalg.svd(network.s, compute_uv=False)[:, 0]
     elif metric == "reciprocity_error":
@@ -270,6 +274,10 @@ def measurement(network: rf.Network, check: dict) -> tuple[float, str, float]:
         elif metric == "s_magnitude":
             values = np.abs(signal)
         elif metric == "s_db":
+            # Only selected samples and the brackets needed for scalar interpolation contribute.
+            first = max(0, int(np.searchsorted(frequency, low, side="right"))-1)
+            stop = int(np.searchsorted(frequency, high, side="left"))+1
+            frequency, signal = frequency[first:stop], signal[first:stop]
             if np.any(signal == 0):
                 raise EvidenceError("dB is not finite at a zero S parameter; use s_magnitude for exact nulls")
             values, unit = 20 * np.log10(np.abs(signal)), "dB"
@@ -281,16 +289,13 @@ def measurement(network: rf.Network, check: dict) -> tuple[float, str, float]:
         raise EvidenceError("nonfinite RF measurement")
 
     def at(position: float) -> float:
-        if not network.f[0] <= position <= network.f[-1]:
-            raise EvidenceError("measurement lies outside the saved frequency grid")
-        return float(np.interp(position, network.f, values))
+        return float(np.interp(position, frequency, values))
 
     if check["statistic"] == "at":
         return at(check["at_hz"]), unit, float(check["at_hz"])
-    low, high = check["window_hz"]
-    selected = (network.f > low) & (network.f < high)
+    selected = (frequency > low) & (frequency < high)
     samples = np.concatenate(([at(low)], values[selected], [at(high)]))
-    frequencies = np.concatenate(([low], network.f[selected], [high]))
+    frequencies = np.concatenate(([low], frequency[selected], [high]))
     index = np.argmin(samples) if check["statistic"] == "min" else np.argmax(samples)
     return float(samples[index]), unit, float(frequencies[index])
 

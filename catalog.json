@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "8d2ead43f7e5a096e16978d41adfdad06dfeabc1",
+    "commit": "b282286c5820445a6215b0340df10ed20152e118",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -696,14 +696,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 114999,
+      "size_bytes": 117113,
       "skill_parents": [],
       "tags": [
         "hardware",
         "rf",
         "network-analysis"
       ],
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     "speedrun": {
       "api_version": 1,
