@@ -106,6 +106,7 @@ VOICE_CLEAN_FILES: tuple[str, ...] = (
     "argus_verticals/package_design/evidence.py",
     "argus_verticals/package_design/run_analysis.py",
     "argus_verticals/package_design/run_reference.py",
+    "argus_verticals/package_design/run_convection_reference.py",
     "argus_verticals/physics/context_policy.py",
     "argus_verticals/physics/downgrade.py",
     "argus_verticals/physics/stages.py",

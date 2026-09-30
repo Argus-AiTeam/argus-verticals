@@ -59,12 +59,55 @@ die on a larger substrate and actual three-dimensional spreading. Contact is
 perfectly bonded with shared conformal nodes and zero interface resistance.
 Each material is homogeneous with positive constant isotropic conductivity.
 
-The entire bottom face is fixed at `base_temperature_k`. `power_w` is positive
+In the original mode, the entire bottom face is fixed at `base_temperature_k`.
+`power_w` is positive
 total power applied **uniformly to the entire uppermost face**, not volumetric
 die dissipation. All other exposed surfaces are adiabatic. The runner integrates
 the uniform surface flux over native triangular faces: each triangle supplies
 one third of its power to each of its nodes. This conserves the original total
 power; equal power per node would not represent uniform surface flux.
+
+### Explicit convection boundary
+
+Alternatively, **omit** `base_temperature_k` and supply this run object:
+
+```json
+"convection": {
+  "ambient_temperature_k": 300,
+  "coefficient_w_m2k": 1000,
+  "surfaces": ["bottom", "top", "other_exposed"],
+  "source": "Explicit ideal reference coefficient, not predicted airflow"
+}
+```
+
+The four keys are required; additional keys are rejected. Ambient is 1-2000 K;
+the positive, constant coefficient is 1e-3 to 1e6 W/(m2 K).
+`surfaces` is a nonempty list without duplicates. `bottom` and `top` mean the
+entire lowest and uppermost faces; `other_exposed` means all other exterior
+faces, including stepped ledges and overhang undersides. The groups do not
+overlap, bonded interfaces never receive film, and unselected faces are
+adiabatic. Source power remains uniform on the top, even when top convection
+is also selected. A coefficient requires a nonempty source; it is an imposed
+assumption, not a solved airflow correlation.
+
+The solver applies native `*FILM`, element ID, F1-F4 face, sink temperature
+and coefficient. Tetrahedron faces follow CalculiX's local-node numbering:
+1-2-3, 1-4-2, 2-4-3, 3-4-1. For constant properties and a single common
+ambient, the native unknown is the rise T-Tambient with zero film sink.
+This exact linear change of variable preserves tiny rises in finite-precision
+DAT output. Native DAT/FRD NT is **rise**, not absolute Kelvin; each run records
+`temperature_reference_k` equal to the original ambient. Add it to native NT
+for physical temperature. Fixed-bottom runs retain absolute NT and reference 0.
+Do not relabel raw fields or subtract two nearly equal absolute temperatures
+to calculate convection resistance.
+
+Native total heat is integrated as h*A*mean(face rise). For nodal RFL checks,
+C3D4 uses one centroid integration point: each face contributes one third of
+that extraction to each vertex. At shared vertices, sum every incident film
+face and subtract from the applied top nodal power. RFL is the resulting net
+external nodal load, not conduction flux alone. Summing bottom-node RFL would
+incorrectly include side cooling or top loading; bottom heat in convection
+mode is instead integrated over bottom **faces** only.
 
 ## Scope, metrics and refinement
 
@@ -91,19 +134,21 @@ to make a result pass.
 
 | Metric | Unit | Meaning |
 |---|---|---|
-| `temperature_max_k` | `K` | Maximum native nodal temperature |
+| `temperature_max_k` | `K` | Maximum physical nodal temperature, including the declared reference |
 | `top_mean_k` | `K` | Area-weighted mean temperature of the heated face |
-| `theta_top_k_w` | `K/W` | (Heated-face mean - prescribed bottom temperature) / applied power |
-| `bottom_heat_w` | `W` | Heat leaving the prescribed-temperature face |
-| `energy_relative_error` | `1` | Worst relative applied/extracted/interior heat imbalance |
+| `theta_top_k_w` | `K/W` | Heated-face mean rise above prescribed bottom or ambient / applied power |
+| `bottom_heat_w` | `W` | Heat leaving the bottom face; zero if bottom is adiabatic |
+| `convective_heat_w` | `W` | Total outward film heat, convection mode only |
+| `convection_area_m2` | `m2` | Total selected exterior film area, convection mode only |
+| `energy_relative_error` | `1` | Worst relative heat imbalance, including nodal native film-load residual |
 
 The model resistance is **not automatically JEDEC theta-JA or theta-JC**.
 Independently of optional checks, native heat balance must close within 1e-5
-relative error and bottom temperatures must match the imposed value within
+relative error. Fixed-bottom temperatures must match the imposed value within
 the fixed native DAT output precision. Original engineering bounds are never
 adjusted for that precision; choose an appropriate supported measurement.
 
-For different-width layers, a refinement comparison is required:
+For different-width layers and **every convection run**, a refinement comparison is required:
 
 ```json
 {"coarse": "coarse_run", "fine": "fine_run",
@@ -111,11 +156,14 @@ For different-width layers, a refinement comparison is required:
 ```
 
 Place these objects in the plan's `convergence` list (up to eight). Both runs
-must use the same model, power and base temperature; fine mesh size must be
+must use the same model, power and complete boundary specification (including
+convection source, ambient, coefficient and surface list); fine mesh size must be
 <=80% of coarse and actually produce more native tetrahedra. Allowed comparison
 metrics are the two temperatures or `theta_top_k_w`. `max_delta` is an absolute
 difference in that metric's unit. Every spreading run must appear in a pair.
 Two meshes establish only the declared agreement, not a proven error bound.
+Returned measurements also include `convection_heat_by_surface_w` for the
+selected groups; these are independently recomputed, not trusted saved summaries.
 
 ## Native execution and records
 
@@ -130,7 +178,7 @@ and uses one thread. It preserves each run's geometry, mesh, solver input,
 DAT nodal fields, STA completion, FRD visualization fields, logs and exact
 command records. `package/results/RESULTS.json` is written by the runner:
 `operation: "gmsh+calculix"`, execution `status`, actual `versions`,
-input/output copy maps and ordered run IDs with native command rows
+input/output copy maps and ordered run IDs with `temperature_reference_k` and native command rows
 (`tool`, `command`, `cwd`, `log`, `exit_code`). Failed attempts remain intact.
 
 The checker rejects stale/self/hardlinked copies, wrong commands, invalid
@@ -140,12 +188,18 @@ directory and compares every retained native file; only FRD creation date/time
 headers are omitted. It never changes the project. A tool-version change needs
 a new run. CalculiX input numbers use bounded-width scientific notation;
 DAT temperatures have seven significant figures, not arbitrary precision.
+Actual solver execution requires exit 0 **and** finished-job output without
+native errors. A nonzero solver exit is never accepted merely because output
+files or a finished-job message exist.
 
 ## Explicit exclusions
 
 No arbitrary CAD import, lateral offsets, contact resistance, voids,
 anisotropic/temperature-dependent conductivity, transient thermal capacitance,
-convection, radiation, CFD, electrical parasitics, stress, warpage, fatigue,
+radiation, CFD, electrical parasitics, stress, warpage, fatigue,
 delamination, yield, measured-device calibration or qualification is executed.
+Mixed fixed-temperature/convection cooling, multiple ambients, local face
+patches and nonuniform or temperature-dependent convection coefficients are
+not supported.
 Those subjects remain important knowledge and must not be claimed as solved.
 No commercial EDA tool, PDK, foundry process or manufacturing order is implied.

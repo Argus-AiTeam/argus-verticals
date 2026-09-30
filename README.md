@@ -88,7 +88,10 @@ Its explicit copper-zone mode refills a separate working board through matching
 KiCad 9 Python bindings, then checks and exports that same board without
 rewriting original projects or trusting old fills.
 `package_design` adds semiconductor-package knowledge and bounded native
-Gmsh/CalculiX steady thermal studies, including mesh-refined die/substrate spreading.
+Gmsh/CalculiX steady thermal studies, including mesh-refined die/substrate spreading
+and explicit prescribed convection to a common ambient. Exterior film area,
+native heat balance and ambient-referenced temperature rises are checked;
+airflow, radiation and physical cooling qualification are not implied.
 `power_electronics` adds power-conversion knowledge and bounded native ngspice
 Buck/Boost startup, ripple and resistive-load studies, including stored-energy
 accounting and time-step comparisons. Its optional operating-envelope mode

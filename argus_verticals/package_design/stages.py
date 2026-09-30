@@ -23,7 +23,7 @@ VERTICAL_ROUTING_PATH = ("hardware", "package_design")
 VERTICAL_PURPOSE = (
     "Semiconductor package engineering: die attach, wire bond, flip chip and bumps, "
     "package substrates, interposers, chiplets, thermal paths, mechanical and assembly constraints; "
-    "executable Gmsh/CalculiX steady heat conduction through ideal bonded package stacks; "
+    "executable Gmsh/CalculiX steady thermal studies of ideal bonded stacks with fixed-temperature or prescribed convection boundaries; "
     "not PCB fabrication, RTL, RF network calculation, general structural FEA or physical qualification"
 )
 VERTICAL_SKILLS = Path(__file__).parent / "skills"

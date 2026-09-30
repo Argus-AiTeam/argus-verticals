@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,7 @@ import numpy as np
 from argus_verticals.hardware.shared.evidence import EvidenceError
 
 from .mesh import Mesh, deck, geometry, read_mesh
+from .model import temperature_offset
 
 FILES = ("model.geo", "model.msh", "thermal.inp", "thermal.dat", "thermal.sta", "thermal.frd")
 
@@ -127,7 +129,38 @@ def measurements(output: Path, model: dict, run: dict) -> tuple[dict, Mesh]:
             raise EvidenceError("steady-state step did not finish")
     except ValueError as exc:
         raise EvidenceError("invalid native step time") from exc
-    base, power = run["base_temperature_k"], run["power_w"]
+    power = run["power_w"]
+    if "convection" in run:
+        coefficient = run["convection"]["coefficient_w_m2k"]
+        nodal, surface_heat = defaultdict(float), {}
+        total_area = 0.0
+        for group in sorted(run["convection"]["surfaces"]):
+            surface_heat[group] = 0.0
+            for _, _, face in mesh.surfaces[group]:
+                a, b, c = (mesh.nodes[v] for v in face)
+                area = float(np.linalg.norm(np.cross(b-a, c-a)) / 2)
+                total_area += area
+                rise_sum = sum(temperatures[v] for v in face)
+                surface_heat[group] += coefficient * area * rise_sum / 3
+                # C3D4 FILM uses one centroid integration point, not a consistent surface mass matrix.
+                for node in face:
+                    nodal[node] += coefficient * area * rise_sum / 9
+        convected = sum(surface_heat.values())
+        residual = sum(abs(heat[node] - (power * mesh.top_weights.get(node, 0) - nodal[node])) for node in mesh.nodes)
+        balance = max(abs(convected-power), abs(sum(heat.values())), residual) / power
+        if not np.isfinite(balance) or balance > 1e-5:
+            raise EvidenceError("native convection heat balance does not close within 1e-5 relative error")
+        mean_rise = sum(weight * temperatures[v] for v, weight in mesh.top_weights.items())
+        ambient = temperature_offset(run)
+        values = {
+            "temperature_max_k": max(temperatures.values()) + ambient,
+            "top_mean_k": mean_rise + ambient, "theta_top_k_w": mean_rise / power,
+            "bottom_heat_w": surface_heat.get("bottom", 0.0),
+            "convective_heat_w": convected, "convection_area_m2": total_area,
+            "convection_heat_by_surface_w": surface_heat, "energy_relative_error": balance,
+        }
+        return values, mesh
+    base = run["base_temperature_k"]
     # DAT temperatures use seven significant figures; honor that fixed native precision.
     temperature_resolution = max(abs(value) for value in temperatures.values()) * 1e-6
     if any(abs(temperatures[v]-base) > temperature_resolution for v in mesh.bottom):
