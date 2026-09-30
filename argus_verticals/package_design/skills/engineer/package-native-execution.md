@@ -15,9 +15,11 @@ groups. Validate layer volumes, shared interfaces and top/bottom areas rather
 than trusting labels. CalculiX consumes C3D4 elements, conductivity, temperature
 DOF 11 constraints and consistently integrated nodal heat loads.
 
-Read NT temperatures and RFL nodal heat generation at the completed steady
-step. Bottom-node RFL represents extracted heat here because those nodes have
-no applied thermal load. Check conservation against the original positive
+Read NT and RFL at the completed steady step. In fixed-bottom mode only,
+bottom-node RFL represents extracted heat. In convection mode NT is rise above
+the explicitly recorded ambient reference, and RFL includes net film extraction.
+Use exterior face integrals for bottom heat, not bottom-node sums that can
+include other surfaces. Check conservation against the original positive
 power; do not adjust power to fit the result.
 
 The checker re-executes both native tools in a temporary directory. Failed

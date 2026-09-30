@@ -15,6 +15,12 @@ and heat balance. Where one-dimensional assumptions apply, independently
 calculate t/(k A) and the expected temperature rise. For spreading, inspect
 actual element counts and the declared mesh comparison rather than a nominal
 mesh-size label alone.
+For bottom-only convection, independently add 1/(h A); exclude internal
+interfaces from the cooling area and include exposed ledges. Check both total
+heat and native nodal film-load balance. Confirm that native NT is explicitly
+identified as rise above ambient and reported Kelvin metrics include that
+reference. A prescribed coefficient does not establish airflow or physical
+cooling performance.
 
 Separate a model's area-averaged source temperature from its maximum nodal
 temperature and from a measured junction temperature. Do not call model

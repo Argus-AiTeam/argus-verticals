@@ -10,7 +10,7 @@ from argus_verticals.hardware.shared.evidence import EvidenceError, project_file
 
 from . import native
 from .evidence import validate_thermal
-from .model import INPUTS_DIR, RESULTS, RESULTS_DIR, validate_plan
+from .model import INPUTS_DIR, RESULTS, RESULTS_DIR, temperature_offset, validate_plan
 
 
 def run_analysis(root: Path) -> dict[str, dict]:
@@ -35,7 +35,7 @@ def run_analysis(root: Path) -> dict[str, dict]:
         if frozen != plan:
             raise EvidenceError("package plan changed while inputs were copied")
         for run in plan["runs"]:
-            row = {"id": run["id"], "commands": []}
+            row = {"id": run["id"], "temperature_reference_k": temperature_offset(run), "commands": []}
             result["runs"].append(row)
 
             def save_commands(commands) -> None:

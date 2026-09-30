@@ -110,6 +110,12 @@ plus the `package` numpy extra. Preserve actual mesh/solver output, conserved
 surface loads and native heat balance. Check independent series-resistance
 equations and actual refinement for lateral spreading; two meshes are not a
 proof of absolute discretization error. Failed original bounds stay failed.
+Convection tests additionally cover native FILM face numbering, exterior
+ledges without internal-interface cooling, common-ambient temperature-rise
+representation, tiny signals, analytic conduction-plus-film resistance,
+overlapping heated/cooled nodes and C3D4 centroid film quadrature. Require
+unchanged ambient, coefficient and selected faces under refinement; a finished
+job message never overrides a nonzero actual solver exit.
 Power-converter tests use native ngspice >=42 and the `power` numpy extra.
 Preserve adaptive sample times, source-current signs and stored L/C energy;
 transient input/output mismatch is not automatically dissipation. Check actual

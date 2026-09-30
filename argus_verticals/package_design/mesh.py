@@ -10,6 +10,10 @@ import numpy as np
 
 from argus_verticals.hardware.shared.evidence import EvidenceError
 
+from .model import temperature_offset
+
+TET_FACES = ((0, 1, 2), (0, 3, 1), (1, 3, 2), (2, 3, 0))
+
 
 def geometry(model: dict, size: float) -> str:
     lines = ['SetFactory("OpenCASCADE");']
@@ -50,6 +54,7 @@ class Mesh:
     elements: dict[int, tuple[int, tuple[int, ...]]]
     bottom: set[int]
     top_weights: dict[int, float]
+    surfaces: dict[str, list[tuple[int, int, tuple[int, ...]]]]
 
 
 def read_mesh(path: Path, model: dict) -> Mesh:
@@ -159,7 +164,23 @@ def read_mesh(path: Path, model: dict) -> Mesh:
                     weights[vertex] += area(face) / (3 * expected)
     if bottom & weights.keys():
         raise EvidenceError("heat input and prescribed-temperature nodes overlap")
-    return Mesh(nodes, elements, bottom, dict(weights))
+    surfaces = {"bottom": [], "top": [], "other_exposed": []}
+    for element, (_, vertex) in elements.items():
+        for label, indices in enumerate(TET_FACES, 1):
+            face = tuple(vertex[i] for i in indices)
+            key = tuple(sorted(face))
+            if len(faces[key]) != 1:
+                continue
+            group = "bottom" if key in expected_surfaces[101] else "top" if key in expected_surfaces[102] else "other_exposed"
+            surfaces[group].append((element, label, face))
+    expected_area = sum(
+        2 * (x*y + (x+y)*layer["thickness_m"])
+        for layer in model["layers"] for x, y in [layer["size_xy_m"]]
+    ) - 2 * sum(interfaces.values())
+    actual_area = sum(area(face) for rows in surfaces.values() for _, _, face in rows)
+    if not np.isclose(actual_area, expected_area, rtol=1e-8, atol=0):
+        raise EvidenceError("exposed native surface area disagrees with the original stacked solids")
+    return Mesh(nodes, elements, bottom, dict(weights), surfaces)
 
 
 def deck(mesh: Mesh, model: dict, run: dict) -> str:
@@ -173,11 +194,22 @@ def deck(mesh: Mesh, model: dict, run: dict) -> str:
             f"*MATERIAL,NAME=M{physical}", "*CONDUCTIVITY", f"{layer['conductivity_w_mk']:.12e}",
             f"*SOLID SECTION,ELSET=L{physical},MATERIAL=M{physical}",
         ])
-    temperature = f"{run['base_temperature_k']:.12e}"
+    convection = run.get("convection")
+    temperature = f"{0 if convection else run['base_temperature_k']:.12e}"
     lines.extend(["*NSET,NSET=BOTTOM", *map(str, sorted(mesh.bottom)),
                   "*INITIAL CONDITIONS,TYPE=TEMPERATURE", f"ALL,{temperature}",
-                  "*STEP", "*HEAT TRANSFER,STEADY STATE", "1,1", "*BOUNDARY",
-                  f"BOTTOM,11,11,{temperature}", "*CFLUX"])
+                  "*STEP", "*HEAT TRANSFER,STEADY STATE", "1,1"])
+    if convection:
+        lines.extend([
+            f"** Native NT is temperature rise above uniform ambient {temperature_offset(run):.12e} K",
+            "*FILM",
+        ])
+        for group in sorted(convection["surfaces"]):
+            for element, label, _ in mesh.surfaces[group]:
+                lines.append(f"{element},F{label},0.,{convection['coefficient_w_m2k']:.12e}")
+    else:
+        lines.extend(["*BOUNDARY", f"BOTTOM,11,11,{temperature}"])
+    lines.append("*CFLUX")
     # Integrating a uniform flux over each linear triangle gives area/3 per vertex.
     lines.extend(f"{v},11,{weight * run['power_w']:.12e}" for v, weight in sorted(mesh.top_weights.items()))
     lines.extend(["*NODE PRINT,NSET=ALL", "NT,RFL", "*NODE FILE", "NT,RFL", "*END STEP"])

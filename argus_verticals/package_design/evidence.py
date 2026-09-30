@@ -7,12 +7,13 @@ from pathlib import Path
 from argus_verticals.hardware.shared.evidence import (
     EvidenceError,
     current_files,
+    number,
     project_file,
     record,
 )
 
 from . import native
-from .model import INPUTS_DIR, RESULTS, RESULTS_DIR, validate_plan
+from .model import INPUTS_DIR, RESULTS, RESULTS_DIR, temperature_offset, validate_plan
 
 
 def validate_thermal(root: Path) -> dict[str, dict]:
@@ -42,6 +43,8 @@ def validate_thermal(root: Path) -> dict[str, dict]:
         output = root / RESULTS_DIR / "native" / run["id"]
         if not isinstance(row, dict) or row.get("id") != run["id"]:
             raise EvidenceError("run identity or order differs from the plan")
+        if number(row.get("temperature_reference_k", 0), "native temperature reference") != temperature_offset(run):
+            raise EvidenceError("native temperature reference differs from the declared boundary")
         commands = row.get("commands")
         if not isinstance(commands, list) or len(commands) != 2:
             raise EvidenceError("each thermal run needs actual mesh and solver commands")

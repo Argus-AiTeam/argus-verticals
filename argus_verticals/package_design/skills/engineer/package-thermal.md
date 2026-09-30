@@ -14,6 +14,15 @@ For an equal-area, perfectly bonded stack with uniform top flux and adiabatic
 sides, R = sum(t_i/(k_i A)) and T_top = T_bottom + P R are independent
 one-dimensional checks. Different lateral dimensions produce three-dimensional
 spreading, so the simple sum generally no longer gives the whole solution.
+With bottom-only convection, add 1/(h A) to that series resistance and reference
+the rise to the prescribed ambient. Top-only convection with uniform top heat
+has uniform rise P/(h A) and no conduction gradient. Other exposed cooling
+requires native field integration, not blindly adding a scalar resistance.
+
+Choose fixed bottom or explicit convection, not both. Preserve ambient,
+coefficient source and selected exterior groups between coarse and fine runs.
+All convection studies need refinement; a coefficient is an input assumption,
+not evidence that airflow was simulated.
 
 Use consistent SI quantities: metres, W/(m K), watts and kelvin. Conductivity
 does not determine heat capacity; a steady-state result says nothing about

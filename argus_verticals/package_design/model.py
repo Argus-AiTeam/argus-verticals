@@ -14,7 +14,13 @@ RESULTS = RESULTS_DIR + "/RESULTS.json"
 METRICS = {
     "temperature_max_k": "K", "top_mean_k": "K", "theta_top_k_w": "K/W",
     "bottom_heat_w": "W", "energy_relative_error": "1",
+    "convective_heat_w": "W", "convection_area_m2": "m2",
 }
+CONVECTION_SURFACES = {"bottom", "top", "other_exposed"}
+
+
+def temperature_offset(run: dict) -> float:
+    return run["convection"]["ambient_temperature_k"] if "convection" in run else 0.0
 
 
 def text(value: object, field: str) -> str:
@@ -119,7 +125,22 @@ def validate_plan(root: Path) -> tuple[dict, dict, list[str]]:
         if estimate > 50000:
             raise EvidenceError("requested mesh exceeds the conservative 50000-element estimate")
         bounded(run.get("power_w"), "power_w", 1e-6, 1e4)
-        bounded(run.get("base_temperature_k"), "base_temperature_k", 1, 2000)
+        if "convection" in run:
+            convection = run["convection"]
+            if "base_temperature_k" in run:
+                raise EvidenceError("choose fixed bottom temperature or convection, not both")
+            if not isinstance(convection, dict) or set(convection) != {
+                "ambient_temperature_k", "coefficient_w_m2k", "surfaces", "source",
+            }:
+                raise EvidenceError("convection needs ambient_temperature_k, coefficient_w_m2k, surfaces and source")
+            bounded(convection["ambient_temperature_k"], "ambient_temperature_k", 1, 2000)
+            bounded(convection["coefficient_w_m2k"], "coefficient_w_m2k", 1e-3, 1e6)
+            surfaces = names(convection["surfaces"], "convection surfaces")
+            if not set(surfaces) <= CONVECTION_SURFACES:
+                raise EvidenceError("convection surfaces must be bottom, top or other_exposed")
+            text(convection["source"], "convection source")
+        else:
+            bounded(run.get("base_temperature_k"), "base_temperature_k", 1, 2000)
         checks = run.get("checks")
         if not isinstance(checks, list) or not 1 <= len(checks) <= 32:
             raise EvidenceError("each run needs 1-32 original numerical checks")
@@ -135,6 +156,8 @@ def validate_plan(root: Path) -> tuple[dict, dict, list[str]]:
             metric = check.get("metric")
             if not isinstance(metric, str) or metric not in METRICS or check.get("unit") != METRICS[metric]:
                 raise EvidenceError("check metric or unit is unsupported")
+            if metric in ("convective_heat_w", "convection_area_m2") and "convection" not in run:
+                raise EvidenceError("convection metrics require an explicit convection boundary")
             low = number(check.get("minimum"), "minimum", minimum=-math.inf)
             high = number(check.get("maximum"), "maximum", minimum=-math.inf)
             if low > high:
@@ -160,12 +183,14 @@ def validate_plan(root: Path) -> tuple[dict, dict, list[str]]:
         if identity in pair_ids:
             raise EvidenceError("duplicate convergence comparison")
         pair_ids.add(identity)
-        if any(coarse[key] != fine[key] for key in ("model", "power_w", "base_temperature_k")):
-            raise EvidenceError("mesh comparison must preserve model, load and boundary temperature")
+        if any(coarse.get(key) != fine.get(key) for key in ("model", "power_w", "base_temperature_k", "convection")):
+            raise EvidenceError("mesh comparison must preserve model, load and all boundary conditions")
         if fine["mesh_size_m"] > 0.8 * coarse["mesh_size_m"]:
             raise EvidenceError("fine mesh size must be at most 80 percent of coarse")
         number(pair.get("max_delta"), "convergence max_delta")
         compared.update((pair["coarse"], pair["fine"]))
     if any(spreading(models[run["model"]]) and run["id"] not in compared for run in runs):
         raise EvidenceError("lateral spreading studies require an explicit mesh-refinement comparison")
+    if any("convection" in run and run["id"] not in compared for run in runs):
+        raise EvidenceError("convection studies require an explicit mesh-refinement comparison")
     return plan, models, sorted({PLAN, *(run["model"] for run in runs)})

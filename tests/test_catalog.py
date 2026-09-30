@@ -446,6 +446,7 @@ def _expected_members(name: str) -> list[str]:
     ("pcb_design", "verification", "pcb", "run_reference"),
     ("pcb_design", "verification", "pcb", "run_zone_reference"),
     ("package_design", "thermal", "package", "run_reference"),
+    ("package_design", "thermal", "package", "run_convection_reference"),
     ("power_electronics", "simulation", "power", "run_reference"),
     ("power_electronics", "simulation", "power", "run_robustness_reference"),
 ])
@@ -532,9 +533,10 @@ if directory == "pcb":
         assert all(zone["filled_area_mm2"] > 143.9 for zone in refill["zones"])
         assert (project / "design/coupon.kicad_pcb").read_bytes() == (project / "pcb/results/inputs/design/coupon.kicad_pcb").read_bytes()
 elif directory == "package":
-    assert len(record["runs"]) == 4
+    assert len(record["runs"]) == (6 if reference == "run_convection_reference" else 4)
     assert record["versions"]["gmsh"].startswith("4.")
     assert record["versions"]["calculix"].startswith("2.")
+    assert all(row["temperature_reference_k"] == (300 if reference == "run_convection_reference" else 0) for row in record["runs"])
 elif directory == "power":
     assert len(record["runs"]) == (10 if reference == "run_robustness_reference" else 4)
     assert int(record["ngspice_version"].split(".")[0]) >= 42

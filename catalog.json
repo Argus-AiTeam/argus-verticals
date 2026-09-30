@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "7cdf9a5262fe7dac1d246ddf420ebde823bbbe6a",
+    "commit": "00fcbc8e7643e4ac67b8a042f7f2482e97e89af3",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -494,8 +494,8 @@
       "paths": [
         "argus_verticals/package_design"
       ],
-      "purpose": "Semiconductor package engineering: die attach, wire bond, flip chip and bumps, package substrates, interposers, chiplets, thermal paths, mechanical and assembly constraints; executable Gmsh/CalculiX steady heat conduction through ideal bonded package stacks; not PCB fabrication, RTL, RF network calculation, general structural FEA or physical qualification",
-      "purpose_zh": "半导体封装、键合倒装、基板中介层与芯粒集成知识；可选 Gmsh／CalculiX 理想粘结叠层稳态热传导",
+      "purpose": "Semiconductor package engineering: die attach, wire bond, flip chip and bumps, package substrates, interposers, chiplets, thermal paths, mechanical and assembly constraints; executable Gmsh/CalculiX steady thermal studies of ideal bonded stacks with fixed-temperature or prescribed convection boundaries; not PCB fabrication, RTL, RF network calculation, general structural FEA or physical qualification",
+      "purpose_zh": "半导体封装、键合倒装、基板中介层与芯粒集成知识；可选 Gmsh／CalculiX 理想粘结叠层稳态导热、显式对流边界与网格收敛",
       "python_requirements": [
         "numpy>=1.26"
       ],
@@ -507,14 +507,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 73533,
+      "size_bytes": 88529,
       "skill_parents": [],
       "tags": [
         "hardware",
         "package",
         "thermal"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "pcb_design": {
       "api_version": 1,
