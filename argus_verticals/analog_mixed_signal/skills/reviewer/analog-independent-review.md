@@ -36,5 +36,8 @@ For an operating envelope, independently verify the full original combination
 set, generated parameter values, coarse/fine controls and all failed conditions.
 Distinguish an accepted negative diagnosis from a passing circuit. Inspect the
 worst headroom and actual parameter coordinates, not just the nominal plot.
+Check that combined worst values come from both coarse and fine runs and that
+the report names the selected resolution. Do not confuse positive distance to
+a bound with satisfying its required margin; compare `*_margin_surplus` too.
 When numerical evidence is unchanged, reuse its accepted comparison and focus
 report corrections on interpretation rather than another solver run.

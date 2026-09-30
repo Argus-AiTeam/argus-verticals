@@ -156,12 +156,16 @@ def _collect(root: Path, study: Study, *, replay: bool) -> dict:
                     continue
                 value = measured[case.id][check["id"]]
                 lower, upper = value-check["minimum"], check["maximum"]-value
-                if not math.isfinite(lower) or not math.isfinite(upper):
+                lower_surplus = lower-check.get("margin_lower", 0)
+                upper_surplus = upper-check.get("margin_upper", 0)
+                if not all(math.isfinite(v) for v in (lower, upper, lower_surplus, upper_surplus)):
                     raise EvidenceError("numerical headroom overflowed; use a meaningful signal scale")
                 within = check["minimum"] <= value <= check["maximum"]
                 margins = lower >= check.get("margin_lower", 0) and upper >= check.get("margin_upper", 0)
-                observation = {"scenario": case.scenario, "run": case.id, "parameters": case.parameters,
+                observation = {"scenario": case.scenario, "run": case.id, "resolution": case.resolution,
+                               "parameters": case.parameters,
                                "value": value, "lower_headroom": lower, "upper_headroom": upper,
+                               "lower_margin_surplus": lower_surplus, "upper_margin_surplus": upper_surplus,
                                "within_limits": within, "required_margins_met": margins}
                 observations.append(observation)
                 if not within or not margins:
@@ -171,6 +175,7 @@ def _collect(root: Path, study: Study, *, replay: bool) -> dict:
                 "analysis": analysis["id"], "id": check["id"], "requirement": check["requirement"],
                 "unit": check["unit"], "minimum": check["minimum"], "maximum": check["maximum"],
                 "required_lower_margin": check.get("margin_lower", 0), "required_upper_margin": check.get("margin_upper", 0),
+                "resolution_scope": ["coarse", "fine"],
                 "expected_runs": len(relevant), "evaluated_runs": len(observations),
                 "worst_observed_lower": min(observations, key=lambda row: row["lower_headroom"]) if observations else None,
                 "worst_observed_upper": min(observations, key=lambda row: row["upper_headroom"]) if observations else None,

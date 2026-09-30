@@ -5,6 +5,7 @@ import itertools
 import math
 import re
 from dataclasses import dataclass
+from decimal import Decimal, localcontext
 from pathlib import Path
 
 from argus_verticals.hardware.shared.evidence import (
@@ -31,8 +32,8 @@ MAX_INPUT_BYTES = 4 * 1024 * 1024
 UNITS = {"V", "A", "ohm", "F", "H", "Hz", "s", "1", "degC"}
 _LITERAL = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
 _PARAM = re.compile(rf"\.param\s+([a-z][a-z0-9_]*)\s*=\s*({_LITERAL}[a-z]*)", re.I)
-_SCALES = {"": 1, "t": 1e12, "g": 1e9, "meg": 1e6, "k": 1e3, "m": 1e-3,
-           "u": 1e-6, "n": 1e-9, "p": 1e-12, "f": 1e-15}
+_SCALES = {"": 0, "t": 12, "g": 9, "meg": 6, "k": 3, "m": -3,
+           "u": -6, "n": -9, "p": -12, "f": -15}
 CHECK_FIELDS = {
     "id", "requirement", "vector", "denominator", "component", "statistic", "unit",
     "minimum", "maximum", "at", "window", "level", "direction",
@@ -50,7 +51,12 @@ def spice_number(text: str) -> float:
     match = re.fullmatch(rf"({_LITERAL})([a-z]*)", text, re.I)
     if match is None or match[2].lower() not in _SCALES:
         raise EvidenceError(f"expected a literal SPICE number, got {text!r}")
-    return number(float(match[1]) * _SCALES[match[2].lower()], "SPICE value", minimum=-math.inf)
+    mantissa, _, exponent = match[1].lower().partition("e")
+    try:
+        value = float(f"{mantissa}e{int(exponent or '0') + _SCALES[match[2].lower()]}")
+    except ValueError as exc:
+        raise EvidenceError(f"invalid literal SPICE number: {text!r}") from exc
+    return number(value, "SPICE value", minimum=-math.inf)
 
 
 def _line(text: str) -> str:
@@ -245,7 +251,11 @@ def resolve_study(root: Path) -> Study:
             value = number(value, "axis value", minimum=0 if factor else -math.inf)
             if factor and value == 0:
                 raise EvidenceError("relative factors must be positive")
-            resolved.append(valid_value(parameter, nominal[parameter]*value if factor else value))
+            if factor:
+                # Two shortest binary64 decimal representations need at most 34 product digits.
+                with localcontext(prec=34):
+                    value = float(Decimal(str(nominal[parameter])) * Decimal(str(value)))
+            resolved.append(valid_value(parameter, value))
         if len(set(resolved)) != len(resolved):
             raise EvidenceError("resolved axis values must remain distinct")
         dimensions.append((axis["id"], parameter, resolved))
@@ -281,7 +291,9 @@ def resolve_study(root: Path) -> Study:
         if kind not in ("op", "dc", "ac", "tran"):
             raise EvidenceError("analysis kind must be op, dc, ac or tran")
         netlist = _text(analysis.get("netlist"), "analysis netlist")
-        dependencies, methods = deck_inputs(root, netlist)
+        dependencies, methods = deck_inputs(
+            root, netlist, declared_files=set(plan["models"]), max_expanded_bytes=MAX_INPUT_BYTES,
+        )
         if methods != [kind] or not dependencies <= plan["models"].keys() or parameter_file not in dependencies:
             raise EvidenceError("each declared deck must include the parameter file and exactly its declared analysis")
         text = project_file(root, netlist).read_text()

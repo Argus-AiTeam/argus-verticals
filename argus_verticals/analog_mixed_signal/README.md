@@ -88,6 +88,17 @@ Missing measurements, ambiguous crossings and failed refinements block both.
 `analog/results/ASSESSMENT.json` contains all violations, worst measured
 headroom, full coverage and separate `conclusion_valid`/`task_accepted` fields.
 
+Version 0.2.1 makes the worst-case resolution explicit and records signed
+surplus after required margins, so a fine-only table cannot silently stand in
+for the combined coarse/fine result. Decimal suffixes and relative factors are
+converted without an extra binary rounding step; exact model bounds remain
+strict. Include inspection reuses parsed files but counts every expanded byte,
+rejecting undeclared sources before reading and decks expanding beyond 4 MiB.
+Native regressions also cover an underdamped second-order RLC network:
+resonant gain and transient overshoot match independent equations, while a
+window containing multiple rising crossings is rejected as an invalid
+single-crossing measurement rather than accepted as a negative diagnosis.
+
 New studies retain the exact generated circuit for each sample and resolution.
 Independent validation recreates it from original inputs and replays every
 waveform. Subsequent checks compare byte copies in external Argus runtime state;

@@ -14,6 +14,7 @@ from argus_verticals.analog_mixed_signal import robustness, stages
 from argus_verticals.analog_mixed_signal.evidence import (
     PLAN,
     RESULTS,
+    deck_inputs,
     validate_plan,
     validate_simulation,
 )
@@ -23,7 +24,7 @@ from argus_verticals.analog_mixed_signal.run_robustness_reference import (
     diode_voltage,
     prepare_reference,
 )
-from argus_verticals.analog_mixed_signal.study import analysis_grid, resolve_study
+from argus_verticals.analog_mixed_signal.study import analysis_grid, resolve_study, spice_number
 from argus_verticals.hardware.shared.evidence import EvidenceError
 
 
@@ -142,6 +143,12 @@ def test_worst_headroom_and_every_failure_are_recomputed(reference):
             assert summary["worst_observed_lower"]["lower_headroom"] == min(value for value, _ in lower)
             assert summary["worst_observed_upper"]["upper_headroom"] == min(value for value, _ in upper)
             assert summary["expected_runs"] == summary["evaluated_runs"] == 34
+            assert summary["resolution_scope"] == ["coarse", "fine"]
+            for side in ("lower", "upper"):
+                worst = summary[f"worst_observed_{side}"]
+                run = next(row for row in relevant if row["id"] == worst["run"])
+                assert worst["resolution"] == run["resolution"]
+                assert worst[f"{side}_margin_surplus"] == worst[f"{side}_headroom"] - check.get(f"margin_{side}", 0)
     assert expected_failures == {(row["run"], row["check"], row["kind"]) for row in report["failures"]}
 
 
@@ -418,3 +425,195 @@ def test_oversized_original_source_is_rejected_before_text_parsing(planned, monk
 def test_invalid_source_encoding_is_reported_by_stage(planned):
     (planned / "design/parameters.inc").write_bytes(b"\xff")
     assert stages.stage_completion_issues("model", planned)
+
+
+@pytest.mark.parametrize("literal,expected", [
+    ("100n", 1e-7), ("10u", 1e-5), ("20u", 2e-5), ("0.1m", 1e-4),
+    ("1e-3k", 1), ("2.5MEG", 2.5e6), ("-250p", -2.5e-10),
+])
+def test_spice_units_convert_once_without_double_rounding(literal, expected):
+    assert spice_number(literal) == expected
+
+
+def test_original_suffix_nominal_matches_specification_exactly(planned):
+    path = planned / "design/parameters.inc"
+    lines = path.read_text().splitlines()
+    path.write_text("\n".join(".param capacitance=100n" if line.startswith(".param capacitance=") else line
+                              for line in lines) + "\n")
+    assert resolve_study(planned).scenarios[0]["parameters"]["capacitance"] == 1e-7
+
+
+def test_relative_sample_on_decimal_boundary_is_not_rejected_or_widened(planned):
+    path = planned / "design/parameters.inc"
+    path.write_text(path.read_text().replace(".param input_v=1\n", ".param input_v=0.1\n"))
+    spec = load(planned, "design/operating.json")
+    spec["parameters"]["input_v"].update(nominal=0.1, minimum=0.09, maximum=0.11)
+    spec["axes"] = [{"id": "input", "parameter": "input_v", "unit": "1", "factors": [0.9, 1.1], "source": "original"}]
+    save(planned, "design/operating.json", spec)
+    assert [row["parameters"]["input_v"] for row in resolve_study(planned).scenarios] == [0.1, 0.09, 0.11]
+    spec["axes"][0]["factors"][1] = math.nextafter(1.1, math.inf)
+    save(planned, "design/operating.json", spec)
+    with pytest.raises(EvidenceError, match="outside declared model validity"):
+        resolve_study(planned)
+
+
+def repeated_inputs(root, depth=8):
+    plan = load(root, PLAN)
+    for index in range(depth):
+        relative = f"design/repeated_{index}.inc"
+        content = "* " + "constant " * 100 + "\n" if index == depth-1 else f'.include "design/repeated_{index+1}.inc"\n' * 2
+        (root / relative).write_text(content)
+        plan["models"][relative] = dict(plan["models"]["design/circuit.inc"])
+    path = root / "design/circuit.inc"
+    path.write_text(path.read_text() + '.include "design/repeated_0.inc"\n')
+    save(root, PLAN, plan)
+    return plan
+
+
+def test_repeated_includes_are_inspected_once_without_changing_analysis_multiplicity(planned, monkeypatch):
+    plan = repeated_inputs(planned)
+    read = Path.read_text
+    reads = []
+
+    def counted(path, *args, **kwargs):
+        reads.append(path)
+        return read(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", counted)
+    paths, kinds = deck_inputs(planned, "benches/frequency.cir")
+    assert kinds == ["ac"]
+    assert set(paths) <= plan["models"].keys()
+    assert len(reads) == len(set(reads)) == len(paths)
+    monkeypatch.setattr(Path, "read_text", read)
+    leaf = planned / "design/repeated_7.inc"
+    leaf.write_text(".op\n")
+    _, kinds = deck_inputs(planned, "benches/frequency.cir")
+    assert kinds.count("op") == 128 and kinds.count("ac") == 1
+
+
+def test_expanded_include_bytes_are_bounded_before_native_work(planned, monkeypatch):
+    from argus_verticals.analog_mixed_signal import study
+
+    plan = repeated_inputs(planned)
+    original_bytes = sum((planned / name).stat().st_size for name in {PLAN, "design/operating.json", *plan["models"]})
+    monkeypatch.setattr(study, "MAX_INPUT_BYTES", original_bytes + 1)
+    with pytest.raises(EvidenceError, match="expanded SPICE inputs"):
+        resolve_study(planned)
+    assert not (planned / "analog/results").exists()
+
+
+def test_undeclared_include_is_rejected_before_reading_it(planned, monkeypatch):
+    hidden = planned / "design/undeclared.inc"
+    hidden.write_text("* Not an original declared model\n")
+    circuit = planned / "design/circuit.inc"
+    circuit.write_text(circuit.read_text() + '.include "design/undeclared.inc"\n')
+    read = Path.read_text
+
+    def declared_only(path, *args, **kwargs):
+        assert path != hidden, "undeclared input was read before its provenance was checked"
+        return read(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", declared_only)
+    with pytest.raises(EvidenceError, match="provenance"):
+        resolve_study(planned)
+
+
+def test_positive_headroom_can_still_fail_the_required_margin(planned):
+    spec = load(planned, "design/operating.json")
+    check = spec["analyses"][0]["checks"][0]
+    check.update(minimum=0.7, maximum=0.84, margin_upper=0.04)
+    save(planned, "design/operating.json", spec)
+    report = run_analysis(planned)
+    summary = next(row for row in report["checks"] if row["id"] == "gain")
+    worst = summary["worst_observed_upper"]
+    assert worst["within_limits"] and worst["upper_headroom"] > 0
+    assert worst["upper_margin_surplus"] < 0 and not worst["required_margins_met"]
+    assert not summary["passed"] and report["task_accepted"]
+    assert any(row["kind"] == "margin" and row["resolution"] == worst["resolution"] for row in report["failures"])
+
+
+def rlc_project(root, *, ambiguous=False):
+    root.mkdir()
+    (root / "analog").mkdir()
+    (root / "parameters.inc").write_text(".param resistance=20\n.param inductance=10m\n.param capacitance=1u\n")
+    (root / "circuit.inc").write_text(
+        "Vin in 0 DC 1 AC 1\nRseries in damp {resistance}\n"
+        "Lseries damp out {inductance} IC=0\nCshunt out 0 {capacitance} IC=0\n"
+    )
+    for name, directive in (("frequency", ".ac dec 400 10 100000"), ("step", ".tran 1u 5m 0 1u uic")):
+        (root / f"{name}.cir").write_text(
+            "Original underdamped RLC network\n.include parameters.inc\n.include circuit.inc\n"
+            ".save v(in) v(out)\n" + directive + "\n.end\n"
+        )
+    spec = {
+        "goal": "diagnose", "source": "Original ideal second-order low-pass circuit.",
+        "limitations": ["Finite samples of ideal RLC, not physical qualification."],
+        "parameter_file": "parameters.inc",
+        "parameters": {
+            "resistance": {"nominal": 20, "minimum": 10, "maximum": 40, "unit": "ohm", "source": "Original series damping."},
+            "inductance": {"nominal": 0.01, "minimum": 0.005, "maximum": 0.02, "unit": "H", "source": "Original ideal inductor."},
+            "capacitance": {"nominal": 1e-6, "minimum": 0.5e-6, "maximum": 2e-6, "unit": "F", "source": "Original ideal capacitor."},
+        },
+        "design_variables": {},
+        "axes": [{"id": "r", "parameter": "resistance", "unit": "1", "factors": [0.9, 1.1], "source": "Original damping samples."}],
+        "relative_tolerances": [1e-5, 1e-7],
+        "analyses": [
+            {"id": "frequency", "kind": "ac", "netlist": "frequency.cir", "checks": [{
+                "id": "resonance", "requirement": "frequency", "vector": "v(out)", "denominator": "v(in)",
+                "component": "magnitude", "statistic": "max", "window": [100, 10000],
+                "unit": "1", "minimum": 1, "maximum": 4, "margin_upper": 0.1, "max_delta": 0.01,
+            }]},
+            {"id": "step", "kind": "tran", "netlist": "step.cir", "checks": [{
+                "id": "overshoot", "requirement": "step", "vector": "v(out)",
+                "component": "real", "statistic": "max", "window": [1e-8, 0.005],
+                "unit": "V", "minimum": 0.9, "maximum": 1.2, "margin_upper": 0.01, "max_delta": 1e-4,
+            }]},
+        ],
+    }
+    if ambiguous:
+        spec["analyses"][1]["checks"][0].update(
+            statistic="crossing", direction="rising", level=1, unit="s",
+            minimum=0, maximum=0.005, margin_upper=0, max_delta=1e-6,
+        )
+    (root / "operating.json").write_text(json.dumps(spec))
+    plan = {
+        "objective": "Diagnose damping, resonance and overshoot of the supplied second-order network.",
+        "requirements": {"frequency": "Bound resonant gain.", "step": "Bound transient overshoot."},
+        "limitations": spec["limitations"],
+        "models": {
+            name: {"kind": "testbench" if name.endswith(".cir") else "ideal", "source": spec["source"],
+                   "validity": "Declared parameter ranges.", "limitations": spec["limitations"]}
+            for name in ("parameters.inc", "circuit.inc", "frequency.cir", "step.cir")
+        },
+        "robustness": {"specification": "operating.json", "design": {}},
+    }
+    save(root, PLAN, plan)
+    return root
+
+
+def test_real_resonant_rlc_matches_second_order_equations(tmp_path):
+    root = rlc_project(tmp_path / "rlc")
+    report = run_analysis(root)
+    assert report["conclusion_valid"] and report["task_accepted"] and report["status"] == "failed"
+    assert len(report["runs"]) == 12 and len(report["comparisons"]) == 6
+    assert all(row["passed"] for row in report["comparisons"])
+    for row in report["runs"]:
+        p = row["parameters"]
+        damping = p["resistance"] / 2 * math.sqrt(p["capacitance"] / p["inductance"])
+        if row["analysis"] == "frequency":
+            expected = 1/(2*damping*math.sqrt(1-damping*damping))
+            assert row["measurements"]["resonance"] == pytest.approx(expected, abs=0.01)
+        else:
+            expected = 1 + math.exp(-math.pi*damping/math.sqrt(1-damping*damping))
+            assert row["measurements"]["overshoot"] == pytest.approx(expected, abs=1e-4)
+    assert validate_simulation(root) == report
+
+
+def test_real_ringing_does_not_turn_multiple_crossings_into_a_valid_diagnosis(tmp_path):
+    root = rlc_project(tmp_path / "ambiguous-rlc", ambiguous=True)
+    with pytest.raises(EvidenceError, match="not accepted"):
+        run_analysis(root)
+    report = load(root, ASSESSMENT)
+    assert not report["conclusion_valid"] and not report["task_accepted"]
+    failures = [row for row in report["failures"] if row["kind"] == "invalid_measurement"]
+    assert len(failures) == 6 and all("expected one crossing" in row["reason"] for row in failures)

@@ -173,6 +173,10 @@ are lowercase identifiers. Decimal/exponent values and the native `t`, `g`,
 multiple assignments occur in that file. Do not redeclare/shadow these sampled
 parameters elsewhere. The Reviewer must still establish that the circuit
 actually uses them and that their physical meanings and ranges are justified.
+Suffixes are combined with the decimal exponent before binary conversion
+(`100n` equals `1e-7`). Relative samples multiply the canonical decimal values
+before one binary conversion. This avoids representation-only boundary failures;
+model limits are still strict, not widened by an acceptance epsilon.
 
 For an existing deck using parameters `r` and `c`, an illustrative specification
 is:
@@ -248,8 +252,11 @@ Non-OP refinement must actually increase saved sample count. Every check must
 meet its original comparison tolerance at every scenario. These comparisons do
 not prove a global error bound, a full settling guarantee or loop stability.
 
-The bounded subset allows 17 scenarios, 32 source files, 4 MiB of original input
-and 1,500,000 estimated native points. Native calls are bounded to 120 seconds
+The bounded subset allows 17 scenarios, 32 source files, 4 MiB of original input,
+4 MiB of expanded source per deck and 1,500,000 estimated native points.
+Undeclared includes are rejected before their contents are read. Repeated files
+are inspected once, but their repeated bytes and analysis commands still count
+in the expansion; cyclic includes remain errors. Native calls are bounded to 120 seconds
 and 64 MiB; each execution/replay phase has 600 seconds and 512 MiB of output
 including generated decks, excluding independent retained copies.
 Native diagnostics require investigation rather than a successful diagnosis.
@@ -261,6 +268,16 @@ native-output copies. Every case retains its generated `inputs/`, `wave.raw`,
 worst observed upper/lower headroom with actual parameters, coverage and every
 refinement, separating engineering `status` from `conclusion_valid` and
 `task_accepted`.
+
+Each check's `resolution_scope` is `["coarse", "fine"]`: its
+`worst_observed_lower`/`worst_observed_upper` cover both resolutions, not just
+the preferred fine run. Each observation names its `resolution`.
+`lower_headroom=value-minimum` and `upper_headroom=maximum-value` describe
+distance to the bounds. The corresponding `*_margin_surplus` additionally
+subtracts the required margin; a positive headroom can therefore still fail.
+Use those exact worst observations, including run, resolution and parameters,
+in the report. A fine-only table is allowed when labeled, but cannot replace
+the combined worst-case summary or omit coarse-only failures.
 
 The read-only checker regenerates every case from original source and
 independently replays all native waveform samples before accepting new evidence.

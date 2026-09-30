@@ -40,3 +40,8 @@ a `design` goal may not. Neither can finish with missing cases, invalid
 measurements or failed refinements. Use the canonical stage command so an
 unchanged accepted numerical comparison is reused while report wording is
 corrected.
+
+Copy combined worst-case values from the assessment with their explicit
+resolution and parameter coordinates. Label fine-only displays separately.
+Distinguish raw bound headroom from the signed surplus after the required
+margin; preserve coarse-only failures even when a fine-run display looks better.
