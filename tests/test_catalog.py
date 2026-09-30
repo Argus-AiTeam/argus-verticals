@@ -486,6 +486,7 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
     script = """
 import json
 import importlib
+import os
 import re
 import shlex
 import subprocess
@@ -505,6 +506,8 @@ assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
 project = Path.cwd() / "circuit"
 prepare_reference(project)
+if directory == "power":
+    os.environ["ARGUS_SKILL_SESSION_ROOT"] = str(Path.cwd() / "runtime-state")
 prompt = stages.render_role_prompt_fragment(
     role="engineer", operation="mission", stage=stage, scope="", project_root=project,
 )
@@ -531,6 +534,21 @@ elif directory == "power":
         assessment = json.loads((project / directory / "results/ASSESSMENT.json").read_text())
         assert assessment["task_accepted"] and assessment["status"] == "passed"
         assert assessment["coverage"]["expected_scenarios"] == 5
+    saved = Path(os.environ["ARGUS_SKILL_SESSION_ROOT"]) / "power-validation"
+    assert (saved / "VALIDATED.json").is_file()
+    (project / "power/REVIEW.md").write_text("Report-only clarification; no hardware approval.")
+    reuse = '''
+from pathlib import Path
+from argus.verticals._base import load_vertical_contract
+contract = load_vertical_contract("power_electronics")
+from argus_verticals.power_electronics import native
+def no_replay(*args, **kwargs):
+    raise AssertionError("unchanged Store evidence was replayed")
+native.execute = no_replay
+assert not contract.completion_issues("review", Path.cwd())
+'''
+    checked = subprocess.run([sys.executable, "-c", reuse], cwd=project, capture_output=True, text=True, timeout=20)
+    assert checked.returncode == 0, (checked.stdout, checked.stderr)
 else:
     assert len(record["runs" if directory == "analog" else "studies"]) == 6
 print("Store-only native execution and read-only check passed")

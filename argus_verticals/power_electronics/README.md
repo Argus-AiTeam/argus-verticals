@@ -53,6 +53,18 @@ executes and independently replays every coarse/fine pair, then computes
 coverage, all original limit failures and required numerical headroom.
 The original plan format and scoped workflow remain compatible.
 
+Version 0.2.1 retains successful numerical validation in the Argus session's
+runtime state, outside the execution project. Simulation/review checks and
+their child processes compare independent byte copies of the plan, models,
+specification, results, assessment, native files, checker source and ngspice
+binary, with recorded runtime/tool versions. Unchanged numerical evidence
+needs no further native replay; editing only `power/REVIEW.md` still requires
+independent report review. Changed evidence is revalidated, never accepted
+from a project-local flag. Source updates in a running checker require a restart
+so old imported code cannot approve the new implementation. Without external runtime state the checker always
+replays. This uses the existing trusted host-state boundary, not a filesystem
+sandbox against a process with write access to that state.
+
 The supplied specification fixes `diagnose` or `design`. A valid complete
 diagnosis may conclude that the circuit fails; a design task must satisfy all
 sampled conditions and margins. Missing/invalid evidence or failed refinement

@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "967a5792b40cb65636b13ddad53fa3da1a081232",
+    "commit": "90218cbf37c05af3ff0eac2fcc95e7404a3555fd",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -598,14 +598,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 131337,
+      "size_bytes": 137994,
       "skill_parents": [],
       "tags": [
         "hardware",
         "power",
         "spice"
       ],
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     "prose": {
       "api_version": 1,

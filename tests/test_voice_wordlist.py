@@ -78,6 +78,7 @@ VOICE_CLEAN_FILES: tuple[str, ...] = (
     "argus_verticals/power_electronics/run_reference.py",
     "argus_verticals/power_electronics/study.py",
     "argus_verticals/power_electronics/robustness.py",
+    "argus_verticals/power_electronics/validation.py",
     "argus_verticals/power_electronics/run_robustness_reference.py",
     "argus_verticals/rf_design/stages.py",
     "argus_verticals/rf_design/networks.py",

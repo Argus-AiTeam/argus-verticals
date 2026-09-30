@@ -171,6 +171,13 @@ re-executes ngspice in temporary directories. Every saved waveform variable and
 sample must match replay; wall-clock headers and performance logs are not
 numeric evidence. The project remains unchanged.
 
+With an external Argus runtime state directory, successful numerical agreement
+is retained there as independent byte copies. Later stage checks reuse it only
+while numerical inputs, result records, native files and checker/tool identity
+remain unchanged. Report-only corrections still need Reviewer approval, but
+not another numerical replay. Without this state, the checker always replays.
+Do not create or modify runtime validation records as project deliverables.
+
 ## Operating-envelope mode: fixed goal, full sampled coverage and margins
 
 Alternatively, keep the plan's `objective`, `requirements`, `limitations`

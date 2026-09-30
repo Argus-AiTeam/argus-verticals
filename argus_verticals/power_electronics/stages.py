@@ -12,9 +12,9 @@ from argus_verticals.hardware.shared.evidence import (
     project_file,
 )
 
-from .evidence import validate_simulation
 from .model import validate_model, validate_specification
 from .study import resolve_study
+from .validation import validate_current
 
 if "routing_path" not in VerticalPlugin.__dataclass_fields__:
     raise RuntimeError("power_electronics requires Argus vertical routing paths")
@@ -71,8 +71,9 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
         + "\nEngineer: run actual ngspice. Reviewer: independently examine circuit topology, "
         "units, PWM timing, load change, source signs, stored energy and time-step sensitivity. "
         "Manager/Planner: preserve original limits and do not require unrelated implementation.\n"
-        "Use this checker from the execution project. It temporarily re-executes native studies "
-        "without modifying the project; [] and exit 0 establish bounded numerical agreement, "
+        "Use this checker from the execution project. It independently replays new or changed "
+        "numerical evidence and reuses unchanged verified files from runtime state without "
+        "modifying the project; [] and exit 0 establish bounded numerical agreement, "
         "not hardware safety, device qualification or measured efficiency.\n"
         "For an operating-envelope diagnosis, task acceptance is not engineering acceptance: "
         "report every failing condition and do not label a failed design as passing. "
@@ -83,7 +84,7 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
     )
 
 
-def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
+def stage_completion_issues(stage: str, project_root: Path, *, state_root: Path | None = None) -> tuple[str, ...]:
     try:
         if stage == "specification":
             plan = validate_specification(project_root)
@@ -94,7 +95,7 @@ def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
             if "robustness" in plan:
                 resolve_study(project_root)
         elif stage in ("simulation", "review"):
-            validate_simulation(project_root)
+            validate_current(project_root, state_root=state_root)
             if stage == "review":
                 project_file(project_root, "power/REVIEW.md")
         else:
