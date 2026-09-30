@@ -97,6 +97,8 @@ VOICE_CLEAN_FILES: tuple[str, ...] = (
     "argus_verticals/pcb_design/evidence.py",
     "argus_verticals/pcb_design/run_analysis.py",
     "argus_verticals/pcb_design/run_reference.py",
+    "argus_verticals/pcb_design/refill.py",
+    "argus_verticals/pcb_design/run_zone_reference.py",
     "argus_verticals/package_design/stages.py",
     "argus_verticals/package_design/model.py",
     "argus_verticals/package_design/mesh.py",

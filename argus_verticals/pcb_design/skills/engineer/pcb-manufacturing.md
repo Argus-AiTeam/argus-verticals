@@ -20,6 +20,11 @@ millimetres at the absolute origin. It compares the full regenerated contents
 apart from generation timestamps. A Gerber drawn-feature count is a structural
 check, not an area, continuity or manufacturability calculation.
 
+For boards with copper zones, export only from the explicitly refilled working
+copy used by the selected DRC. Include every enabled inner and outer copper
+layer. Preserve the original unfilled/stale source and the refilled board
+separately so the manufacturing files have an unambiguous source.
+
 Fabricator-specific material, finish, tolerance, impedance, panelization,
 testing and documentation requirements remain explicit external requirements.
 Do not upload a project, place an order or claim universal DFM acceptance from

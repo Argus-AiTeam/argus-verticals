@@ -98,7 +98,13 @@ PCB tests require KiCad 9 `kicad-cli` and the declared `pcb` extra (`sexpdata`).
 The original local-library coupon exercises real ERC, DRC with parity and
 Gerber/Excellon generation. Deliberate defects must fail native checks; changing
 both saved output copies must still fail independent temporary replay. Keep
-unsupported zones/advanced drills explicit rather than trusting stale fill.
+unsupported zone forms and advanced drills explicit rather than trusting stale fill.
+PCB copper-zone tests additionally execute the official KiCad 9 `pcbnew`
+binding in a separate system Python process (the KiCad package installed in CI
+includes it). Require exact CLI/binding version agreement. Preserve original
+and frozen inputs, discard old fills, and use one refilled working board for
+checks and exports. Cover custom-rule parse failures and actual clearance
+effects; KiCad's `LoadBoard` alone can hide invalid custom rules.
 Package thermal tests require native `gmsh` and `ccx` (`calculix-ccx` on Ubuntu)
 plus the `package` numpy extra. Preserve actual mesh/solver output, conserved
 surface loads and native heat balance. Check independent series-resistance

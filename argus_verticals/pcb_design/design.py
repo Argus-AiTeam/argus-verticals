@@ -163,12 +163,29 @@ def input_closure(root: Path, plan: dict, *, all_design: bool = False) -> tuple[
         layers = [str(row[1]) for row in child(board, "layers")[1:] if isinstance(row, list) and len(row) >= 3]
         if not {"F.Cu", "B.Cu"} <= set(layers) or len(children(board, "footprint")) < 1:
             raise EvidenceError("a nonempty board with at least two copper layers is required")
-        if children(board, "zone"):
-            raise EvidenceError("copper zones and rule areas need a separate refill-aware implementation; not supported here")
+        zones = children(board, "zone")
+        if zones and not plan.get("zone_refill"):
+            raise EvidenceError("copper zones require explicit zone_refill: true; stored fills are not trusted")
+        if plan.get("zone_refill") and not zones:
+            raise EvidenceError("zone_refill requires actual board copper zones")
+        zone_ids = []
+        for zone in zones:
+            if children(zone, "keepout") or children(zone, "rule_area") or children(zone, "layers"):
+                raise EvidenceError("rule areas and multi-layer zone objects are unsupported; use single-layer copper zones")
+            layer = str(child(zone, "layer")[1])
+            if layer not in layers or not layer.endswith(".Cu"):
+                raise EvidenceError("zones must belong to an enabled copper layer")
+            zone_ids.append(text(child(zone, "uuid")[1], "original zone identity"))
+            if not children(zone, "polygon"):
+                raise EvidenceError("copper zones need original polygon outlines")
+        if len(zones) > 256 or len(zone_ids) != len(set(zone_ids)):
+            raise EvidenceError("use at most 256 copper zones with distinct original identities")
         if not any(str(child(item, "layer")[1]) == "Edge.Cuts" for tag in ("gr_line", "gr_rect", "gr_arc", "gr_poly", "gr_circle") for item in children(board, tag)):
             raise EvidenceError("board needs actual Edge.Cuts geometry")
         pads = 0
         for footprint in children(board, "footprint"):
+            if children(footprint, "zone"):
+                raise EvidenceError("footprint-local zones and rule areas are unsupported")
             library_item(text(footprint[1] if len(footprint) > 1 else None, "footprint identity"), "fp-lib-table")
             for pad in children(footprint, "pad"):
                 pads += 1
@@ -225,6 +242,8 @@ def input_closure(root: Path, plan: dict, *, all_design: bool = False) -> tuple[
 
 def validate_plan(root: Path, *, all_design: bool = False) -> tuple[dict, list[str]]:
     plan = validate_specification(root)
+    if type(plan.get("zone_refill", False)) is not bool:
+        raise EvidenceError("zone_refill must be an explicit boolean")
     checks = plan.get("checks", [])
     if not isinstance(checks, list) or len(checks) > 2 or any(not isinstance(c, dict) for c in checks):
         raise EvidenceError("checks: choose at most one ERC and one DRC")
@@ -254,6 +273,10 @@ def validate_plan(root: Path, *, all_design: bool = False) -> tuple[dict, list[s
             integer(count, "drill hits")
     if not checks and fab is None and not all_design:
         raise EvidenceError("select at least one native check or fabrication export")
+    if plan.get("zone_refill") and not (
+        any(c["kind"] == "drc" for c in checks) or fab is not None or all_design and "board" in plan.get("design", {})
+    ):
+        raise EvidenceError("zone_refill needs a selected board operation, not ERC alone")
     inputs, layers = input_closure(root, plan, all_design=all_design)
     if fab is not None:
         mandatory = {layer for layer in layers if layer.endswith(".Cu")} | {"Edge.Cuts"}
