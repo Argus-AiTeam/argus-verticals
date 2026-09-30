@@ -8,10 +8,11 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from argus_verticals.hardware.shared.evidence import project_file
+from argus_verticals.hardware.shared.evidence import project_file, record
 
 from .evidence import (
     INPUTS_DIR,
+    PLAN,
     RESULTS,
     RESULTS_DIR,
     RUN_ENVIRONMENT,
@@ -22,8 +23,12 @@ from .evidence import (
 )
 
 
-def run_analysis(root: Path) -> dict[str, dict[str, float]]:
+def run_analysis(root: Path) -> dict:
     root = root.resolve()
+    if "robustness" in record(root, PLAN):
+        from .robustness import run_robustness
+
+        return run_robustness(root)
     plan, required = validate_plan(root)
     if shutil.which("ngspice") is None:
         raise RuntimeError("ngspice is required; no simulation was performed")
@@ -85,7 +90,7 @@ def main() -> None:
     parser.add_argument("project", type=Path)
     args = parser.parse_args()
     print(json.dumps(run_analysis(args.project), indent=2))
-    print("PASS: declared ngspice analyses and numerical checks; no physical implementation claim")
+    print("PASS: requested numerical task accepted; a diagnosis may report noncompliance, never hardware approval")
 
 
 if __name__ == "__main__":

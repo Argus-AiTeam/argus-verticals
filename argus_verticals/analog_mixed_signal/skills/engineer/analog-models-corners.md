@@ -32,3 +32,11 @@ the runner freezes their bytes. External library selection, dynamically loaded
 device code and file-driven stimuli are outside its first reproducible subset.
 Changing model or testbench bytes invalidates old results, even if filenames and
 human-readable condition labels stay the same.
+
+For a supplied parameter study, use the operating-envelope format in the
+canonical contract instead of manually copying nominal results into corner
+rows. Preserve the complete combination set, one common design and original
+model-validity ranges. Temperature must act through the actual declared native
+device equations; a temperature label does not change an ideal resistor or
+capacitor. OP checks solver-tolerance sensitivity, whereas AC/DC/transient also
+need an actual denser grid or smaller time step. Name the limitation precisely.

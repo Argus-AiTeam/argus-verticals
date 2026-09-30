@@ -441,6 +441,7 @@ def _expected_members(name: str) -> list[str]:
 
 @pytest.mark.parametrize("vertical,stage,directory,reference", [
     ("analog_mixed_signal", "simulation", "analog", "run_reference"),
+    ("analog_mixed_signal", "simulation", "analog", "run_robustness_reference"),
     ("rf_design", "analysis", "rf", "run_reference"),
     ("pcb_design", "verification", "pcb", "run_reference"),
     ("package_design", "thermal", "package", "run_reference"),
@@ -467,6 +468,7 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
         entry["archive"]["url"] = (dist / entry["archive"]["file"]).as_uri()
     catalog_path = tmp_path / "catalog.json"
     catalog_path.write_text(json.dumps(local_catalog), encoding="utf-8")
+    dependency_paths = sorted({sysconfig.get_path("purelib"), sysconfig.get_path("platlib")})
     isolated = tmp_path / "interpreter"
     venv.EnvBuilder(with_pip=False).create(isolated)
     python = isolated / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
@@ -475,7 +477,6 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
         text=True,
     ).strip())
     # Share dependency wheels without executing the parent's editable-project .pth files.
-    dependency_paths = sorted({sysconfig.get_path("purelib"), sysconfig.get_path("platlib")})
     (site_packages / "dependency-wheels.pth").write_text("\n".join(dependency_paths) + "\n", encoding="utf-8")
     env = {key: value for key, value in os.environ.items() if not key.startswith("ARGUS_SKILL_")}
     env.update({
@@ -506,7 +507,7 @@ assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
 project = Path.cwd() / "circuit"
 prepare_reference(project)
-if directory == "power":
+if directory == "power" or reference == "run_robustness_reference":
     os.environ["ARGUS_SKILL_SESSION_ROOT"] = str(Path.cwd() / "runtime-state")
 prompt = stages.render_role_prompt_fragment(
     role="engineer", operation="mission", stage=stage, scope="", project_root=project,
@@ -534,23 +535,36 @@ elif directory == "power":
         assessment = json.loads((project / directory / "results/ASSESSMENT.json").read_text())
         assert assessment["task_accepted"] and assessment["status"] == "passed"
         assert assessment["coverage"]["expected_scenarios"] == 5
-    saved = Path(os.environ["ARGUS_SKILL_SESSION_ROOT"]) / "power-validation"
-    assert (saved / "VALIDATED.json").is_file()
-    (project / "power/REVIEW.md").write_text("Report-only clarification; no hardware approval.")
-    reuse = '''
-from pathlib import Path
-from argus.verticals._base import load_vertical_contract
-contract = load_vertical_contract("power_electronics")
-from argus_verticals.power_electronics import native
-def no_replay(*args, **kwargs):
-    raise AssertionError("unchanged Store evidence was replayed")
-native.execute = no_replay
-assert not contract.completion_issues("review", Path.cwd())
-'''
-    checked = subprocess.run([sys.executable, "-c", reuse], cwd=project, capture_output=True, text=True, timeout=20)
-    assert checked.returncode == 0, (checked.stdout, checked.stderr)
+elif directory == "analog" and reference == "run_robustness_reference":
+    assert len(record["runs"]) == 136
+    assessment = json.loads((project / directory / "results/ASSESSMENT.json").read_text())
+    assert assessment["task_accepted"] and assessment["status"] == "passed"
+    assert assessment["coverage"]["expected_scenarios"] == 17
+    assert len(assessment["comparisons"]) == 136
 else:
     assert len(record["runs" if directory == "analog" else "studies"]) == 6
+if directory == "power" or reference == "run_robustness_reference":
+    saved = Path(os.environ["ARGUS_SKILL_SESSION_ROOT"]) / f"{directory}-validation"
+    assert (saved / "VALIDATED.json").is_file()
+    (project / directory / "REVIEW.md").write_text("Report-only clarification; no hardware approval.")
+    reuse = '''
+from pathlib import Path
+import sys
+from argus.verticals._base import load_vertical_contract
+vertical = sys.argv[1]
+contract = load_vertical_contract(vertical)
+def no_replay(*args, **kwargs):
+    raise AssertionError("unchanged Store evidence was replayed")
+if vertical == "power_electronics":
+    from argus_verticals.power_electronics import native
+    native.execute = no_replay
+else:
+    from argus_verticals.analog_mixed_signal import robustness
+    robustness._execute = no_replay
+assert not contract.completion_issues("review", Path.cwd())
+'''
+    checked = subprocess.run([sys.executable, "-c", reuse, vertical], cwd=project, capture_output=True, text=True, timeout=20)
+    assert checked.returncode == 0, (checked.stdout, checked.stderr)
 print("Store-only native execution and read-only check passed")
 """
     result = subprocess.run(

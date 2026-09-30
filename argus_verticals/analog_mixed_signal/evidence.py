@@ -153,6 +153,11 @@ def _validate_check(check: object, requirements: dict) -> str:
 
 
 def validate_plan(root: Path) -> tuple[dict, list[str]]:
+    if "robustness" in record(root, PLAN):
+        from .study import resolve_study
+
+        study = resolve_study(root)
+        return record(root, PLAN), list(study.inputs)
     plan = validate_model(root)
     runs = plan.get("runs")
     if not isinstance(runs, list) or not runs:
@@ -207,7 +212,11 @@ def run_command(run: dict) -> list[str]:
     ]
 
 
-def validate_simulation(root: Path) -> dict[str, dict[str, float]]:
+def validate_simulation(root: Path) -> dict:
+    if "robustness" in record(root, PLAN):
+        from .robustness import validate_robustness
+
+        return validate_robustness(root)
     plan, required = validate_plan(root)
     results = record(root, RESULTS)
     _text(results.get("tool_version"), "tool_version")

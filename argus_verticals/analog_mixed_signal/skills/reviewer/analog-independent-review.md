@@ -27,6 +27,14 @@ automatic failure or automatic permission to ignore numerical problems.
 
 Approve only the selected scope. Require a clear statement of ideal/behavioral
 assumptions, omitted mechanisms and any need for measured or extracted data.
-If records are missing or a relevant numerical condition fails, request a
-concrete repair or report the missing capability. Never create successful
+If records are missing or numerical reliability fails, request a concrete
+repair or report the missing capability. Preserve valid out-of-limit findings
+for a fixed diagnosis rather than demanding an unrequested redesign. Never create successful
 measurements or modify completion state to compensate for an incomplete study.
+
+For an operating envelope, independently verify the full original combination
+set, generated parameter values, coarse/fine controls and all failed conditions.
+Distinguish an accepted negative diagnosis from a passing circuit. Inspect the
+worst headroom and actual parameter coordinates, not just the nominal plot.
+When numerical evidence is unchanged, reuse its accepted comparison and focus
+report corrections on interpretation rather than another solver run.
