@@ -399,7 +399,9 @@ def test_missing_tool_is_an_explicit_failure(buck, monkeypatch):
 
 @pytest.mark.parametrize("code,banner", [(0, "ngspice-41"), (0, "unrecognized"), (1, "ngspice-42")])
 def test_unsupported_tool_response_is_not_success(monkeypatch, code, banner):
-    monkeypatch.setattr(native.subprocess, "run", lambda *a, **kw: subprocess.CompletedProcess(a[0], code, banner, ""))
+    from argus_verticals.hardware.spice import batch
+
+    monkeypatch.setattr(batch.subprocess, "run", lambda *a, **kw: subprocess.CompletedProcess(a[0], code, banner, ""))
     with pytest.raises(EvidenceError, match="requires native ngspice"):
         native.version()
 

@@ -100,7 +100,7 @@ are still separate work, not capabilities implied by the taxonomy.
 | entry point | module | purpose (as shown in the Manager's menu) | skill parents |
 |---|---|---|---|
 | `ale_last_exam` | `argus_verticals.ale_last_exam` | Agents' Last Exam long-horizon professional workflow in a real sandbox with hidden-reference, artifact-first GUI+CLI delivery | |
-| `analog_mixed_signal` | `argus_verticals.analog_mixed_signal` | analog/mixed-signal knowledge and scoped native ngspice analysis with explicit model limits | |
+| `analog_mixed_signal` | `argus_verticals.analog_mixed_signal` | scoped ngspice OP/DC/AC/transient analysis, parameter envelopes, margins and numerical refinement with explicit model limits | |
 | `chip_design` | `argus_verticals.chip_design` | end-to-end digital ASIC/accelerator design from workload and microarchitecture through RTL, physical implementation, and sign-off | `digital_circuit` |
 | `classical_poetry` | `argus_verticals.classical_poetry` | compose or check classical Chinese 近体诗/古体/词 with reproducible 押韵/平仄 prosody and literary review | |
 | `digital_circuit` | `argus_verticals.digital_circuit` | Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off | |
@@ -133,8 +133,9 @@ each with a JSON schema.
 `argus_verticals/hardware/shared/` similarly shares file/copy/numeric record
 utilities between independent hardware domains, without inheriting their
 knowledge, stages or acceptance methods.
-`argus_verticals/hardware/spice/` shares the native waveform reader and scalar
-measurements between analog and power domains, without sharing their workflows.
+`argus_verticals/hardware/spice/` shares the native waveform reader, scalar
+measurements, bounded process execution and byte-bound numerical validation
+storage between analog and power domains, without sharing their workflows.
 
 Each vertical directory has its own `README.md` with its modules, the extras
 it needs, and the tests that cover it.

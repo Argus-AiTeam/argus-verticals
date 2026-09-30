@@ -1,4 +1,5 @@
 """Independent analog work with selected methods and explicit model limits."""
+import os
 import shlex
 import sys
 from pathlib import Path
@@ -10,9 +11,12 @@ from argus_verticals.hardware.shared.evidence import (
     EvidenceError,
     evidence_check_command,
     project_file,
+    record,
 )
 
-from .evidence import validate_model, validate_simulation, validate_specification
+from .evidence import PLAN, validate_model, validate_simulation, validate_specification
+from .study import resolve_study
+from .validation import validate_current
 
 if "routing_path" not in VerticalPlugin.__dataclass_fields__:
     raise RuntimeError("analog_mixed_signal requires Argus vertical routing paths")
@@ -22,7 +26,8 @@ VERTICAL_ROUTING_PATH = ("hardware", "analog_mixed_signal")
 VERTICAL_PURPOSE = (
     "analog/mixed-signal circuits: bias, small-signal gain, feedback, op-amps, filters, "
     "noise, device models and data-converter interfaces; executable ngspice operating-point, "
-    "DC sweep, AC and transient analysis, not RTL verification, RF/EM, PCB layout or foundry sign-off"
+    "DC sweep, AC and transient analysis with parameter corners, margins and numerical refinement, "
+    "not RTL verification, RF/EM, PCB layout or foundry sign-off"
 )
 VERTICAL_SKILLS = Path(__file__).parent / "skills"
 VERTICAL_SKILL_PARENTS = ()
@@ -43,7 +48,7 @@ WORKFLOW_STAGE_REQUIREMENTS = {
 CHECKLIST_ITEMS = {
     "specification": (ChecklistItem("analog.requirements", "Observable analog requirements and exclusions are explicit.", "analog/PLAN.json"),),
     "model": (ChecklistItem("analog.models", "Actual circuit/model inputs have named provenance, validity and limitations.", "analog/PLAN.json models and project-local SPICE files"),),
-    "simulation": (ChecklistItem("analog.native-analysis", "Every requested analysis ran, with current inputs and native waveform measurements inside declared bounds.", "analog/results/RESULTS.json, native waveforms and logs"),),
+    "simulation": (ChecklistItem("analog.native-analysis", "Requested native analyses are current; envelope coverage and refinements are valid, with fixed-goal diagnosis/design acceptance.", "analog/results/RESULTS.json, native waveforms and optional ASSESSMENT.json"),),
     "review": (ChecklistItem("analog.conclusion", "The conclusion distinguishes ideal/model-dependent simulation from measured or manufactured behavior.", "analog/REVIEW.md and current simulation evidence"),),
 }
 
@@ -54,6 +59,12 @@ def render_role_prompt_fragment(
     if stage not in STAGE_ORDER:
         return ""
     contract = Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
+    runtime_root = os.environ.get("ARGUS_SKILL_SESSION_ROOT")
+    locations = f"Installed analog provider source: `{Path(__file__).resolve().parent}`.\n"
+    if runtime_root:
+        locations += f"Argus task runtime root: `{Path(runtime_root).resolve()}`. Keep the inherited ARGUS_SKILL_SESSION_ROOT unchanged.\n"
+    else:
+        locations += "No Argus task runtime root is configured; standalone operating-envelope checks perform full native replay.\n"
     execution = ""
     if stage in {"simulation", "review"}:
         script = (
@@ -70,7 +81,7 @@ def render_role_prompt_fragment(
     return (
         f"## Analog work: {stage}\nApply only the selected scope and requested analysis kinds. "
         "The examples below define record formats, not extra work to perform.\n\n"
-        + contract + execution
+        + locations + "\n" + contract + execution
         + "\nEngineer: create records from actual execution. Reviewer: independently "
         "check circuit assumptions, model validity, numerical tolerances and native results "
         "before approving them. Manager/Planner must preserve the stated acceptance conditions.\n"
@@ -82,9 +93,16 @@ def render_role_prompt_fragment(
     )
 
 
-def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
+def stage_completion_issues(stage: str, project_root: Path, *, state_root: Path | None = None) -> tuple[str, ...]:
     try:
-        if stage == "specification":
+        robustness = "robustness" in record(project_root, PLAN)
+        if robustness and stage in {"specification", "model"}:
+            resolve_study(project_root)
+        elif robustness and stage in {"simulation", "review"}:
+            validate_current(project_root, state_root=state_root)
+            if stage == "review":
+                project_file(project_root, "analog/REVIEW.md")
+        elif stage == "specification":
             validate_specification(project_root)
         elif stage == "model":
             validate_model(project_root)
@@ -95,6 +113,6 @@ def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
             project_file(project_root, "analog/REVIEW.md")
         else:
             raise ValueError(f"unknown analog stage: {stage}")
-    except EvidenceError as exc:
+    except (EvidenceError, OSError, UnicodeError) as exc:
         return (str(exc),)
     return ()

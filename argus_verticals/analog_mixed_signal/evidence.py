@@ -66,23 +66,32 @@ def validate_model(root: Path) -> dict:
     return plan
 
 
-def deck_inputs(root: Path, entry: str) -> tuple[set[str], list[str]]:
+def deck_inputs(root: Path, entry: str, *, declared_files: set[str] | None = None,
+                max_expanded_bytes: int | None = None) -> tuple[set[str], list[str]]:
     files: set[str] = set()
     active: set[str] = set()
-    analyses: list[str] = []
+    parsed: dict[str, tuple[tuple[str, ...], int]] = {}
 
-    def visit(relative: str, *, top: bool = False) -> None:
+    def visit(relative: str, *, top: bool = False) -> tuple[tuple[str, ...], int]:
         if relative in active:
             raise EvidenceError(f"cyclic SPICE include: {relative}")
+        if declared_files is not None and relative not in declared_files:
+            raise EvidenceError(f"models: missing provenance and validity for {relative}")
+        if relative in parsed:
+            return parsed[relative]
         active.add(relative)
         path = project_file(root, relative)
         files.add(relative)
+        expanded_bytes = path.stat().st_size
+        if max_expanded_bytes is not None and expanded_bytes > max_expanded_bytes:
+            raise EvidenceError(f"expanded SPICE inputs exceed {max_expanded_bytes} bytes")
         try:
             lines = path.read_text(encoding="utf-8").splitlines()
         except (OSError, UnicodeError) as exc:
             raise EvidenceError(f"{relative}: cannot read SPICE input: {exc}") from exc
         if top:
             lines = lines[1:]  # ngspice treats the first deck line as its title.
+        analyses: list[str] = []
         for line in lines:
             text = line.strip()
             if not text or text.startswith("*"):
@@ -99,7 +108,11 @@ def deck_inputs(root: Path, entry: str) -> tuple[set[str], list[str]]:
             if directive in {".include", ".inc"}:
                 if len(fields) != 2:
                     raise EvidenceError(f"{relative}: .include needs one literal project-relative path")
-                visit(fields[1])
+                included_analyses, included_bytes = visit(fields[1])
+                expanded_bytes += included_bytes
+                if max_expanded_bytes is not None and expanded_bytes > max_expanded_bytes:
+                    raise EvidenceError(f"expanded SPICE inputs exceed {max_expanded_bytes} bytes")
+                analyses.extend(included_analyses)
             elif directive in {".control", ".lib", ".hdl", ".osdi"}:
                 raise EvidenceError(f"{relative}: {directive} is outside this batch adapter")
             elif directive[1:] in PLOT_NAMES:
@@ -109,9 +122,11 @@ def deck_inputs(root: Path, entry: str) -> tuple[set[str], list[str]]:
             elif directive == ".end" and not top:
                 raise EvidenceError(f"{relative}: an included fragment must not terminate the deck")
         active.remove(relative)
+        parsed[relative] = (tuple(analyses), expanded_bytes)
+        return parsed[relative]
 
-    visit(entry, top=True)
-    return files, analyses
+    analyses, _ = visit(entry, top=True)
+    return files, list(analyses)
 
 
 def _validate_check(check: object, requirements: dict) -> str:
@@ -153,6 +168,11 @@ def _validate_check(check: object, requirements: dict) -> str:
 
 
 def validate_plan(root: Path) -> tuple[dict, list[str]]:
+    if "robustness" in record(root, PLAN):
+        from .study import resolve_study
+
+        study = resolve_study(root)
+        return record(root, PLAN), list(study.inputs)
     plan = validate_model(root)
     runs = plan.get("runs")
     if not isinstance(runs, list) or not runs:
@@ -207,7 +227,11 @@ def run_command(run: dict) -> list[str]:
     ]
 
 
-def validate_simulation(root: Path) -> dict[str, dict[str, float]]:
+def validate_simulation(root: Path) -> dict:
+    if "robustness" in record(root, PLAN):
+        from .robustness import validate_robustness
+
+        return validate_robustness(root)
     plan, required = validate_plan(root)
     results = record(root, RESULTS)
     _text(results.get("tool_version"), "tool_version")

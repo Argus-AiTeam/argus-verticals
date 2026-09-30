@@ -144,3 +144,153 @@ requirements met/missed, model assumptions, convergence/numerical limitations
 and excluded physical claims. Independent review is required in every selected
 scope, not only in this report stage. Consistent files do not prove authentic
 execution, adequate models, sufficient numerical resolution or physical safety.
+
+## Parameter operating-envelope mode
+
+Keep the original plan's `objective`, `requirements`, `limitations` and `models`,
+but replace `runs` with:
+
+```json
+{"robustness": {"specification": "design/operating.json", "design": {}}}
+```
+
+The specification is a separate original input, outside results, with `goal`,
+`source`, `limitations`, `parameter_file`, `parameters`, `design_variables`,
+`axes`, `relative_tolerances` and `analyses`. Do not change that original goal or
+its limits to make an unsuccessful study finish.
+
+`goal: diagnose` holds the supplied design fixed and requires empty design
+variables/choices. Complete valid numerical evidence may honestly conclude that
+some sampled conditions fail. `goal: design` requires every original sampled
+limit and margin; its plan chooses exactly the allowed common variables.
+Missing data, ambiguous measurements or failed numerical comparisons cannot
+complete either goal.
+
+Each top-level deck must include the declared parameter file. It contains one
+literal `.param name=value` per line, plus optional blank/comment lines; names
+are lowercase identifiers. Decimal/exponent values and the native `t`, `g`,
+`meg`, `k`, `m`, `u`, `n`, `p`, `f` suffixes are supported. No expressions or
+multiple assignments occur in that file. Do not redeclare/shadow these sampled
+parameters elsewhere. The Reviewer must still establish that the circuit
+actually uses them and that their physical meanings and ranges are justified.
+Suffixes are combined with the decimal exponent before binary conversion
+(`100n` equals `1e-7`). Relative samples multiply the canonical decimal values
+before one binary conversion. This avoids representation-only boundary failures;
+model limits are still strict, not widened by an acceptance epsilon.
+
+For an existing deck using parameters `r` and `c`, an illustrative specification
+is:
+
+```json
+{
+  "goal": "diagnose",
+  "source": "Original agreed finite RC study",
+  "limitations": ["Ideal passives; finite samples, not hardware approval"],
+  "parameter_file": "design/parameters.inc",
+  "parameters": {
+    "r": {"nominal": 1000, "minimum": 500, "maximum": 2000,
+          "unit": "ohm", "source": "Original resistor model"},
+    "c": {"nominal": 1e-7, "minimum": 5e-8, "maximum": 2e-7,
+          "unit": "F", "source": "Original capacitor model"}
+  },
+  "design_variables": {},
+  "axes": [
+    {"id": "r", "parameter": "r", "unit": "1", "factors": [0.9, 1.1],
+     "source": "Agreed resistor tolerance samples"},
+    {"id": "c", "parameter": "c", "unit": "1", "factors": [0.9, 1.1],
+     "source": "Agreed capacitor tolerance samples"}
+  ],
+  "relative_tolerances": [0.0001, 0.000001],
+  "analyses": [{
+    "id": "response", "kind": "ac", "netlist": "bench.cir",
+    "checks": [{
+      "id": "gain", "requirement": "bandwidth", "vector": "v(out)",
+      "denominator": "v(in)", "component": "magnitude", "statistic": "at",
+      "at": 1000, "unit": "1", "minimum": 0.7, "maximum": 0.95,
+      "margin_lower": 0.01, "margin_upper": 0.01, "max_delta": 0.001
+    }]
+  }]
+}
+```
+
+Every original literal parameter is described exactly once; its nominal value
+must match the file. Units are `V`, `A`, `ohm`, `F`, `H`, `Hz`, `s`, `1` or `degC`.
+Declared minimum/maximum values are the model's valid range, not device ratings;
+all samples and choices must stay inside it. A design variable maps its name to
+`parameter`, `minimum`, `maximum`, `source`; the plan supplies its one value.
+Axes use either distinct absolute `values` in the parameter unit, or positive
+dimensionless `factors` around the common selected nominal. Factors cannot apply
+to Celsius temperatures or nonpositive nominal quantities. An absolute axis
+must not overwrite a common design choice.
+
+Use the complete Cartesian product plus nominal. An identical nominal grid
+point is counted once, not simulated twice. No automatic thinning, one-at-a-time
+replacement or statistical-yield interpretation is allowed. A `.temp {temp_c}`
+statement can vary native model temperature through a declared parameter;
+this does not invent temperature coefficients for other components.
+
+Choose 1-4 analyses and 1-32 checks per analysis. Each has its own original
+top-level, single-analysis deck and the same measurement fields as above, plus
+mandatory absolute `max_delta` in the measured unit. Optional
+`margin_lower`/`margin_upper` default to zero and fit inside the original bounds.
+Every requirement has a check. Unknown operating-specification fields are errors.
+
+The runner creates both resolutions without changing original files:
+
+- OP keeps `.op`; it compares the two declared relative tolerances only.
+- DC supports one V/I source, literal start/stop/step and an integer number of
+  intervals, including descending sweeps. The fine step is half the original.
+- AC supports `lin`, `dec`, `oct`; fine doubles intervals or samples per log unit.
+- Transient requires `.tran tstep tstop tstart tmax [uic]` with all four literal
+  numbers. Fine halves tstep and tmax, preserving duration, start and initial
+  condition semantics.
+
+Both resolutions also apply the supplied relative tolerances: coarse at most
+1e-2, fine at least 1e-12 and at most coarse/10. Remove conflicting source
+`reltol` options explicitly; other supplied solver settings remain unchanged.
+Non-OP refinement must actually increase saved sample count. Every check must
+meet its original comparison tolerance at every scenario. These comparisons do
+not prove a global error bound, a full settling guarantee or loop stability.
+
+The bounded subset allows 17 scenarios, 32 source files, 4 MiB of original input,
+4 MiB of expanded source per deck and 1,500,000 estimated native points.
+Undeclared includes are rejected before their contents are read. Repeated files
+are inspected once, but their repeated bytes and analysis commands still count
+in the expansion; cyclic includes remain errors. Native calls are bounded to 120 seconds
+and 64 MiB; each execution/replay phase has 600 seconds and 512 MiB of output
+including generated decks, excluding independent retained copies.
+Native diagnostics require investigation rather than a successful diagnosis.
+
+`analog/results/RESULTS.json` records `ngspice-analog-corners`, the fixed goal,
+tool version, exact cases, actual commands, original inputs and independent
+native-output copies. Every case retains its generated `inputs/`, `wave.raw`,
+`ngspice.log` and `console.log`. `ASSESSMENT.json` records all violations,
+worst observed upper/lower headroom with actual parameters, coverage and every
+refinement, separating engineering `status` from `conclusion_valid` and
+`task_accepted`.
+
+Each check's `resolution_scope` is `["coarse", "fine"]`: its
+`worst_observed_lower`/`worst_observed_upper` cover both resolutions, not just
+the preferred fine run. Each observation names its `resolution`.
+`lower_headroom=value-minimum` and `upper_headroom=maximum-value` describe
+distance to the bounds. The corresponding `*_margin_surplus` additionally
+subtracts the required margin; a positive headroom can therefore still fail.
+Use those exact worst observations, including run, resolution and parameters,
+in the report. A fine-only table is allowed when labeled, but cannot replace
+the combined worst-case summary or omit coarse-only failures.
+
+The read-only checker regenerates every case from original source and
+independently replays all native waveform samples before accepting new evidence.
+Successful comparison can be retained in external Argus runtime state.
+Unchanged numeric inputs/results and checker/tool identity are compared by
+independent byte copies, not timestamps or a project-local passed flag.
+Report-only edits still require independent review, but no new native replay.
+Without trusted external state, the checker always replays. Do not write runtime
+validation records as project work.
+
+Use the supplied read-only command without overriding `ARGUS_SKILL_SESSION_ROOT`.
+Its inherited value belongs to the Argus task, not the native CLI's own session
+or scratch directory. Creating a second cache there cannot satisfy the host's
+accepted-check history and forces another native replay. If implementation
+inspection is needed, use the installed provider source location above rather
+than searching other projects or session histories.

@@ -53,6 +53,10 @@ executes and independently replays every coarse/fine pair, then computes
 coverage, all original limit failures and required numerical headroom.
 The original plan format and scoped workflow remain compatible.
 
+Version 0.2.2 shares bounded SPICE process execution and byte-bound validation
+storage with the analog domain. Converter physics, limits, measurements and
+workflow ownership are unchanged.
+
 Version 0.2.1 retains successful numerical validation in the Argus session's
 runtime state, outside the execution project. Simulation/review checks and
 their child processes compare independent byte copies of the plan, models,

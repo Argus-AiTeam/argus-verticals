@@ -29,3 +29,9 @@ physical assumptions by guesswork. Ask about ambiguity that changes the result.
 The native checker validates records and stated numerical comparisons; it
 cannot authorize hardware operation, establish a PDK entitlement, or replace
 independent review of model adequacy and experimental meaning.
+
+An existing circuit with a supplied operating specification is still a scoped
+analog simulation/review task. Preserve its diagnosis/design distinction.
+A valid diagnosis can report noncompliance; a design conclusion requires all
+original sampled limits and margins. Missing coverage or unreliable numerical
+measurements cannot justify either completion.

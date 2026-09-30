@@ -30,3 +30,9 @@ already supplied in the role context; do not replace it with a custom summary.
 An unchanged, current result may be reused after its input copies and native
 measurements pass the checker. Replanning should address a real missing
 comparison or failed assumption, not create repeated analysis for its own sake.
+
+For operating envelopes, keep the supplied specification separate from the
+plan's allowed common choices. Count the complete Cartesian product plus
+nominal and every required method/resolution before execution. Preserve the
+fixed diagnosis/design goal and metric-unit margins; do not reinterpret a
+failed design as a diagnosis or an invalid numerical study as a valid failure.

@@ -41,6 +41,8 @@ From an environment where this package is importable:
 
 ```bash
 python -m argus_verticals.analog_mixed_signal.run_reference /tmp/new-analog-reference
+python -m argus_verticals.analog_mixed_signal.run_robustness_reference /tmp/new-analog-envelope
+python -m argus_verticals.analog_mixed_signal.run_robustness_reference /tmp/new-analog-diagnosis --goal diagnose --tight
 python -m argus_verticals.analog_mixed_signal.run_analysis /path/to/project
 ```
 
@@ -64,7 +66,68 @@ and the analog workflow are unchanged.
 
 ## Executable references and limits
 
-The reference creates a new directory and performs six genuine analyses:
+Version 0.2 adds an optional externally supplied operating specification. It
+binds named global parameters, original nominal values and model-validity ranges
+to one common allowed design and the full Cartesian sample set plus nominal.
+Only the analyses needed by the question are selected; the original plan format
+is unchanged.
+
+Every sample is evaluated at coarse/fine settings. DC halves its step, AC doubles
+its density (or linear intervals), and transient halves its explicit maximum
+step and output interval; those methods must actually produce more saved points.
+All methods also use a separately declared tighter relative tolerance. OP has no
+sweep grid: its comparison is solver-tolerance sensitivity, not grid convergence.
+Each metric needs an original absolute comparison tolerance. This is evidence
+of the specified sensitivity, not a mathematical error bound or a general
+settling/stability guarantee.
+
+The original `goal` separates task completion from circuit compliance.
+`diagnose` can accept a complete, numerically valid negative conclusion;
+`design` must satisfy every sampled original bound and required margin.
+Missing measurements, ambiguous crossings and failed refinements block both.
+`analog/results/ASSESSMENT.json` contains all violations, worst measured
+headroom, full coverage and separate `conclusion_valid`/`task_accepted` fields.
+
+Version 0.2.1 makes the worst-case resolution explicit and records signed
+surplus after required margins, so a fine-only table cannot silently stand in
+for the combined coarse/fine result. Decimal suffixes and relative factors are
+converted without an extra binary rounding step; exact model bounds remain
+strict. Include inspection reuses parsed files but counts every expanded byte,
+rejecting undeclared sources before reading and decks expanding beyond 4 MiB.
+Native regressions also cover an underdamped second-order RLC network:
+resonant gain and transient overshoot match independent equations, while a
+window containing multiple rising crossings is rejected as an invalid
+single-crossing measurement rather than accepted as a negative diagnosis.
+
+Version 0.2.2 also names the installed provider and actual Argus task runtime
+root in role context. The native CLI's scratch directory is not a replacement
+for that runtime state; overriding it creates a separate validation history.
+Decimal products retain all operand digits, including integer factors, before
+binary conversion so strict model bounds do not depend on intermediate rounding.
+
+New studies retain the exact generated circuit for each sample and resolution.
+Independent validation recreates it from original inputs and replays every
+waveform. Subsequent checks compare byte copies in external Argus runtime state;
+unchanged numerical evidence is reused across report-only changes. Source/tool
+changes invalidate reuse, and changed code in a running checker requires restart.
+This uses trusted host state, not a sandbox against processes allowed to edit it.
+
+The new reference exercises a loaded RC network and an explicitly modeled diode
+at 17 conditions with all four analysis kinds. Independent expectations include
+`H0=Rload/(R+Rload)`, `tau=(R || Rload)*C`, the resulting transfer/step responses,
+and Shockley forward voltage with declared Is/N/EG/XTI/TNOM. Temperature changes
+the native diode, not an invented passive temperature coefficient. Wide original
+bounds pass; the separately requested tight gain specification passes nominal
+but fails some corners.
+
+The bounded subset permits at most 17 scenarios, four analyses, 32 checks per
+analysis, 32 source files, 4 MiB of original input and 1,500,000 estimated points.
+Each native call is limited to 120 seconds and 64 MiB; each execution/replay
+phase has 600 seconds and 512 MiB of original output, with retained copies extra.
+Noise/PSS, Monte Carlo yield, arbitrary dynamic model loading and foundry claims
+remain outside the executable scope.
+
+The legacy `run_reference` creates a new directory and performs six genuine analyses:
 RC operating point, DC transfer, AC response and step response, plus operating
 point and AC response of a finite-gain, one-pole feedback amplifier.
 
