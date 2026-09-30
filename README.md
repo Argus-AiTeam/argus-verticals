@@ -84,6 +84,9 @@ operating-point, DC, AC and transient analysis, not a PDK or physical-design flo
 matching models, explicit port/reference handling and two-port cascades.
 `pcb_design` adds independent PCB knowledge and selected native KiCad 9 ERC,
 DRC/parity and Gerber/Excellon generation with temporary native replay.
+Its explicit copper-zone mode refills a separate working board through matching
+KiCad 9 Python bindings, then checks and exports that same board without
+rewriting original projects or trusting old fills.
 `package_design` adds semiconductor-package knowledge and bounded native
 Gmsh/CalculiX steady thermal studies, including mesh-refined die/substrate spreading.
 `power_electronics` adds power-conversion knowledge and bounded native ngspice

@@ -25,7 +25,8 @@ def run_analysis(root: Path) -> dict:
         shutil.copyfile(project_file(root, relative), root / target)
         inputs[relative] = target
     result = {
-        "operation": "kicad-cli", "status": "running", "kicad_version": version,
+        "operation": "kicad-cli+pcbnew" if plan.get("zone_refill") else "kicad-cli",
+        "status": "running", "kicad_version": version,
         "inputs": inputs, "commands": [], "outputs": {},
     }
 

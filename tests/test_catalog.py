@@ -444,6 +444,7 @@ def _expected_members(name: str) -> list[str]:
     ("analog_mixed_signal", "simulation", "analog", "run_robustness_reference"),
     ("rf_design", "analysis", "rf", "run_reference"),
     ("pcb_design", "verification", "pcb", "run_reference"),
+    ("pcb_design", "verification", "pcb", "run_zone_reference"),
     ("package_design", "thermal", "package", "run_reference"),
     ("power_electronics", "simulation", "power", "run_reference"),
     ("power_electronics", "simulation", "power", "run_robustness_reference"),
@@ -522,8 +523,14 @@ for command in (execute[0], check[0]):
 assert result.stdout.strip() == "[]", result.stdout
 record = json.loads((project / directory / "results/RESULTS.json").read_text())
 if directory == "pcb":
-    assert [row["kind"] for row in record["commands"]] == ["erc", "drc", "gerbers", "drill"]
+    expected = (["refill"] if reference == "run_zone_reference" else []) + ["erc", "drc", "gerbers", "drill"]
+    assert [row["kind"] for row in record["commands"]] == expected
     assert record["kicad_version"].startswith("9.")
+    if reference == "run_zone_reference":
+        refill = json.loads((project / directory / "results/native/refill.json").read_text())
+        assert {zone["layer"] for zone in refill["zones"]} == {"F.Cu", "In1.Cu", "In2.Cu", "B.Cu"}
+        assert all(zone["filled_area_mm2"] > 143.9 for zone in refill["zones"])
+        assert (project / "design/coupon.kicad_pcb").read_bytes() == (project / "pcb/results/inputs/design/coupon.kicad_pcb").read_bytes()
 elif directory == "package":
     assert len(record["runs"]) == 4
     assert record["versions"]["gmsh"].startswith("4.")

@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "849af6c759bef06a2192aaef75c530f6547d16f8",
+    "commit": "7cdf9a5262fe7dac1d246ddf420ebde823bbbe6a",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -526,8 +526,8 @@
       "paths": [
         "argus_verticals/pcb_design"
       ],
-      "purpose": "PCB and printed circuit board engineering: schematics, components and footprints, stackup, placement, routing, return paths and fabrication preparation; executable KiCad ERC/DRC, schematic-board parity, Gerber and Excellon drill outputs; not RTL, IC layout, RF network calculation, package design, field-solved SI/PI or physical qualification",
-      "purpose_zh": "PCB 原理图、器件封装、叠层布局布线与制造准备；可选 KiCad 原生 ERC/DRC、图板一致性和 Gerber/钻孔输出",
+      "purpose": "PCB and printed circuit board engineering: schematics, components and footprints, stackup, placement, routing, return paths and fabrication preparation; executable KiCad copper-zone refill on copies, ERC/DRC, schematic-board parity, Gerber and Excellon drill outputs; not RTL, IC layout, RF network calculation, package design, field-solved SI/PI or physical qualification",
+      "purpose_zh": "PCB 原理图、器件封装、叠层布局布线与制造准备；KiCad 铜区副本重填、ERC/DRC、图板一致性和 Gerber/钻孔输出",
       "python_requirements": [
         "sexpdata>=1.0.2,<2"
       ],
@@ -539,14 +539,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 79606,
+      "size_bytes": 101229,
       "skill_parents": [],
       "tags": [
         "hardware",
         "pcb",
         "kicad"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "physics": {
       "api_version": 1,

@@ -4,12 +4,13 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
-from argus_verticals.hardware.shared.evidence import EvidenceError
+from argus_verticals.hardware.shared.evidence import EvidenceError, record
 
-from .design import text
+from .design import text, validate_plan
 
 
 def environment(home: Path) -> dict[str, str]:
@@ -32,6 +33,12 @@ def version() -> str:
 def steps(plan: dict, output: Path) -> list[tuple[str, list[str]]]:
     result = []
     design = plan["design"]
+    if plan.get("zone_refill"):
+        result.append(("refill", [
+            os.environ.get("ARGUS_KICAD_PYTHON", "/usr/bin/python3"), "-I",
+            str(Path(__file__).with_name("refill.py").resolve()), design["board"],
+            "--output", str(output), "--expected-version", version(),
+        ]))
     for check in plan.get("checks", []):
         kind = check["kind"]
         arguments = ["kicad-cli", "sch" if kind == "erc" else "pcb", kind,
@@ -55,18 +62,32 @@ def steps(plan: dict, output: Path) -> list[tuple[str, list[str]]]:
     return result
 
 
+def working_directory(inputs: Path, plan: dict, output: Path) -> Path:
+    return output / "work" if plan.get("zone_refill") else inputs
+
+
 def execute(inputs: Path, plan: dict, output: Path, *, save=None) -> list[dict]:
     output.mkdir(parents=True, exist_ok=False)
+    work = working_directory(inputs, plan, output)
+    required = []
+    if plan.get("zone_refill"):
+        frozen, required = validate_plan(inputs)
+        if frozen != plan:
+            raise EvidenceError("refill input plan differs from the selected plan")
+        for relative in required:
+            destination = work / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(inputs / relative, destination)
     commands = []
     for kind, arguments in steps(plan, output):
         log = output / f"{kind}.log"
-        row = {"kind": kind, "command": arguments, "cwd": str(inputs), "exit_code": None, "log": str(log)}
+        row = {"kind": kind, "command": arguments, "cwd": str(work), "exit_code": None, "log": str(log)}
         commands.append(row)
         if save is not None:
             save(commands)
         try:
             result = subprocess.run(
-                arguments, cwd=inputs, env=environment(output / "config"),
+                arguments, cwd=work, env=environment(output / "config"),
                 capture_output=True, text=True, timeout=180,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
@@ -78,6 +99,9 @@ def execute(inputs: Path, plan: dict, output: Path, *, save=None) -> list[dict]:
             save(commands)
         if result.returncode not in ((0, 5) if kind in ("erc", "drc") else (0,)):
             raise EvidenceError(f"{kind}: native command exited {result.returncode}; inspect {log}")
+    for relative in required:
+        if relative != plan["design"]["board"] and (work / relative).read_bytes() != (inputs / relative).read_bytes():
+            raise EvidenceError(f"native execution modified copied settings or dependencies: {relative}")
     return commands
 
 
@@ -131,6 +155,10 @@ def report(path: Path, kind: str, source: str, tool_version: str) -> tuple[dict[
 
 def output_paths(plan: dict, output: Path) -> list[Path]:
     paths = [output / f"{check['kind']}.json" for check in plan.get("checks", [])]
+    if plan.get("zone_refill"):
+        paths += [output / "refill.json", output / "refill-unfilled.kicad_pcb", output / "work" / plan["design"]["board"]]
+        if (output / "refill-rules.rpt").exists():
+            paths.append(output / "refill-rules.rpt")
     fab = plan.get("fabrication")
     if fab is not None:
         stem = Path(plan["design"]["board"]).stem
@@ -157,8 +185,24 @@ def normalized_export(path: Path) -> str:
         except (ValueError, TypeError, KeyError) as exc:
             raise EvidenceError("invalid native Gerber job description") from exc
         return json.dumps(value, sort_keys=True)
-    prefixes = ("%TF.CreationDate,", "G04 Created by KiCad ", "; DRILL file {KiCad ", "; #@! TF.CreationDate,")
+    prefixes = ("%TF.CreationDate,", "G04 Created by KiCad ", "; DRILL file {KiCad ", "; #@! TF.CreationDate,", "** Created on ")
     return "\n".join(line for line in data.splitlines() if not line.startswith(prefixes))
+
+
+def refill_measurements(plan: dict, output: Path, tool_version: str) -> dict:
+    if not plan.get("zone_refill"):
+        return {}
+    value = record(output, "refill.json")
+    if (
+        value.get("operation") != "pcbnew.ZONE_FILLER"
+        or value.get("kicad_version") != tool_version
+        or value.get("board") != plan["design"]["board"]
+        or value.get("old_fills_discarded") is not True
+        or value.get("non_fill_design_unchanged") is not True
+        or not isinstance(value.get("zones"), list) or not value["zones"]
+    ):
+        raise EvidenceError("refill report does not identify the selected native operation and board")
+    return {"zone_refill": value}
 
 
 def fabrication_measurements(plan: dict, output: Path) -> dict:

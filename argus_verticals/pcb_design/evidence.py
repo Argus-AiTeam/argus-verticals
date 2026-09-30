@@ -20,7 +20,8 @@ def validate_verification(root: Path) -> dict:
     root = root.resolve()
     plan, inputs = validate_plan(root)
     result = record(root, RESULTS)
-    if result.get("status") != "complete" or result.get("operation") != "kicad-cli":
+    operation = "kicad-cli+pcbnew" if plan.get("zone_refill") else "kicad-cli"
+    if result.get("status") != "complete" or result.get("operation") != operation:
         raise EvidenceError("PCB execution has no completed native command record")
     version = native.version()
     if result.get("kicad_version") != version:
@@ -44,7 +45,7 @@ def validate_verification(root: Path) -> dict:
     for row, (kind, arguments) in zip(commands, expected_steps):
         if not isinstance(row, dict) or (
             row.get("kind") != kind or row.get("command") != arguments
-            or row.get("cwd") != str(root / INPUTS_DIR)
+            or row.get("cwd") != str(native.working_directory(root / INPUTS_DIR, plan, output))
             or row.get("log") != str(output / f"{kind}.log")
             or type(row.get("exit_code")) is not int
         ):
@@ -63,6 +64,7 @@ def validate_verification(root: Path) -> dict:
         elif row["exit_code"] != 0:
             raise EvidenceError(f"{kind}: export did not succeed")
     measured.update(native.fabrication_measurements(plan, output))
+    measured.update(native.refill_measurements(plan, output, version))
     # Replay a separate copy: KiCad may write local cache/config files even for checks.
     with tempfile.TemporaryDirectory(prefix="argus-pcb-check-") as directory:
         temporary = Path(directory)
@@ -86,8 +88,12 @@ def validate_verification(root: Path) -> dict:
             if normalized != expected:
                 raise EvidenceError(f"{kind}: saved violations disagree with independent native replay")
         for path in paths:
-            if path.suffix in (".gbr", ".drl", ".gbrjob") and native.normalized_export(path) != native.normalized_export(replay / path.relative_to(output)):
+            if path.suffix in (".gbr", ".drl", ".gbrjob", ".rpt") and native.normalized_export(path) != native.normalized_export(replay / path.relative_to(output)):
                 raise EvidenceError(f"{path.name}: exported geometry differs from independent native replay")
+            if path.suffix == ".kicad_pcb" and path.read_bytes() != (replay / path.relative_to(output)).read_bytes():
+                raise EvidenceError(f"{path.name}: refilled board differs from independent native replay")
+        if native.refill_measurements(plan, replay, version) != native.refill_measurements(plan, output, version):
+            raise EvidenceError("zone refill measurements differ from independent native replay")
         for relative in inputs:
             if (replay_inputs / relative).read_bytes() != project_file(root, relative).read_bytes():
                 raise EvidenceError("native replay modified a design input")

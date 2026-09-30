@@ -25,3 +25,11 @@ The verifier reruns native commands in a temporary copy and checks geometry and
 reports against current sources. It is read-only with respect to the project,
 not a text-only heuristic. Unavailable KiCad or an unsupported design subset
 must remain an explicit failure, never a successful fallback.
+
+For copper zones, explicitly select `zone_refill: true`. Keep original boards
+and frozen input copies unchanged; use the runner's separate refilled working
+board for both checking and export. Never refill manually in the source tree
+or export its old saved polygons. The official pcbnew binding must match the
+CLI version; its separate Python interpreter is not the Argus interpreter.
+If present, the custom-rule pre-fill report is only a configuration diagnostic.
+The selected DRC result is produced after filling.

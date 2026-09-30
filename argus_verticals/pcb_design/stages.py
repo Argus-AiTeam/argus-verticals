@@ -23,7 +23,7 @@ VERTICAL_ROUTING_PATH = ("hardware", "pcb_design")
 VERTICAL_PURPOSE = (
     "PCB and printed circuit board engineering: schematics, components and footprints, "
     "stackup, placement, routing, return paths and fabrication preparation; "
-    "executable KiCad ERC/DRC, schematic-board parity, Gerber and Excellon drill outputs; "
+    "executable KiCad copper-zone refill on copies, ERC/DRC, schematic-board parity, Gerber and Excellon drill outputs; "
     "not RTL, IC layout, RF network calculation, package design, field-solved SI/PI or physical qualification"
 )
 VERTICAL_SKILLS = Path(__file__).parent / "skills"
@@ -66,7 +66,8 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
             f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
         )
     return (
-        f"## PCB work: {stage}\nPreserve the user's selected scope and original requirements.\n\n"
+        f"## PCB work: {stage}\nPreserve the user's selected scope and original requirements.\n"
+        f"Installed PCB provider source: `{Path(__file__).resolve().parent}`.\n\n"
         + Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
         + execution
         + "\nEngineer: run genuine native tools. Reviewer: independently inspect constraints, "

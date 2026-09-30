@@ -47,7 +47,7 @@ Drill counts are exact round-hole hits, separately PTH and NPTH; zero is valid.
 All paths are project-relative. Board/root schematic must share the project's
 directory and basename so native KiCad reads the intended settings.
 
-## Initial executable subset
+## Supported native inputs
 
 Install `kicad-cli` **9.x** and the provider's `sexpdata` Python dependency.
 Native KiCad executes the checks; the parser only resolves inputs and structure.
@@ -64,12 +64,58 @@ are retained in full. The local tables themselves are always retained.
 
 This initial planar backend accepts nonempty boards with at least two pads, a
 named net and Edge.Cuts geometry. It supports enabled multilayer copper,
-round PTH/NPTH pads and full-through vias. **Zones/rule areas, blind/microvias,
-slots and routed drills are rejected**: no hidden zone refill or source rewrite
-is performed. Three-dimensional models are not used or validated by these
+round PTH/NPTH pads and full-through vias. Board copper zones require explicit
+`zone_refill: true` as described below. Rule areas, footprint-local zones,
+multi-layer zone objects, blind/microvias, slots and routed drills remain
+unsupported. No hidden refill or source rewrite is performed.
+Three-dimensional models are not used or validated by these
 planar checks/exports. At most 64 distinct schematic sheets, 256 input files,
 32 MiB per parsed file and 128 MiB total are accepted. Unsupported inputs must
 be reported, not simplified behind the user's back.
+
+## Explicit copper-zone refill
+
+Set the top-level `zone_refill` boolean to `true` for a selected board operation
+when the board contains copper zones. Omitting it or setting it false rejects
+zones rather than trusting previously saved polygons. ERC alone does not need
+or permit refill; refill does not imply DRC or fabrication was selected.
+Up to 256 board-level zones with distinct original KiCad identities are supported.
+Each must have original polygon outlines and one enabled copper layer. Separate
+single-layer zones may cover every layer of a multilayer board.
+
+KiCad 9 CLI has no refill command. This mode also requires the official
+`pcbnew` Python module with **exactly the same version** as `kicad-cli`.
+The runner invokes `/usr/bin/python3 -I` by default; `ARGUS_KICAD_PYTHON` may
+explicitly select the matching KiCad interpreter on another installation.
+Do not install an unrelated PyPI package named pcbnew into Argus. Missing
+bindings, a version mismatch or failed native fill is a retained failure,
+not permission to fall back to stale copper. The old zone-free mode does not
+need these bindings.
+
+Original project files and `pcb/results/inputs` stay byte-identical. Refill
+runs on another complete selected input copy under `pcb/results/native/work`,
+retaining the project's basename, adjacent settings, local libraries and rules.
+Every selected command, including DRC and manufacturing export, uses that
+same working project. Its board is the **refilled export source**, not a
+replacement for the user's original.
+
+The helper discards all stored fills, runs native `ZONE_FILLER`, and saves
+the working board. Native serialization without fills must agree before and
+after filling, so a change to non-fill design data fails. Native formatting
+may differ from the original; original bytes are still retained separately.
+Malformed custom rules must fail explicitly: the helper initializes them
+through native `WriteDRCReport` because `LoadBoard` alone suppresses parse
+errors. `refill-rules.rpt`, when present, is a pre-fill diagnostic, **not**
+the selected post-fill DRC result or an additional acceptance requirement.
+
+`refill.json` records the native operation/version, original zone identities,
+names, nets, layers and filled polygon area in mm2. `refill-unfilled.kicad_pcb`
+records native non-fill serialization; the final board remains under `work`.
+These outputs are retained and independently regenerated. Empty fill is
+reported as zero area, not a fabricated plane. Positive area does not establish
+connectivity, minimum required area, impedance or return-path adequacy; examine
+the requested post-fill DRC and original engineering requirements. Polygon
+area is not copper volume and does not substitute for the separate drill files.
 
 ## Execution and acceptance
 
@@ -82,7 +128,8 @@ No global/user KiCad settings are an intended input. The project rules still
 need engineering review: default/native rule coverage is not universal.
 
 `pcb/results/RESULTS.json` is written by the runner, not invented manually.
-It identifies `operation: "kicad-cli"`, actual `kicad_version`, execution status,
+It identifies `operation: "kicad-cli"` (or `"kicad-cli+pcbnew"` with refill),
+actual `kicad_version`, execution status,
 input/output copy maps and ordered command rows (`kind`, exact `command`,
 `cwd`, `exit_code`, `log`). Native exit 5 means violations, not tool success
 with zero findings. DRC includes its ordinary violations, unconnected items
@@ -96,6 +143,9 @@ compares reports and fabrication contents. Only known generation timestamps
 and unstable report item UUIDs are omitted from this comparison; coordinates,
 descriptions, severities and manufacturing geometry are not normalized away.
 It does not modify the project. Native version changes require a fresh run.
+With refill it also repeats the fill from the original input copy and compares
+the full saved working-board bytes and zone measurements, not just matching
+copies or a report saying that filling succeeded.
 
 Successful ERC/DRC establishes only the checks actually enabled in the retained
 project and supported native tool. File generation is not fab acceptance,

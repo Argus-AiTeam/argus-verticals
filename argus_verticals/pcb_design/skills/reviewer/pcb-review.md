@@ -21,3 +21,10 @@ checks from passed checks. Fabrication-only export must not be described as
 ERC/DRC acceptance. Explain unsupported inputs and absent datasheet, fab,
 SI/PI, assembly or physical evidence. Reject invented completion records and
 source edits outside the user's permission.
+
+When zones are present, require an explicit native refill from original inputs.
+Check that the command records point to the same working project for DRC and
+exports, and that the independent replay covers the filled board, zone data and
+manufacturing geometry. Report empty or unexpectedly reduced fills; positive
+polygon area alone proves neither connection nor an adequate return path.
+Do not mistake `refill-rules.rpt` for the selected post-fill DRC result.
