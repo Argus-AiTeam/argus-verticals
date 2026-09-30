@@ -6,15 +6,23 @@ import json
 import shutil
 from pathlib import Path
 
-from argus_verticals.hardware.shared.evidence import EvidenceError, current_files, project_file
+from argus_verticals.hardware.shared.evidence import (
+    EvidenceError,
+    current_files,
+    project_file,
+    record,
+)
 
 from . import native
 from .evidence import validate_simulation
-from .model import INPUTS_DIR, RESULTS, RESULTS_DIR, validate_plan
+from .model import INPUTS_DIR, PLAN, RESULTS, RESULTS_DIR, validate_plan
 
 
-def run_analysis(root: Path) -> dict[str, dict]:
+def run_analysis(root: Path) -> dict:
     root = root.resolve()
+    if "robustness" in record(root, PLAN):
+        from .robustness import run_robustness
+        return run_robustness(root)
     plan, models, inputs = validate_plan(root)
     version = native.version()
     (root / RESULTS_DIR).mkdir(parents=True, exist_ok=False)

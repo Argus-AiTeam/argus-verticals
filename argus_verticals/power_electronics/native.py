@@ -7,7 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from argus_verticals.hardware.shared.evidence import EvidenceError
+from argus_verticals.hardware.shared.evidence import EvidenceError, number
 from argus_verticals.hardware.spice.raw import MAX_RAW_BYTES, read_plot
 
 FILES = ("model.cir", "wave.raw", "ngspice.log", "console.log")
@@ -88,7 +88,12 @@ def check_output(output: Path, model: dict, run: dict):
     return plot
 
 
-def execute(model: dict, run: dict, output: Path, *, save=None) -> dict:
+def execute(model: dict, run: dict, output: Path, *, save=None,
+            timeout_seconds: float | None = None, maximum_output_bytes: int | None = None) -> dict:
+    timeout = TIMEOUT_SECONDS if timeout_seconds is None else min(TIMEOUT_SECONDS, number(timeout_seconds, "native time budget"))
+    if maximum_output_bytes is not None and (type(maximum_output_bytes) is not int or maximum_output_bytes < 0):
+        raise EvidenceError("native output budget must be a nonnegative integer")
+    output_budget = MAX_OUTPUT_BYTES if maximum_output_bytes is None else min(MAX_OUTPUT_BYTES, maximum_output_bytes)
     output.mkdir(parents=True, exist_ok=False)
     (output / "model.cir").write_text(deck(model, run), encoding="ascii")
     home = output / "config"
@@ -102,12 +107,12 @@ def execute(model: dict, run: dict, output: Path, *, save=None) -> dict:
     try:
         with (output / "console.log").open("w") as console:
             with subprocess.Popen(COMMAND, cwd=output, env=env, stdout=console, stderr=subprocess.STDOUT) as process:
-                deadline = time.monotonic() + TIMEOUT_SECONDS
+                deadline = time.monotonic() + timeout
                 while process.poll() is None:
                     if time.monotonic() >= deadline:
-                        stopped = f"native simulation exceeded {TIMEOUT_SECONDS:g} seconds"
-                    elif sum((output / name).stat().st_size for name in FILES if (output / name).exists()) > MAX_OUTPUT_BYTES:
-                        stopped = f"native output exceeded {MAX_OUTPUT_BYTES} bytes"
+                        stopped = f"native simulation exceeded {timeout:g} seconds"
+                    elif sum((output / name).stat().st_size for name in FILES if (output / name).exists()) > output_budget:
+                        stopped = f"native output exceeded {output_budget} bytes"
                     if stopped:
                         process.kill()
                         break
@@ -117,6 +122,10 @@ def execute(model: dict, run: dict, output: Path, *, save=None) -> dict:
         raise EvidenceError(f"ngspice execution failed: {exc}") from exc
     if save:
         save(row)
+    if time.monotonic() >= deadline:
+        stopped = f"native simulation exceeded {timeout:g} seconds"
+    if sum((output / name).stat().st_size for name in FILES if (output / name).exists()) > output_budget:
+        stopped = f"native output exceeded {output_budget} bytes"
     if stopped or row["exit_code"] != 0:
         raise EvidenceError(f"{stopped or 'ngspice failed'}; inspect {output}")
     check_output(output, model, run)

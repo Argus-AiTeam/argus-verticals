@@ -11,12 +11,15 @@ from argus_verticals.hardware.shared.evidence import (
 )
 
 from . import native
-from .model import INPUTS_DIR, RESULTS, RESULTS_DIR, validate_plan
+from .model import INPUTS_DIR, PLAN, RESULTS, RESULTS_DIR, validate_plan
 from .waveform import measurements
 
 
-def validate_simulation(root: Path) -> dict[str, dict]:
+def validate_simulation(root: Path) -> dict:
     root = root.resolve()
+    if "robustness" in record(root, PLAN):
+        from .robustness import validate_robustness
+        return validate_robustness(root)
     plan, models, inputs = validate_plan(root)
     result = record(root, RESULTS)
     if result.get("operation") != "ngspice-converter" or result.get("status") != "complete":

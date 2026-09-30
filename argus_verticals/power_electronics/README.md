@@ -2,11 +2,11 @@
 
 Independent domain `hardware / power_electronics`, with no analog or digital
 workflow inheritance. `vertical.json` declares its numpy dependency and
-bundled shared helpers. Fifteen skills cover conversion, devices/drivers,
+bundled shared helpers. Sixteen skills cover conversion, devices/drivers,
 magnetics, passive filters, control, protection, losses/thermal constraints,
 layout/EMI, isolation and drives, with role-specific decision and review rules.
 
-## Executable first version
+## Executable scope
 
 Actual ngspice Buck/Boost startup, switching ripple and resistive-load changes:
 open-loop PWM, linear L/C with explicit series resistance, a finite-resistance
@@ -30,6 +30,8 @@ All roles receive the same [canonical contract](evidence-contract.md).
 ```bash
 pip install -e ".[power]"
 python -m argus_verticals.power_electronics.run_reference /tmp/new-power-reference
+python -m argus_verticals.power_electronics.run_robustness_reference /tmp/new-power-envelope
+python -m argus_verticals.power_electronics.run_robustness_reference /tmp/new-power-diagnosis --goal diagnose --tight
 python -m argus_verticals.power_electronics.run_analysis /path/to/project
 ```
 
@@ -43,6 +45,41 @@ is `argus_verticals.hardware.spice.raw`; file/copy checks are in
 circuits and monitors real processes; `waveform.py` performs time-weighted
 measurements; `evidence.py` enforces original limits and independent replay.
 Execution preserves failed attempts and refuses existing results.
+
+Version 0.2 adds an optional separately declared operating specification.
+`study.py` resolves a fixed common design plus the full Cartesian product of
+input/load/temperature/component samples, including nominal; `robustness.py`
+executes and independently replays every coarse/fine pair, then computes
+coverage, all original limit failures and required numerical headroom.
+The original plan format and scoped workflow remain compatible.
+
+Version 0.2.1 retains successful numerical validation in the Argus session's
+runtime state, outside the execution project. Simulation/review checks and
+their child processes compare independent byte copies of the plan, models,
+specification, results, assessment, native files, checker source and ngspice
+binary, with recorded runtime/tool versions. Unchanged numerical evidence
+needs no further native replay; editing only `power/REVIEW.md` still requires
+independent report review. Changed evidence is revalidated, never accepted
+from a project-local flag. Source updates in a running checker require a restart
+so old imported code cannot approve the new implementation. Without external runtime state the checker always
+replays. This uses the existing trusted host-state boundary, not a filesystem
+sandbox against a process with write access to that state.
+
+The supplied specification fixes `diagnose` or `design`. A valid complete
+diagnosis may conclude that the circuit fails; a design task must satisfy all
+sampled conditions and margins. Missing/invalid evidence or failed refinement
+cannot complete either. Read both `task_accepted` and engineering `status`
+in `power/results/ASSESSMENT.json`; task completion alone is not design approval.
+The new reference demonstrates a passing finite design and a nominal-pass,
+corner-fail diagnosis under separate original specifications.
+
+At most 17 scenarios (including nominal) and 1,500,000 estimated points are
+supported. Every execution/replay phase has a 600-second limit; total native
+outputs are bounded to 512 MiB, excluding their retained copies. Individual
+native calls remain bounded to 120 seconds and 64 MiB.
+Finite sampled coverage is not a continuous guarantee, statistical yield or
+physical qualification. Temperature changes the modeled diode; unspecified
+temperature coefficients and electrothermal feedback are not invented.
 
 The original reference covers both converter types, startup, an actual
 conductance ramp, pre/post-load steady intervals and smaller maximum time

@@ -111,6 +111,25 @@ def test_native_references_and_finite_completion(reference, tmp_path):
     assert not (reference / "power/REVIEW.md").exists()
 
 
+def test_legacy_native_agreement_survives_report_only_changes(work, tmp_path, monkeypatch):
+    state = tmp_path / "state"
+    calls = []
+    execute = native.execute
+
+    def counted(*args, **kwargs):
+        calls.append(args[1]["id"])
+        return execute(*args, **kwargs)
+
+    monkeypatch.setattr(native, "execute", counted)
+    assert not stages.stage_completion_issues("simulation", work, state_root=state)
+    assert len(calls) == 4
+    (work / "power/REVIEW.md").write_text("Bounded native reference; not hardware approval.")
+    assert not stages.stage_completion_issues("review", work, state_root=state)
+    (work / "power/REVIEW.md").write_text("Clarified device-model limitations.")
+    assert not stages.stage_completion_issues("review", work, state_root=state)
+    assert len(calls) == 4
+
+
 def test_all_scopes_and_model_only_requirements(planned):
     contract = load_vertical_contract("power_electronics")
     assert stages.VERTICAL_SKILL_PARENTS == ()

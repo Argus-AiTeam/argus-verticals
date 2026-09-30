@@ -88,7 +88,10 @@ DRC/parity and Gerber/Excellon generation with temporary native replay.
 Gmsh/CalculiX steady thermal studies, including mesh-refined die/substrate spreading.
 `power_electronics` adds power-conversion knowledge and bounded native ngspice
 Buck/Boost startup, ripple and resistive-load studies, including stored-energy
-accounting and time-step comparisons. These complete the eight primary domain
+accounting and time-step comparisons. Its optional operating-envelope mode
+adds complete finite Cartesian input/load/temperature/component samples,
+common design decisions and original-limit headroom, with distinct diagnosis
+and design acceptance. These complete the eight primary domain
 registrations, not industrial coverage of every subject within those domains.
 The existing `chip_design` architecture model remains accelerator-oriented in
 this batch; a general control-SoC model and independent physical/DFT execution

@@ -100,5 +100,5 @@ def measurements(plot: Plot, model: dict, run: dict) -> dict[str, dict[str, floa
         }
         if not all(math.isfinite(value) for value in values.values()):
             raise EvidenceError("nonfinite computed converter measurement")
-        measured[name] = values
+        measured[name] = {key: float(value) for key, value in values.items()}
     return measured
