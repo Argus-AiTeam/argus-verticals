@@ -94,6 +94,13 @@ attenuator, resistor, line and matching equations. Preserve port/reference
 conventions and distinguish full-matrix passivity from individual port-power
 checks. Archive-only tests use a fresh interpreter so editable source installs
 cannot silently stand in for Store packages.
+RF robustness tests must compare exported complex S data with independent
+circuit equations at every declared corner and grid, retain failed original
+limits, and distinguish valid negative diagnosis from passing design. Cover
+common choices, exact decimal tolerance products, worst-frequency/headroom
+witnesses, numerical refinement failure and complete Cartesian coverage.
+Test unequal port references when frequency count equals port count: library
+vector-shape inference must not reinterpret them as frequency-dependent values.
 PCB tests require KiCad 9 `kicad-cli` and the declared `pcb` extra (`sexpdata`).
 The original local-library coupon exercises real ERC, DRC with parity and
 Gerber/Excellon generation. Deliberate defects must fail native checks; changing

@@ -143,3 +143,166 @@ around old outputs. The review scope additionally needs `rf/REVIEW.md` stating
 requirements met/missed and limitations. Every scope requires independent
 review. Record consistency does not prove authentic measurements, model
 adequacy, calibration quality, global stability or physical safety.
+
+## Optional finite tolerance and frequency robustness
+
+Use the same runner/checker. In this mode the plan has only `objective`,
+`requirements`, `limitations` and `robustness`; do not also add legacy
+`networks` or `studies`. Original network definitions and bounds live in an
+external project-local specification, not a runner-generated success summary:
+
+```json
+{
+  "objective": "Diagnose a supplied resistor across the complete declared tolerance samples",
+  "requirements": {"band": "Reflection must not exceed 0.34 at the declared band samples"},
+  "limitations": ["Ideal sampled model, not measured component performance"],
+  "robustness": {"specification": "design/rf-study.json", "design": {}}
+}
+```
+
+An original `design/rf-study.json` for that example is:
+
+```json
+{
+  "goal": "diagnose",
+  "source": "Explicit ideal series-resistor reference",
+  "limitations": ["Finite samples only, not a probability distribution or continuous-band guarantee"],
+  "networks": {
+    "resistor": {
+      "kind": "lumped",
+      "source": "Original ideal resistor",
+      "validity": "Constant resistance and real 50-ohm wave references",
+      "limitations": ["No parasitics or measured calibration"],
+      "frequency_hz": [800000000, 1200000000],
+      "z0_ohm": [50, 50],
+      "elements": [{"kind": "R", "connection": "series", "value_si": 50}]
+    }
+  },
+  "parameters": {
+    "resistance": {
+      "network": "resistor", "element": 1, "nominal": 50,
+      "minimum": 40, "maximum": 60, "unit": "ohm",
+      "source": "Original component value and validity interval"
+    }
+  },
+  "design_variables": {},
+  "axes": [{
+    "id": "resistance_tolerance", "parameter": "resistance",
+    "unit": "1", "factors": [0.9, 1.1],
+    "source": "Explicit independent +/-10 percent samples"
+  }],
+  "studies": [{
+    "id": "band", "network": "resistor",
+    "checks": [{
+      "id": "reflection", "requirement": "band",
+      "metric": "s_magnitude", "ports": [1, 1], "statistic": "max",
+      "window_hz": [800000000, 1200000000], "unit": "1",
+      "minimum": 0, "maximum": 0.34, "margin_upper": 0,
+      "max_delta": 0.0000000001
+    }]
+  }]
+}
+```
+
+This example **fails its original reflection limit at 55 ohms**:
+S11=55/(100+55), approximately 0.354839. A complete, numerically valid diagnosis
+may finish with that negative conclusion. Do not change the supplied resistor
+or the 0.34 limit to make the example pass.
+
+### Common design and complete sampling
+
+`parameters` describes 1-8 distinct, one-based elements in selected `lumped`
+networks. Units must match R/L/C (`ohm`, `H`, `F`); positive finite nominal
+values must equal the original elements. Positive `minimum`/`maximum` bound
+model validity, not the engineering acceptance window. Every source is nonempty.
+Only component values vary: topology, terminations, wave references and check
+definitions remain original.
+
+`design_variables` maps parameter IDs to `{minimum, maximum, source}`. The plan's
+`robustness.design` selects exactly those variables, within both original design
+and model-validity bounds. One choice is shared across **all** samples and both
+grids. Diagnosis must declare empty design variables and choices. Design may
+also assess a fixed supplied circuit with empty choices; it still must pass.
+
+Declare 1-8 independent `axes`, with distinct IDs and distinct parameter
+targets. Each has dimensionless `factors`, 2-8 distinct positive values, and
+source provenance. Samples multiply the common value using decimal-value
+arithmetic before conversion to the native floating representation. Invalid or
+out-of-validity values fail explicitly. The runner uses every Cartesian
+combination plus the nominal design, deduplicating nominal only if already
+present. At most **17 total scenarios** are supported; excess combinations
+are rejected, never dropped. This is not Monte Carlo, statistical yield or
+continuous-tolerance optimization.
+
+Selected dependency graphs may use ideal lumped/line primitives, explicit
+renormalization, reorder and cascade nodes. Measured Touchstone leaves are
+not supported in this mode: interpolation cannot create missing physical
+frequency evidence. Legacy Touchstone analysis remains available separately.
+Unused graph definitions are not executed during analysis; model scope still
+validates every declared definition.
+
+### Frequency checks and acceptance
+
+Every selected primitive has 2-5001 explicit original frequency samples.
+The fine grid contains every original point plus every representable interval
+midpoint, producing up to 10001 samples. Ideal models are genuinely recalculated
+at the added frequencies; exported S values are not interpolated to create them.
+Original grids and junction references must already agree for cascades.
+`at_hz` and window endpoints must be original samples for the selected network.
+Unlike legacy measurement queries, robustness does not accept interpolated
+check positions.
+
+Declare 1-4 studies, each with at most 32 original checks. Existing RF metrics,
+port conventions and statistics apply. Every check also requires nonnegative
+`max_delta`, an absolute allowed coarse/fine change in that metric's unit.
+Optional `margin_lower` and `margin_upper` are nonnegative required distances
+from the inclusive original bounds; together they must fit inside the window.
+Both resolutions must meet design limits and margins. Headroom can be negative;
+it is never clipped to suggest passing. The report identifies the observed
+frequency, scenario, resolution and physical component values at each worst
+lower/upper headroom.
+
+All supported ideal networks must remain passive and reciprocal at every saved
+sample: largest full-S singular value <=1+1e-9 and reciprocity error <=1e-9.
+These fixed numerical consistency tolerances do not relax any original check.
+Every measured coarse/fine comparison must meet its original `max_delta`.
+Two grids cannot prove the absence of unsampled resonances or global causality.
+Zero S parameters still have no finite dB/phase; use magnitude rather than floors.
+
+The assessment distinguishes:
+
+- `status`: `passed` or `failed` original engineering requirements, margins
+  and numerical validity.
+- `conclusion_valid`: complete, valid network measurements and acceptable
+  frequency-refinement comparisons.
+- `task_accepted`: a valid diagnosis, even with missed engineering limits;
+  or a valid design meeting **every** original limit and required margin.
+
+Undefined measurements, missing cases, inconsistent exports, failed numerical
+physics checks or failed refinement cannot complete either goal.
+
+### Robustness evidence
+
+The runner refuses an existing `rf/results`. It freezes independent copies of
+the original plan/specification, retains every generated
+`rf/results/cases/<scenario>_<coarse|fine>/MODEL.json` and per-study Touchstone,
+and records exact cases, outputs, current Python/numpy/scikit-rf versions and
+`operation: "scikit-rf-component-corners"` in `RESULTS.json`.
+This is real in-process scikit-rf analysis, **not** an external EM simulator.
+Completed calculation is recorded separately from engineering acceptance.
+`RESULTS.status` is `complete` only when the declared goal is accepted.
+
+`rf/results/ASSESSMENT.json` includes coverage, common design, measurements,
+worst observations, margins, comparisons and explicit failure records. The
+read-only checker independently reconstructs every case from current original
+inputs, compares generated model bytes and reloaded complex networks, and
+recomputes the entire assessment. Saved summaries are not authority. Failed
+design attempts remain intact; only `inspect_study` can inspect an unaccepted
+complete assessment without treating it as a successful stage.
+
+Input size is limited to 4 MiB, aggregate evaluated scattering entries to
+2000000, and generated model/network payload to 128 MiB before retained copies.
+Execution and inspection each have a 180-second aggregate budget.
+No validation cache or changed native-output tolerance is introduced.
+Include passed and missed requirements in `rf/REVIEW.md`; diagnosis completion
+must never be described as proof that the circuit meets its limits.

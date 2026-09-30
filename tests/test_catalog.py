@@ -443,6 +443,7 @@ def _expected_members(name: str) -> list[str]:
     ("analog_mixed_signal", "simulation", "analog", "run_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_robustness_reference"),
     ("rf_design", "analysis", "rf", "run_reference"),
+    ("rf_design", "analysis", "rf", "run_robustness_reference"),
     ("pcb_design", "verification", "pcb", "run_reference"),
     ("pcb_design", "verification", "pcb", "run_zone_reference"),
     ("package_design", "thermal", "package", "run_reference"),
@@ -509,7 +510,7 @@ assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
 project = Path.cwd() / "circuit"
 prepare_reference(project)
-if directory == "power" or reference == "run_robustness_reference":
+if directory == "power" or (directory == "analog" and reference == "run_robustness_reference"):
     os.environ["ARGUS_SKILL_SESSION_ROOT"] = str(Path.cwd() / "runtime-state")
 prompt = stages.render_role_prompt_fragment(
     role="engineer", operation="mission", stage=stage, scope="", project_root=project,
@@ -550,9 +551,15 @@ elif directory == "analog" and reference == "run_robustness_reference":
     assert assessment["task_accepted"] and assessment["status"] == "passed"
     assert assessment["coverage"]["expected_scenarios"] == 17
     assert len(assessment["comparisons"]) == 136
+elif directory == "rf" and reference == "run_robustness_reference":
+    assessment = json.loads((project / directory / "results/ASSESSMENT.json").read_text())
+    assert record["operation"] == "scikit-rf-component-corners" and len(record["cases"]) == 10
+    assert assessment["task_accepted"] and assessment["status"] == "passed"
+    assert assessment["coverage"]["expected_scenarios"] == 5
+    assert len(assessment["comparisons"]) == 15
 else:
     assert len(record["runs" if directory == "analog" else "studies"]) == 6
-if directory == "power" or reference == "run_robustness_reference":
+if directory == "power" or (directory == "analog" and reference == "run_robustness_reference"):
     saved = Path(os.environ["ARGUS_SKILL_SESSION_ROOT"]) / f"{directory}-validation"
     assert (saved / "VALIDATED.json").is_file()
     (project / directory / "REVIEW.md").write_text("Report-only clarification; no hardware approval.")

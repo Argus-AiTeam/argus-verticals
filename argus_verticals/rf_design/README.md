@@ -30,6 +30,7 @@ Install the declared dependencies in the interpreter used by Argus:
 ```bash
 pip install -e ".[rf]"
 python -m argus_verticals.rf_design.run_reference /tmp/new-rf-reference
+python -m argus_verticals.rf_design.run_robustness_reference /tmp/new-rf-tolerance-reference
 python -m argus_verticals.rf_design.run_analysis /path/to/project
 ```
 
@@ -43,6 +44,31 @@ For real-reference renormalization, a direct wave-basis linear solve is used
 on the scikit-rf network instead of an intermediate Z matrix. Ideal thru and
 series-element Z matrices can be singular; avoiding that conversion preserves
 their reference-change accuracy without hidden eigenvalue regularization.
+
+## Finite component and frequency robustness
+
+The optional `robustness` plan selects an original external specification and
+one common set of design choices. The specification owns the ideal network
+graph, component provenance/validity, positive relative tolerance factors,
+original limits, headroom and frequency-refinement tolerances.
+The runner evaluates the **full Cartesian product plus nominal**, never a
+convenient subset or separately retuned corners. It recalculates every ideal
+network on the original frequency grid and a grid with every midpoint added.
+No measured Touchstone data is interpolated to manufacture a finer experiment.
+
+Retained case models and Touchstone exports are independently recomputed.
+`rf/results/ASSESSMENT.json` reports complete coverage, sampled full-matrix
+passivity and reciprocity, worst observed frequencies/corners, original-limit
+headroom and coarse/fine deltas. `goal: "diagnose"` can accept an explicitly
+failed engineering conclusion; `goal: "design"` must pass all original limits
+and required margins. Missing cases, invalid measurements and failed numerical
+refinement cannot complete either goal.
+
+The reference checks an ideal 50-to-100 ohm L-match across independently varied
+L/C +/-5 percent samples over 0.8-1.2 GHz, with a five-point original grid and
+nine-point fine grid. The four combinations plus nominal produce ten real
+network calculations. These are finite samples, not guaranteed continuous-band
+performance, a global tolerance bound, statistical yield or physical qualification.
 
 ## Independent executable references
 

@@ -4,8 +4,6 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-import numpy as np
-
 from argus_verticals.hardware.shared.evidence import (
     EvidenceError,
     current_files,
@@ -14,7 +12,7 @@ from argus_verticals.hardware.shared.evidence import (
     record,
 )
 
-from .networks import build_networks, identifier, measure, read_touchstone, text
+from .networks import build_networks, check_export, identifier, measure, text
 
 PLAN = "rf/PLAN.json"
 RESULTS_DIR = "rf/results"
@@ -39,12 +37,21 @@ def validate_specification(root: Path) -> dict:
 
 def validate_model(root: Path) -> dict:
     plan = validate_specification(root)
+    if "robustness" in plan:
+        from .study import resolve_study
+
+        study = resolve_study(root)
+        build_networks(root, study.specification["networks"])
+        return plan
     build_networks(root, plan.get("networks"))
     return plan
 
 
 def validate_plan(root: Path) -> tuple[dict, dict, list[str]]:
-    plan = validate_specification(root)
+    return validate_network_plan(root, validate_specification(root))
+
+
+def validate_network_plan(root: Path, plan: dict) -> tuple[dict, dict, list[str]]:
     studies = plan.get("studies")
     if not isinstance(studies, list) or not 1 <= len(studies) <= 64:
         raise EvidenceError("studies: declare 1-64 selected network studies")
@@ -110,7 +117,11 @@ def result_path(identity: str) -> str:
     return f"{RESULTS_DIR}/networks/{identity}.ts"
 
 
-def validate_analysis(root: Path) -> dict[str, dict[str, float]]:
+def validate_analysis(root: Path) -> dict:
+    if "robustness" in validate_specification(root):
+        from .robustness import validate_robustness
+
+        return validate_robustness(root)
     plan, networks, required = validate_plan(root)
     result = record(root, RESULTS)
     if result.get("operation") != OPERATION or result.get("status") != "complete":
@@ -143,15 +154,7 @@ def validate_analysis(root: Path) -> dict[str, dict[str, float]]:
         study = requested[row["id"]]
         if row.get("network") != study["network"] or row.get("path") != result_path(row["id"]):
             raise EvidenceError("study output does not identify the requested network")
-        exported = read_touchstone(root, row["path"])
-        expected = networks[study["network"]]
-        if (
-            not np.array_equal(exported.f, expected.f)
-            or not np.array_equal(exported.z0, expected.z0)
-            or exported.s.shape != expected.s.shape
-            or not np.allclose(exported.s, expected.s, rtol=1e-11, atol=1e-12)
-        ):
-            raise EvidenceError(f"{row['id']}: exported data disagrees with recomputation from current inputs")
+        exported = check_export(root, row["path"], networks[study["network"]])
         values = {}
         for check in study["checks"]:
             value, unit = measure(exported, check)

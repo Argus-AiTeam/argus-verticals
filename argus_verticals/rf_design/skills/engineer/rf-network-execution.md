@@ -29,3 +29,11 @@ refresh snapshots around old files. Numerical examples should be checked
 against independent equations, and manufactured/measured claims require
 their own evidence. Reviewer checks remain necessary even after the
 read-only command returns an empty issue list.
+
+For robustness, preserve the external original specification and choose only
+its declared common design variables. Execute every finite tolerance combination
+and nominal case on both grids. Do not retune each corner, interpolate measured
+Touchstone into a finer experiment, or hide failed margins behind nominal
+success. Read `ASSESSMENT.json`: accepted diagnosis may correctly report missed
+limits, whereas design must pass. Neither goal can accept invalid measurements
+or failed frequency refinement.

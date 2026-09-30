@@ -82,6 +82,9 @@ The digital verification specialty and FPGA domain are joined by
 operating-point, DC, AC and transient analysis, not a PDK or physical-design flow.
 `rf_design` adds independent scikit-rf network studies: Touchstone data,
 matching models, explicit port/reference handling and two-port cascades.
+Its optional robustness mode evaluates complete finite component-tolerance
+combinations, common design choices and frequency-refined ideal networks,
+with worst-case headroom and distinct diagnosis/design acceptance.
 `pcb_design` adds independent PCB knowledge and selected native KiCad 9 ERC,
 DRC/parity and Gerber/Excellon generation with temporary native replay.
 Its explicit copper-zone mode refills a separate working board through matching
