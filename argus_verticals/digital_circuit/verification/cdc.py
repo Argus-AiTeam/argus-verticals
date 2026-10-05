@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -19,6 +21,10 @@ from argus_verticals.hardware.shared.evidence import (
 
 from . import cdc_simulation
 from .cdc_model import ASSESSMENT, DIRECTORY, LIMITS, RESULTS, resolve, structure
+
+OUTPUT_BUDGET = 128 * 1024 * 1024
+COMMAND_TIMEOUT = 30
+EXECUTION_TIMEOUT = 180
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -39,31 +45,59 @@ def _commands(spec: dict) -> list[tuple[str, list[str]]]:
 
 
 def _execute(root: Path, spec: dict, result: dict) -> None:
-    deadline = time.monotonic() + 180
+    deadline = time.monotonic() + EXECUTION_TIMEOUT
+
+    def limit(command_deadline: float) -> str:
+        if time.monotonic() >= command_deadline:
+            return "CDC native command or study exceeded its allowed seconds"
+        if sum(p.stat().st_size for p in (root / DIRECTORY).iterdir() if p.is_file()) > OUTPUT_BUDGET:
+            return f"CDC generated output exceeded {OUTPUT_BUDGET} bytes"
+        return ""
+
     for name, configuration in spec["configurations"].items():
         frames = cdc_simulation.stimulus(spec, configuration)
         (root / DIRECTORY / f"{name}.sv").write_text(cdc_simulation.testbench(spec, frames), encoding="utf-8")
+        if stopped := limit(deadline):
+            raise EvidenceError(stopped)
     for name, command in _commands(spec):
         log = f"{DIRECTORY}/{name}.log"
         row = {"step": name, "command": command, "exit_code": None, "log": log}
         result["commands"].append(row)
         _write(root / RESULTS, result)
-        timeout = min(30, deadline - time.monotonic())
-        if timeout <= 0:
-            raise EvidenceError("CDC native study exceeded its 180-second execution budget")
+        command_deadline = min(deadline, time.monotonic() + COMMAND_TIMEOUT)
+        if stopped := limit(command_deadline):
+            row["stop_reason"] = stopped
+            _write(root / RESULTS, result)
+            raise EvidenceError(stopped)
         with (root / log).open("w", encoding="utf-8") as stream:
             stream.write("$ " + json.dumps(command) + "\n")
             stream.flush()
             try:
-                completed = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
-            except (OSError, subprocess.TimeoutExpired) as exc:
+                with subprocess.Popen(
+                    command, cwd=root, stdout=stream, stderr=subprocess.STDOUT,
+                    start_new_session=os.name == "posix",
+                ) as process:
+                    while process.poll() is None:
+                        if stopped := limit(command_deadline):
+                            if os.name == "posix":
+                                try:
+                                    os.killpg(process.pid, signal.SIGKILL)
+                                except ProcessLookupError:
+                                    process.wait()
+                            else:
+                                process.kill()
+                            break
+                        time.sleep(0.05)
+                    row["exit_code"] = process.wait()
+            except OSError as exc:
                 raise EvidenceError(f"{name}: native command could not finish: {exc}") from exc
-        row["exit_code"] = completed.returncode
+        stopped = stopped or limit(command_deadline)
+        if stopped:
+            row["stop_reason"] = stopped
         _write(root / RESULTS, result)
-        if completed.returncode != 0:
-            raise EvidenceError(f"{name}: native command exited {completed.returncode}; retained {log}")
-        if sum(p.stat().st_size for p in (root / DIRECTORY).iterdir() if p.is_file()) > 128 * 1024 * 1024:
-            raise EvidenceError("CDC generated output exceeded 128 MiB")
+        if stopped or row["exit_code"] != 0:
+            reason = stopped or f"native command exited {row['exit_code']}"
+            raise EvidenceError(f"{name}: {reason}; retained {log}")
 
 
 def _assessment(root: Path, spec: dict) -> dict:

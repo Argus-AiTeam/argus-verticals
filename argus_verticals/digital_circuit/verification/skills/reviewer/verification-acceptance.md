@@ -24,3 +24,8 @@ Check the original requirement goal: valid negative diagnosis is not a passing
 design. Do not allow a structurally bad reset path merely because its ideal
 digital waveforms pass. Explain excluded metastability, MTBF, placement, timing,
 pulse/bus coherence and system-level reset recovery claims.
+For multiple data paths inspect independent high/low patterns, not only
+simultaneous toggles. Match structural findings to the named native cell/bit,
+expected signal and observed connections; failed inspected paths are not
+accepted chains. A timeout or output-budget stop is incomplete execution,
+not a valid negative engineering conclusion.

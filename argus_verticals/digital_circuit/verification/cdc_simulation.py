@@ -34,6 +34,13 @@ def stimulus(spec: dict, configuration: dict) -> list[dict[str, int]]:
 
     for reset in resets:
         change({reset: 1})
+    if len(data) > 1:
+        for selected in data:
+            change({name: int(name == selected) for name in data})
+            change(dict.fromkeys(data, 0))
+        for selected in data:
+            change({name: int(name != selected) for name in data})
+        change(dict.fromkeys(data, 0))
     for value in (1, 0, 1):
         change(dict.fromkeys(data, value))
     for reset in resets:
@@ -126,4 +133,10 @@ def measure(spec: dict, configuration: dict, text: str) -> dict:
         "passed": all(c["mismatches"] == 0 for c in counters.values()),
         "ticks": len(frames) - 1, "checks": counters, "first_mismatches": witnesses,
         "expected_levels": {name: sorted(values) for name, values in values_seen.items()},
+        "data_patterns": {
+            "inputs": [c["input"] for c in spec["crossings"].values()],
+            "values": [list(pattern) for pattern in sorted({
+                tuple(frame[c["input"]] for c in spec["crossings"].values()) for frame in frames
+            })],
+        },
     }

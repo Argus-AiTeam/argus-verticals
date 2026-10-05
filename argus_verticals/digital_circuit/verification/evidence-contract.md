@@ -211,10 +211,22 @@ checks clock/reset polarity, chain length, complete sequential-state inventory,
 direct data connections and intermediate-stage fanout. Digital traces alone
 cannot substitute for these structural checks: raw-reset usage can look correct
 in simulation while still failing the declared synchronization structure.
+Each structural `finding` identifies the path, failure kind and, when available,
+native cell, bit and RTL source position. Clock/reset connection findings also
+give the expected signal and observed native net aliases. A failed clock or
+reset check does not stop traversal of the remaining directly connected stages.
+`traces` includes inspected paths even when they fail; only fully accepted paths
+appear in `chains`. Unreachable state is reported separately, not automatically
+counted as another defect merely because a traced chain failed.
 It then compiles/runs an independently generated Icarus stimulus for **every**
 original configuration. Stable low/high transitions, staggered initial reset
 release and an individual mid-traffic pulse on every reset input are exercised.
 Later reset assertions/releases occur between every domain's active edges.
+With multiple data inputs, the stimulus additionally holds each input high on
+its own and low on its own long enough for the declared chains to settle.
+This makes input swaps observable even when identical simultaneous transitions
+would conceal them. `data_patterns` records the input order and exercised value
+patterns; it is not a claim of complete input-combination coverage.
 The host compares every output at every tick against a separate synchronous
 state/history calculation, including coincident-clock old-value semantics and
 unknown outputs. Counts are actual comparisons, not elapsed cycles.
@@ -225,10 +237,20 @@ testbenches, executables, traces and `ASSESSMENT.json`. The assessment contains
 structural findings, per-configuration comparison/mismatch counts and first
 counterexample ticks. Execution is bounded to 180 seconds per study, 30 seconds
 per command and 128 MiB generated files before retained copies.
+Time and generated-output limits are checked while the native command is still
+running, with 50 ms sampling, and again after it exits. A process may produce
+additional bytes between samples; 128 MiB is a stop threshold, not a filesystem
+quota. On POSIX the runner terminates only that command's own process group;
+it records the actual exit code and `stop_reason` before reporting failure.
+Timeouts and output overruns cannot become valid negative engineering diagnoses.
 The read-only checker recomputes the assessment, executes a fresh native replay
 in a temporary directory, and compares the native netlist, generated stimuli
 and raw traces without changing the project. Compiled Icarus files contain
 process-specific addresses; retaining them is not a bit-identical rebuild claim.
+Version 0.2.1 adds independent multi-input stimuli and detailed structural
+findings. Preserve previously accepted 0.2.0 results with their generating
+provider; create fresh results for the new checker rather than rewriting old
+snapshots or claiming that the old experiment exercised the new patterns.
 
 `goal: "diagnose"` may finish with `status: "failed"` and
 `task_accepted: true` after complete, valid execution: report the negative

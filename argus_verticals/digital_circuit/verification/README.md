@@ -42,6 +42,11 @@ python -m argus_verticals.digital_circuit.verification.run_cdc_reference /tmp/ne
 
 It checks source-faster, destination-faster and coincident-edge schedules, native
 stage counts and fanout, asynchronous reset assertion and domain-local release.
+Multiple data paths also receive independently held high/low patterns so swapped
+inputs cannot hide behind identical stimuli. Structural findings name the native
+cell/bit and expected versus observed clock/reset connection, and keep inspecting
+remaining direct stages after a defect. Native time/output limits are monitored
+during execution; terminated commands retain their actual exits and reasons.
 The canonical contract below defines the two/three-stage adapter boundary,
 diagnosis versus design goals, independent raw traces and native replay. Use
 `"cdc": true` in an existing general/FPGA verification plan only when explicitly

@@ -238,10 +238,7 @@ def test_existing_result_is_never_overwritten(reference):
 
 
 def test_failed_native_command_keeps_actual_exit_and_output(fresh, monkeypatch):
-    original = subprocess.run
-    def fail(command, **kwargs):
-        return original(["yosys", "-p", "not_a_yosys_command"], **kwargs)
-    monkeypatch.setattr(cdc.subprocess, "run", fail)
+    monkeypatch.setattr(cdc, "_commands", lambda spec: [("yosys", ["yosys", "-p", "not_a_yosys_command"])])
     with pytest.raises(EvidenceError, match="exited"):
         cdc.run(fresh)
     result = json.loads((fresh / RESULTS).read_text())

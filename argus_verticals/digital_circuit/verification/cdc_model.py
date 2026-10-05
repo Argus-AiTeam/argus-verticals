@@ -140,74 +140,113 @@ def _structure(spec: dict, netlist: dict) -> dict:
         raise EvidenceError("Yosys did not produce the declared top and native port/cell records")
     ports, cells = top["ports"], top["cells"]
     inputs, outputs = interface(spec)
+    failures, findings, chains, traces = [], [], {}, {}
+
+    def fail(kind: str, path: str, message: str, **detail) -> None:
+        failures.append(f"{path}: {message}")
+        findings.append({"kind": kind, "path": path, "message": message, **detail})
+
+    def result() -> dict:
+        return {"passed": not failures, "failures": failures, "findings": findings, "chains": chains, "traces": traces}
+
     if set(ports) != set(inputs + outputs) or any(
         p.get("direction") != ("input" if name in inputs else "output") or len(p.get("bits", [])) != 1
         for name, p in ports.items()
     ):
-        return {"passed": False, "failures": ["top ports differ from the complete declared scalar interface"], "chains": {}}
+        fail("interface", spec["top"], "top ports differ from the complete declared scalar interface")
+        return result()
     bits = {name: p["bits"][0] for name, p in ports.items()}
     if any(type(bits[name]) is not int for name in inputs) or len({bits[name] for name in inputs}) != len(inputs):
-        return {"passed": False, "failures": ["declared input ports are aliased or constant in the native model"], "chains": {}}
+        fail("interface", spec["top"], "declared input ports are aliased or constant in the native model")
+        return result()
+    aliases = defaultdict(list)
+    for name, net in top.get("netnames", {}).items():
+        for index, bit in enumerate(net["bits"]):
+            position = len(net["bits"]) - index - 1 if net.get("upto", 0) else index
+            aliases[bit].append(name if len(net["bits"]) == 1 else f"{name}[{position + net.get('offset', 0)}]")
+    for name, bit in bits.items():
+        if name not in aliases[bit]:
+            aliases[bit].append(name)
+
+    def net_names(connections: list) -> list[str]:
+        return sorted({name for bit in connections for name in aliases.get(bit, [str(bit)])})
+
     drivers, consumers = {}, defaultdict(list)
-    atoms, failures, chains, used = set(), [], {}, set()
+    atoms, claimed = set(), set()
     for name in outputs:
         consumers[bits[name]].append(("port", name, 0))
     for name, cell in cells.items():
         if cell["type"] not in ("$adff", "$dff"):
-            failures.append(f"{name}: unsupported cell {cell['type']} in the declared adapter")
+            fail("cell_type", spec["top"], f"unsupported cell {cell['type']} in the declared adapter", cell=name)
         for port, connections in cell["connections"].items():
             for index, bit in enumerate(connections):
                 if cell["port_directions"][port] == "input":
                     consumers[bit].append((name, port, index))
                 elif port == "Q" and cell["type"] in ("$adff", "$dff"):
+                    if bit in drivers:
+                        raise EvidenceError("native Yosys model has multiple sequential drivers for one bit")
                     drivers[bit] = (name, index)
                     atoms.add((name, index))
 
     def chain(label: str, output: str, stages: list[tuple[str, str]], first: int | str) -> None:
         bit, route = bits[output], []
         expected_consumer = ("port", output, 0)
+        before = len(findings)
         for clock, reset in reversed(stages):
             atom = drivers.get(bit)
-            if atom is None or atom in used or atom in {(r["cell"], r["bit"]) for r in route}:
-                failures.append(f"{label}: missing, bypassed or shared sequential stage")
-                return
+            if atom is None or atom in claimed:
+                fail("topology", label, "missing, bypassed or shared sequential stage", observed=net_names([bit]))
+                break
             name, index = atom
             cell = cells[name]
             parameters, connections = cell["parameters"], cell["connections"]
-            if (cell["type"] != "$adff" or connections["CLK"] != [bits[clock]]
-                    or int(parameters["CLK_POLARITY"], 2) != 1
-                    or connections.get("ARST") != [bits[reset]]
-                    or int(parameters.get("ARST_POLARITY", "1"), 2) != 0
-                    or int(parameters.get("ARST_VALUE", "1"), 2) != 0):
-                failures.append(f"{label}: stage must use its declared positive-edge clock and active-low zero reset")
-                return
+            detail = {"cell": name, "bit": index, "source": cell.get("attributes", {}).get("src", "")}
+            if connections["CLK"] != [bits[clock]]:
+                observed = net_names(connections["CLK"])
+                fail("clock", label, f"{name} Q[{index}] clock must be {clock}; observed {observed}",
+                     expected=clock, observed=observed, **detail)
+            if int(parameters["CLK_POLARITY"], 2) != 1:
+                fail("clock_polarity", label, f"{name} Q[{index}] must use a positive-edge clock", **detail)
+            if cell["type"] != "$adff":
+                fail("reset_type", label, f"{name} Q[{index}] must use asynchronous reset", **detail)
+            if connections.get("ARST") != [bits[reset]]:
+                observed = net_names(connections.get("ARST", []))
+                fail("reset", label, f"{name} Q[{index}] reset must be {reset}; observed {observed}",
+                     expected=reset, observed=observed, **detail)
+            if int(parameters.get("ARST_POLARITY", "1"), 2) != 0:
+                fail("reset_polarity", label, f"{name} Q[{index}] must use active-low reset", **detail)
+            if int(parameters.get("ARST_VALUE", "1"), 2) != 0:
+                fail("reset_value", label, f"{name} Q[{index}] must reset to zero", **detail)
             if consumers[bit] != [expected_consumer] and not (
                 label.startswith("reset.") and not route
                 and all(c == expected_consumer or (c[0] in cells and c[1] == "ARST"
                         and cells[c[0]]["connections"].get("CLK") == [bits[clock]]) for c in consumers[bit])
             ):
-                failures.append(f"{label}: intermediate-stage fanout, reconvergence or unexpected output use")
-                return
+                fail("fanout", label, f"{name} Q[{index}] has intermediate-stage fanout, reconvergence or unexpected output use",
+                     observed=[list(c) for c in consumers[bit]], **detail)
             route.append({"cell": name, "bit": index})
+            claimed.add(atom)
             expected_consumer = (name, "D", index)
             bit = connections["D"][index]
-        if bit != first:
-            failures.append(f"{label}: chain does not start at its declared input (or reset release constant)")
-            return
-        chains[label] = list(reversed(route))
+        else:
+            if bit != first:
+                fail("input", label, "chain does not start at its declared input (or reset release constant)",
+                     expected=net_names([first]), observed=net_names([bit]))
+        traces[label] = list(reversed(route))
+        if len(findings) == before:
+            chains[label] = traces[label]
 
     # Keep each bit exclusive, including vector registers expanded into native bit positions.
     for clock, reset in spec["resets"].items():
         label = f"reset.{clock}"
         chain(label, reset["output"], [(clock, reset["input"])] * reset["stages"], "1")
-        used.update((r["cell"], r["bit"]) for r in chains.get(label, []))
     for name, crossing in spec["crossings"].items():
         src, dst = crossing["source_clock"], crossing["destination_clock"]
         stages = [(src, spec["resets"][src]["output"])]
         stages += [(dst, spec["resets"][dst]["output"])] * crossing["stages"]
         label = f"crossing.{name}"
         chain(label, crossing["output"], stages, bits[crossing["input"]])
-        used.update((r["cell"], r["bit"]) for r in chains.get(label, []))
-    if atoms != used:
-        failures.append("sequential state is undeclared or did not match an accepted chain")
-    return {"passed": not failures, "failures": failures, "chains": chains}
+    if atoms != claimed:
+        fail("untraced_state", spec["top"], "sequential state is undeclared or not reachable through the declared direct chains",
+             observed=[{"cell": name, "bit": index} for name, index in sorted(atoms - claimed)])
+    return result()
