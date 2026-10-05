@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "cee191ce3cbef1b37ef7775b1340e05b3b33b303",
+    "commit": "e19293c5977d8de7e724c34a5f6fbe0b942fcf96",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -71,7 +71,7 @@
       "paths": [
         "argus_verticals/chip_design"
       ],
-      "purpose": "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt control design, repair and diagnosis; scoped architecture/RTL/PPA tasks or explicit full implementation and sign-off, not GPU software kernels",
+      "purpose": "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt control design, repair and diagnosis. For the fixed apb4-timer-v1 contract, the control profile already includes authorized RTL repair, native synthesis, both RTL/synthesized simulations and generic-cell limits within verification; these generic counts are not PPA and do not require custom rtl+ppa stages. Other requests use scoped architecture/RTL/PPA tasks or explicit full implementation and sign-off, not GPU software kernels",
       "purpose_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，含有界 APB4 寄存器／定时器／中断设计与修复",
       "python_requirements": [],
       "requires": [
@@ -84,7 +84,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 203245,
+      "size_bytes": 204043,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -94,7 +94,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     "classical_poetry": {
       "api_version": 1,

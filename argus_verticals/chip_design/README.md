@@ -34,6 +34,9 @@ diagnosis. Its [original-input contract](control-contract.md) defines byte write
 exact waits/errors, one-shot/periodic timer behavior and set-dominant W1C IRQ
 semantics. This separate profile does not require accelerator memory models or
 physical PPA records and does not migrate any legacy workflow.
+The classifier-visible purpose explicitly identifies this self-contained scope:
+for `apb4-timer-v1`, authorized RTL repair and generic synthesis counts belong to
+`control`, not an expanded accelerator `custom rtl+ppa` workflow.
 
 With Yosys and Icarus installed, run
 `python -m argus_verticals.chip_design.run_control_reference /tmp/new-control-study`.

@@ -263,3 +263,13 @@ def test_control_roles_receive_exact_original_contract(tmp_path, role, operation
     assert "Design/repair must pass" in prompt.role_banner
     assert stages.WORKFLOW_PROFILES["full"]["stages"] == stages.STAGE_ORDER
     assert len(stages.STAGE_ORDER) == 9
+
+
+def test_classifier_visible_purpose_explains_self_contained_control_scope():
+    from argus.skills.vertical_select import available_vertical_purposes
+
+    purpose = available_vertical_purposes()["chip_design"]
+    assert "apb4-timer-v1" in purpose
+    assert "control profile already includes authorized RTL repair" in purpose
+    assert "generic counts are not PPA" in purpose
+    assert "do not require custom rtl+ppa stages" in purpose

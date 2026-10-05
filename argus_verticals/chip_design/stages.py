@@ -27,7 +27,10 @@ VERTICAL_ROUTING_PATH = ("hardware", "chip_design")
 VERTICAL_PURPOSE = (
     "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, "
     "memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt "
-    "control design, repair and diagnosis; scoped architecture/RTL/PPA tasks "
+    "control design, repair and diagnosis. For the fixed apb4-timer-v1 contract, the control "
+    "profile already includes authorized RTL repair, native synthesis, both RTL/synthesized "
+    "simulations and generic-cell limits within verification; these generic counts are not "
+    "PPA and do not require custom rtl+ppa stages. Other requests use scoped architecture/RTL/PPA tasks "
     "or explicit full implementation and sign-off, not GPU software kernels"
 )
 VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
@@ -453,6 +456,9 @@ def role_banner(role: str) -> str:
         "evidence. Use the active workflow profile: architecture, RTL, verification, "
         "PPA, prototype, benchmark, bounded APB4 control, or explicitly full design. If no profile was saved, "
         "preserve the legacy full flow. Do not demand outputs from omitted stages. "
+        "For the fixed apb4-timer-v1 peripheral contract, control is a self-contained "
+        "implementation/repair and native verification profile, not verification-only reuse. "
+        "Generic synthesis cell counts do not request a separate PPA stage. "
         "This is NOT ordinary software work or GPU kernel programming. "
         "Delivery level describes the target; only completed, reviewed stages may "
         "be claimed as delivered. "
