@@ -273,3 +273,205 @@ def test_classifier_visible_purpose_explains_self_contained_control_scope():
     assert "control profile already includes authorized RTL repair" in purpose
     assert "generic counts are not PPA" in purpose
     assert "do not require custom rtl+ppa stages" in purpose
+
+
+@pytest.mark.parametrize("report", [None, "", "TODO", "## Scope\nOriginal inputs.\n## Findings and changes\nNo changes.\n## Evidence\n```json\n{}\n```\n## Limitations\nFinite checks only.\n"])
+def test_final_completion_rejects_missing_or_incomplete_report(work, report):
+    path = work / "verification/CONTROL_REVIEW.md"
+    if path.exists():
+        path.unlink()
+    if report is not None:
+        path.write_text(report)
+    issues = stages.stage_completion_issues("verification", work, workflow_profile="control")
+    assert issues and "CONTROL_REVIEW.md" in " ".join(issues)
+
+
+def _perfect_trace(spec, config, frames):
+    lines = []
+    for index, row in enumerate(control_model.expected(spec, config, frames)):
+        lines.append(
+            f"SAMPLE {index} {row.get('ready', 0)} {row.get('error', 0)} "
+            f"{row.get('read_data', 0):08x} {row['irq_before']} {row['irq_after']}"
+        )
+    return "\n".join([*lines, "END CONTROL", ""])
+
+
+def test_idle_label_cannot_prove_semantic_coverage():
+    spec, config = {"base_address": 0}, {"counter_width": 8, "wait_cycles": 0, "seed": 1}
+    frame = {
+        "case": "set_dominates_clear", "reset": 1, "select": 0, "enable": 0,
+        "write": 0, "address": 0, "data": 0, "strobes": 0, "protection": 0,
+    }
+    with pytest.raises(EvidenceError, match="semantic coverage"):
+        control_simulation.measure(spec, config, [frame], _perfect_trace(spec, config, [frame]))
+
+
+def test_unselected_writes_do_not_cover_strobes(reference):
+    spec, _ = control_model.resolve(reference)
+    config = spec["configurations"]["compact"]
+    frames = control_simulation.stimulus(spec, config)
+    for frame in frames:
+        if frame["write"] and frame["strobes"] == 4 and frame["address"] == spec["base_address"] + 20:
+            frame["select"] = 0
+    with pytest.raises(EvidenceError, match="semantic coverage"):
+        control_simulation.measure(spec, config, frames, _perfect_trace(spec, config, frames))
+
+
+def test_coverage_counts_real_reference_events_not_case_names(reference):
+    spec, _ = control_model.resolve(reference)
+    for config in spec["configurations"].values():
+        frames = control_simulation.stimulus(spec, config)
+        for frame in frames:
+            frame["case"] = "arbitrary_label"
+        result = control_simulation.measure(spec, config, frames, _perfect_trace(spec, config, frames))
+        coverage = result["coverage"]
+        assert result["passed"] and coverage["cases"] == ["arbitrary_label"]
+        for event, count in coverage["reference_event_counts"].items():
+            if event == "wait_observations" and config["wait_cycles"] == 0:
+                assert count == 0 and coverage["first_event_cycles"][event] == []
+            else:
+                assert count > 0 and len(coverage["first_event_cycles"][event]) == min(count, 4)
+                assert all(0 <= cycle < len(frames) for cycle in coverage["first_event_cycles"][event])
+        for register in ("scratch", "reload"):
+            assert coverage["completed_write_strobes"][register] == list(range(16))
+            for strobe, cycle in coverage["first_strobe_cycles"][register].items():
+                frame = frames[cycle]
+                assert frame["write"] and frame["select"] and frame["enable"]
+                assert frame["strobes"] == int(strobe)
+                assert frame["address"] == spec["base_address"] + control_model.REGISTERS[register]
+
+
+def test_reference_event_counts_follow_hand_calculated_state():
+    idle = {"reset": 1, "select": 0, "enable": 0, "write": 0, "address": 0, "data": 0, "strobes": 0}
+    def write(address, data):
+        return {**idle, "select": 1, "enable": 1, "write": 1, "address": address, "data": data, "strobes": 1}
+    frames = [{**idle, "reset": 0}, write(16, 1), write(4, 1), write(0, 1), idle, idle,
+              write(12, 1), write(4, 0), write(0, 3), write(12, 1), {**idle, "reset": 0}]
+    rows, coverage = control_model.reference_trace({"base_address": 0}, {"counter_width": 4, "wait_cycles": 0}, frames)
+    for name, cycle in (("one_shot_expiries", 5), ("periodic_expiries", 9), ("zero_reload_expiries", 9),
+                        ("set_clear_races", 9), ("async_active_irq_resets", 10)):
+        assert coverage["reference_event_counts"][name] == 1
+        assert coverage["first_event_cycles"][name] == [cycle]
+    assert rows[9]["irq_after"] == 1 and rows[10]["irq_before"] == 0
+
+
+@pytest.mark.parametrize("goal", ["design", "diagnose"])
+def test_missing_coverage_is_not_an_engineering_diagnosis(fresh, monkeypatch, goal):
+    change_spec(fresh, goal=goal)
+    def idle_only(spec, config):
+        return [{
+            "case": "set_dominates_clear", "reset": 0, "select": 0, "enable": 0,
+            "write": 0, "address": 0, "data": 0, "strobes": 0, "protection": 0,
+        }]
+    monkeypatch.setattr(control_simulation, "stimulus", idle_only)
+    with pytest.raises(EvidenceError, match="semantic coverage"):
+        control.run(fresh)
+    result = json.loads((fresh / control.RESULTS).read_text())
+    assert result["status"] == "failed" and all(row["exit_code"] == 0 for row in result["commands"])
+    assert not (fresh / control.ASSESSMENT).exists()
+
+
+@pytest.mark.parametrize("field", ["reference_event_counts", "first_event_cycles", "first_strobe_cycles"])
+def test_coverage_witness_tampering_is_rejected(work, field):
+    path = work / control.ASSESSMENT
+    result = json.loads(path.read_text())
+    coverage = result["configurations"]["compact"]["simulations"]["rtl"]["coverage"]
+    if field == "reference_event_counts":
+        coverage[field]["set_clear_races"] += 1
+    elif field == "first_event_cycles":
+        coverage[field]["set_clear_races"][0] += 1
+    else:
+        coverage[field]["scratch"]["0"] += 1
+    path.write_text(json.dumps(result))
+    retain(work, control.ASSESSMENT)
+    with pytest.raises(EvidenceError, match="assessment"):
+        control.validate(work)
+
+
+@pytest.mark.parametrize("tamper", [
+    "goal", "parameter", "missing_configuration", "cell_count", "comparison", "coverage",
+    "duplicate_key", "numeric_type", "nonfinite",
+])
+def test_report_summary_must_match_replayed_original_facts(work, monkeypatch, tamper):
+    from argus_verticals.chip_design import control_report
+
+    measured = json.loads((work / control.ASSESSMENT).read_text())
+    monkeypatch.setattr(control, "validate", lambda root: measured)
+    path = work / control_report.REPORT
+    text = path.read_text()
+    prefix, tail = text.split("```json\n", 1)
+    payload, suffix = tail.split("\n```", 1)
+    data = json.loads(payload)
+    if tamper == "goal":
+        data["goal"] = "diagnose"
+    elif tamper == "parameter":
+        data["configurations"]["compact"]["parameters"]["counter_width"] += 1
+    elif tamper == "missing_configuration":
+        data["configurations"].pop("compact")
+    elif tamper == "cell_count":
+        data["configurations"]["compact"]["generic_cells"] -= 1
+    elif tamper == "comparison":
+        data["configurations"]["compact"]["simulations"]["rtl"]["mismatches"] += 1
+    elif tamper == "coverage":
+        data["configurations"]["compact"]["simulations"]["rtl"]["reference_event_counts"]["set_clear_races"] += 1
+    elif tamper == "numeric_type":
+        data["configurations"]["compact"]["parameters"]["seed"] = 1.0
+    elif tamper == "nonfinite":
+        data["base_address"] = float("nan")
+    payload = json.dumps(data, indent=2)
+    if tamper == "duplicate_key":
+        payload = payload.replace('"goal": "design"', '"goal": "design", "goal": "design"')
+    path.write_text(prefix + "```json\n" + payload + "\n```" + suffix)
+    with pytest.raises(EvidenceError, match="CONTROL_REVIEW.md"):
+        control_report.validate_completion(work)
+
+
+@pytest.mark.parametrize("tamper", ["missing", "only_code", "duplicate_heading", "heading_in_code", "encoding", "oversized"])
+def test_report_structure_fails_before_expensive_native_replay(work, monkeypatch, tamper):
+    from argus_verticals.chip_design import control_report
+
+    def unexpected(root):
+        raise AssertionError("native replay must not run for a missing/incomplete report")
+    monkeypatch.setattr(control, "validate", unexpected)
+    path = work / control_report.REPORT
+    text = path.read_text()
+    if tamper == "missing":
+        path.unlink()
+    elif tamper == "only_code":
+        path.write_text(text.replace("## Scope\n", "## Scope\n```text\n").replace("\n\n## Findings", "\n```\n\n## Findings"))
+    elif tamper == "duplicate_heading":
+        path.write_text(text + "\n## Scope\nDuplicate.\n")
+    elif tamper == "heading_in_code":
+        path.write_text(text.replace("## Scope\n", "```text\n## Scope\n").replace("\n\n## Findings", "\n```\n\n## Findings"))
+    elif tamper == "encoding":
+        path.write_bytes(b"\xff")
+    else:
+        path.write_text(text + " " * 65536)
+    with pytest.raises(EvidenceError, match="CONTROL_REVIEW.md"):
+        control_report.validate_completion(work)
+
+
+def test_report_cannot_change_during_native_replay(work, monkeypatch):
+    from argus_verticals.chip_design import control_report
+
+    path = work / control_report.REPORT
+    def change_report(root):
+        path.write_text(path.read_text() + "\nConcurrent edit.\n")
+        return json.loads((work / control.ASSESSMENT).read_text())
+    monkeypatch.setattr(control, "validate", change_report)
+    with pytest.raises(EvidenceError, match="changed during"):
+        control_report.validate_completion(work)
+
+
+def test_negative_diagnosis_can_complete_with_truthful_report(fresh):
+    from argus_verticals.chip_design import control_report
+    from argus_verticals.chip_design.run_control_reference import write_reference_report
+
+    change_spec(fresh, goal="diagnose", max_generic_cells=1)
+    measured = control.run(fresh)
+    assert measured["status"] == "failed" and measured["task_accepted"]
+    write_reference_report(fresh)
+    assert control_report.validate_completion(fresh) == measured
+    path = fresh / control_report.REPORT
+    path.write_text(path.read_text().replace('"engineering_status": "failed"', '"engineering_status": "passed"'))
+    assert stages.stage_completion_issues("verification", fresh, workflow_profile="control")

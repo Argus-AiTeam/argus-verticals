@@ -91,6 +91,12 @@ IRQ masks and asynchronous reset during traffic. Mutate actual RTL and require
 both models to expose defects; verify inclusive original generic-cell caps,
 fresh native replay and Store-only profile acceptance. Preserve authorized
 repair diffs and failed attempts; never claim physical PPA from generic cells.
+Final control acceptance also checks the Engineer report and its exact measured
+summary. Test missing/contradictory reports and that malformed reports fail before
+native replay. Verify event-count and cycle-witness recomputation, completed
+strobe coverage, and rejection of idle frames carrying impressive case labels.
+Coverage is based on independent reference conditions, so faulty DUT responses
+remain diagnosable; absent stimulus coverage never qualifies as a diagnosis.
 The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,
 including bad stage counts, intermediate fanout, wrong clocks, asynchronous
 release and raw-reset paths that digital simulation alone may miss. Keep the

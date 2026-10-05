@@ -99,28 +99,68 @@ def merge_bytes(old: int, data: int, strobes: int) -> int:
     return (old & ~mask) | (data & mask)
 
 
-def expected(spec: dict, config: dict, frames: list[dict]) -> list[dict]:
+REFERENCE_EVENTS = (
+    "completed_transfers", "wait_observations", "back_to_back_setups",
+    "set_clear_races", "async_active_irq_resets", "reset_aborted_transfers",
+    "one_shot_expiries", "periodic_expiries", "zero_reload_expiries",
+    "maximum_reload_starts", "masked_pending_observations",
+    "read_only_write_errors", "invalid_read_errors", "invalid_write_errors",
+    "unselected_accesses",
+)
+
+
+def reference_trace(spec: dict, config: dict, frames: list[dict]) -> tuple[list[dict], dict]:
     width_mask = (1 << config["counter_width"]) - 1
     state = {name: 0 for name in REGISTERS}
     age, rows = 0, []
-    for frame in frames:
+    counts = dict.fromkeys(REFERENCE_EVENTS, 0)
+    witnesses: dict[str, list[int]] = {name: [] for name in REFERENCE_EVENTS}
+    strobes: dict[str, dict[str, int]] = {"scratch": {}, "reload": {}}
+
+    def event_at(name: str, cycle: int) -> None:
+        counts[name] += 1
+        if len(witnesses[name]) < 4:
+            witnesses[name].append(cycle)
+
+    for cycle, frame in enumerate(frames):
         if not frame["reset"]:
+            if state["status"] & state["mask"]:
+                event_at("async_active_irq_resets", cycle)
+            if cycle and frames[cycle - 1]["reset"] and frames[cycle - 1]["select"] and not rows[-1].get("ready", 0):
+                event_at("reset_aborted_transfers", cycle)
             state = {name: 0 for name in REGISTERS}
             age = 0
+        elif not frame["select"] and frame["enable"]:
+            event_at("unselected_accesses", cycle)
+        elif frame["select"] and not frame["enable"] and rows and rows[-1].get("ready") == 1:
+            event_at("back_to_back_setups", cycle)
         offset = frame["address"] - spec["base_address"]
         selected = bool(frame["reset"] and frame["select"] and frame["enable"])
         complete = selected and age == config["wait_cycles"]
         error = offset not in REGISTERS.values() or (frame["write"] and offset == REGISTERS["count"])
         row = {"irq_before": int(bool(state["status"] & state["mask"]))}
+        if state["status"] and not state["mask"]:
+            event_at("masked_pending_observations", cycle)
         if selected:
             row["ready"] = int(complete)
+            if not complete:
+                event_at("wait_observations", cycle)
         if complete:
+            event_at("completed_transfers", cycle)
             row["error"] = int(error)
+            if offset not in REGISTERS.values():
+                event_at("invalid_write_errors" if frame["write"] else "invalid_read_errors", cycle)
+            elif error:
+                event_at("read_only_write_errors", cycle)
             if not frame["write"]:
                 register = next((name for name, address in REGISTERS.items() if address == offset), None)
                 row["read_data"] = state[register] if register else 0
         old = state.copy()
         event = bool(frame["reset"] and old["control"] & 1 and old["count"] == 0)
+        if event:
+            event_at("periodic_expiries" if old["control"] & 2 else "one_shot_expiries", cycle)
+            if old["reload"] == 0:
+                event_at("zero_reload_expiries", cycle)
         if frame["reset"] and old["control"] & 1:
             if old["count"]:
                 state["count"] -= 1
@@ -130,24 +170,52 @@ def expected(spec: dict, config: dict, frames: list[dict]) -> list[dict]:
                 state["control"] &= ~1
         clear = 0
         if complete and frame["write"] and not error:
-            data, strobes = frame["data"], frame["strobes"]
-            if offset == REGISTERS["control"] and strobes & 1:
+            data, strobe = frame["data"], frame["strobes"]
+            for register in strobes:
+                if offset == REGISTERS[register]:
+                    strobes[register].setdefault(str(strobe), cycle)
+            if offset == REGISTERS["control"] and strobe & 1:
                 state["control"] = data & 3
                 if data & 1:
                     state["count"] = old["reload"]
+                    if old["reload"] == width_mask:
+                        event_at("maximum_reload_starts", cycle)
             elif offset == REGISTERS["reload"]:
-                state["reload"] = merge_bytes(old["reload"], data, strobes) & width_mask
+                state["reload"] = merge_bytes(old["reload"], data, strobe) & width_mask
             elif offset == REGISTERS["scratch"]:
-                state["scratch"] = merge_bytes(old["scratch"], data, strobes)
-            elif offset == REGISTERS["mask"] and strobes & 1:
+                state["scratch"] = merge_bytes(old["scratch"], data, strobe)
+            elif offset == REGISTERS["mask"] and strobe & 1:
                 state["mask"] = data & 1
-            elif offset == REGISTERS["status"] and strobes & 1:
+            elif offset == REGISTERS["status"] and strobe & 1:
                 clear = data & 1
+        if event and clear:
+            event_at("set_clear_races", cycle)
         state["status"] = int(bool((old["status"] and not clear) or event))
         age = age + 1 if selected and not complete else 0
         row["irq_after"] = int(bool(state["status"] & state["mask"]))
         rows.append(row)
-    return rows
+    return rows, {
+        "reference_event_counts": counts,
+        "first_event_cycles": witnesses,
+        "completed_write_strobes": {name: sorted(map(int, values)) for name, values in strobes.items()},
+        "first_strobe_cycles": strobes,
+    }
+
+
+def expected(spec: dict, config: dict, frames: list[dict]) -> list[dict]:
+    return reference_trace(spec, config, frames)[0]
+
+
+def require_coverage(config: dict, coverage: dict) -> None:
+    counts = coverage["reference_event_counts"]
+    missing = [name for name in REFERENCE_EVENTS if name != "wait_observations" and counts[name] <= 0]
+    if (counts["wait_observations"] > 0) != bool(config["wait_cycles"]):
+        missing.append("wait_observations must match the original zero/nonzero wait configuration")
+    for register, values in coverage["completed_write_strobes"].items():
+        if values != list(range(16)):
+            missing.append(f"{register} completed writes must exercise every strobe mask")
+    if missing:
+        raise EvidenceError("control stimulus lacks required semantic coverage: " + "; ".join(missing))
 
 
 def synthesis(spec: dict, name: str, netlist: dict, statistics: dict) -> dict:

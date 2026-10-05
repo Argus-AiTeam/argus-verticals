@@ -119,6 +119,7 @@ VOICE_CLEAN_FILES: tuple[str, ...] = (
     "argus_verticals/chip_design/stages.py",
     "argus_verticals/chip_design/control.py",
     "argus_verticals/chip_design/control_model.py",
+    "argus_verticals/chip_design/control_report.py",
     "argus_verticals/chip_design/control_simulation.py",
     "argus_verticals/chip_design/run_control_reference.py",
     "argus_verticals/hardware/shared/native.py",

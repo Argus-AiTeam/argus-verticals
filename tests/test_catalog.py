@@ -525,7 +525,12 @@ digital_profile = directory in {"verification/cdc", "verification/control"}
 execute = [command for command in commands if ("run(Path.cwd())" if digital_profile else "run_analysis(Path.cwd())") in command]
 check = [command for command in commands if "completion_issues" in command and (not digital_profile or "for_profile" in command)]
 assert len(execute) == len(check) == 1
-for command in (execute[0], check[0]):
+for index, command in enumerate((execute[0], check[0])):
+    if directory == "verification/control" and index == 1:
+        missing = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
+        assert missing.returncode != 0 and "CONTROL_REVIEW.md" in missing.stdout
+        write_reference_report = importlib.import_module(f"argus_verticals.{module}.{reference}").write_reference_report
+        write_reference_report(project)
     result = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout

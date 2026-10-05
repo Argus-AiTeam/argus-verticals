@@ -23,6 +23,11 @@ Respect exact waits, all byte strobes, read-only/error semantics and old-state
 timer ordering; timer-event set dominates simultaneous W1C. Repair only authorized
 RTL, retain failed attempts and verify both RTL and synthesized models with the
 original configuration matrix and generic-cell cap. This is not physical PPA.
+Deliver `verification/CONTROL_REVIEW.md` before requesting review, with the
+required narrative sections and exact measured summary from `control_report.summary`.
+The final checker requires this report; Reviewer does not write missing
+Engineer deliverables. Confirm positive semantic event counts and completed
+write-strobe coverage, not only scenario labels or a passing simulator exit.
 
 ## Ownership and coherence
 

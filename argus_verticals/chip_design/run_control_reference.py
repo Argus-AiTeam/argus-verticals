@@ -7,6 +7,8 @@ import shutil
 from pathlib import Path
 
 from .control import run
+from .control_model import LIMITS
+from .control_report import REPORT, summary
 
 
 def prepare_reference(root: Path) -> None:
@@ -28,9 +30,22 @@ def prepare_reference(root: Path) -> None:
     (root / "verification/CONTROL_PLAN.json").write_text(json.dumps({"specification": "design/control-spec.json"}) + "\n", encoding="utf-8")
 
 
+def write_reference_report(root: Path) -> None:
+    """Write the example's Engineer report, without claiming independent approval."""
+    (root / REPORT).write_text(
+        "# Bounded control reference\n\n"
+        "## Scope\nThe copied teaching reference uses the original declared APB4 contract and configuration matrix.\n\n"
+        "## Findings and changes\nNo RTL repairs were applied to this reference. This generated example report is not independent Reviewer approval.\n\n"
+        "## Evidence\n```json\n" + json.dumps(summary(root), indent=2) + "\n```\n\n"
+        "## Limitations\n" + LIMITS + "\n",
+        encoding="utf-8",
+    )
+
+
 def run_reference(root: Path) -> None:
     prepare_reference(root)
     run(root)
+    write_reference_report(root)
 
 
 def main() -> None:

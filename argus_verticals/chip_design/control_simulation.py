@@ -7,7 +7,7 @@ from collections import defaultdict
 
 from argus_verticals.hardware.shared.evidence import EvidenceError
 
-from .control_model import REGISTERS, expected
+from .control_model import REGISTERS, reference_trace, require_coverage
 
 
 def stimulus(spec: dict, config: dict) -> list[dict]:
@@ -167,9 +167,11 @@ def measure(spec: dict, config: dict, frames: list[dict], trace: str) -> dict:
             ended = True
     if not ended or len(samples) != len(frames):
         raise EvidenceError("control trace is incomplete; this is not a valid negative diagnosis")
+    expected_rows, coverage = reference_trace(spec, config, frames)
+    require_coverage(config, coverage)
     checks = defaultdict(lambda: {"comparisons": 0, "mismatches": 0})
     witnesses = []
-    for cycle, (frame, observed, wanted) in enumerate(zip(frames, samples, expected(spec, config, frames))):
+    for cycle, (frame, observed, wanted) in enumerate(zip(frames, samples, expected_rows)):
         for signal, value in wanted.items():
             check = checks[frame["case"]]
             check["comparisons"] += 1
@@ -183,7 +185,8 @@ def measure(spec: dict, config: dict, frames: list[dict], trace: str) -> dict:
         "passed": all(row["mismatches"] == 0 for row in checks.values()),
         "samples": len(samples), "checks": dict(checks), "first_mismatches": witnesses,
         "coverage": {
-            "write_strobes": sorted({f["strobes"] for f in frames if f["case"] == "byte_strobes" and f["write"]}),
+            **coverage,
+            "write_strobes": coverage["completed_write_strobes"]["scratch"],
             "wait_cycles": config["wait_cycles"], "random_seed": config["seed"],
             "cases": sorted(checks),
         },

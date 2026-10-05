@@ -222,7 +222,7 @@ def main() -> None:
         measured = run(args.project)
     except (EvidenceError, FileExistsError) as exc:
         parser.exit(1, f"Control execution failed: {exc}\n")
-    print(f"Control task accepted: goal={measured['goal']}, engineering_status={measured['status']}. {LIMITS}")
+    print(f"Control native evidence complete: goal={measured['goal']}, engineering_status={measured['status']}. Final completion also requires the Engineer report and independent review. {LIMITS}")
 
 
 if __name__ == "__main__":

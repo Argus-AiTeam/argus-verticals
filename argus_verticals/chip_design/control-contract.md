@@ -110,6 +110,25 @@ IRQ mask and W1C races, and asynchronous reset during traffic plus seeded traffi
 Only protocol-defined valid response windows are compared; X/Z in consumed
 signals are mismatches. Logs retain every sample, not just a PASS string.
 
+Every configuration must also establish semantic coverage from the independent
+reference state and presented inputs, not from scenario labels. The assessment
+records event counts and up to four first cycle witnesses for completed
+transfers, wait observations, back-to-back setup, event/W1C races, reset with
+active reference IRQ, reset-aborted transfers, one-shot/periodic/zero-reload
+expiry, maximum-reload starts, masked pending state, RO/unmapped errors and
+unselected accesses. All events require positive counts, except wait observations
+must be zero for WAIT_CYCLES=0 and positive otherwise. Each of SCRATCH and RELOAD
+must receive completed valid writes with all 16 strobe masks; setup, unselected,
+waiting or erroneous writes do not establish that coverage.
+
+These are reference-condition witnesses, not assertions that a faulty DUT reached
+the correct internal state. Raw responses are independently compared at those
+cycles, so a real design defect remains a valid negative diagnosis. Missing
+semantic coverage is instead incomplete verification evidence and cannot finish
+even a diagnosis. A passing design establishes both coverage and matching observed
+responses. The checker recomputes counts and witnesses; editing coverage records
+cannot make missing events valid.
+
 Yosys elaborates every original parameter configuration, flattens and synthesizes
 with `-noabc`, checks the design, and emits the netlist, synthesizable Verilog and
 JSON cell statistics. The flattened interface, no-latch constraint and original
@@ -135,7 +154,53 @@ top-level output is polled every 50 ms against 128 MiB (a stop threshold, not a
 filesystem quota). Termination stops only the owned process group on POSIX and
 retains actual exit codes and stop reasons.
 
+## Engineer report and final completion
+
+**Engineer owns `verification/CONTROL_REVIEW.md` and must deliver it before
+requesting review.** The native runner does not write this report. Reviewer
+independently checks it, rather than authoring missing Engineer deliverables.
+Native execution and `control.validate(project)` remain usable before the report
+exists; they do not complete the workflow. The profile-specific completion
+checker first rejects a missing/incomplete report, then independently replays
+native evidence and checks the report's facts against that result.
+
+The report must be UTF-8, at most 64 KiB, and have these four distinct H2 headings
+exactly (narrative underneath may use the user's requested language):
+
+```text
+## Scope
+Explain the original inputs, goal, authorized edits and unchanged limits.
+## Findings and changes
+Explain actual defects, repairs or diagnostic findings and retained failures.
+## Evidence
+One fenced json block containing the exact summary described below.
+## Limitations
+Explain finite coverage and the absence of formal/physical/SoC qualification.
+```
+
+The three narrative sections require prose, not just code or headings. Evidence
+must contain exactly one JSON block equal to
+`argus_verticals.chip_design.control_report.summary(project)`. Use the active
+interpreter and load `chip_design` through the Store before importing that helper,
+as in the native runner command. For example, in that loaded Python process:
+
+```python
+import json
+from pathlib import Path
+from argus_verticals.chip_design.control_report import summary
+print(json.dumps(summary(Path.cwd()), indent=2))
+```
+
+The helper reports original specification/goal/top/source/address/cell bounds,
+every original configuration, actual generic cells/headroom and RTL/synthesized
+comparison and semantic-coverage counts. It only supplies facts; it does not
+invent findings, narrative, independent approval or completion. Copy its JSON
+inside a single fenced `json` block beneath Evidence. Missing configurations,
+stale or contradictory values, duplicate keys and malformed JSON are rejected.
+Report edits do not rewrite native evidence; final validation is read-only.
+
 Reviewer must inspect original constraints, meaningful coverage, oracle
-independence and any repair diff, execute the profile-specific checker, and
-explain finite-check limitations in `verification/CONTROL_REVIEW.md`. A native
-tool exit zero, Engineer's report or generic cell count alone is not acceptance.
+independence, narrative accuracy and any repair diff, then execute the
+profile-specific checker. Structural report checks cannot judge the truth of
+arbitrary prose or replace independent review. A native tool exit zero,
+Engineer's report or generic cell count alone is not acceptance.

@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "e19293c5977d8de7e724c34a5f6fbe0b942fcf96",
+    "commit": "775a04c44c78b271276b3125731fcc76fd291a2c",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -84,7 +84,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 204043,
+      "size_bytes": 219329,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -94,7 +94,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.2.1"
+      "version": "1.2.2"
     },
     "classical_poetry": {
       "api_version": 1,

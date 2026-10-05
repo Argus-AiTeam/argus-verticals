@@ -237,7 +237,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
                 "and passing summaries contain no contradictory failures. A control-profile "
                 "diagnosis may retain real failures; control design/repair must pass both RTL and synthesized simulation."
             ),
-            evidence_hint="verification/RESULTS.json and verification/raw/; control profile uses verification/control/",
+            evidence_hint="verification/RESULTS.json and verification/raw/; control profile uses verification/control/ and the Engineer-authored verification/CONTROL_REVIEW.md",
         ),
     ),
     "ppa": (
@@ -359,12 +359,12 @@ def stage_completion_issues(
     if workflow_profile == "control":
         from argus_verticals.hardware.shared.evidence import EvidenceError as ControlEvidenceError
 
-        from .control import validate
+        from .control_report import validate_completion
 
         if stage_name != "verification":
             return ("control profile only executes its bounded verification stage",)
         try:
-            validate(root)
+            validate_completion(root)
         except ControlEvidenceError as exc:
             return (str(exc),)
         return ()
@@ -440,7 +440,10 @@ def render_role_prompt_fragment(
         + Path(__file__).with_name("control-contract.md").read_text(encoding="utf-8")
         + "\nEngineer: execute the native study from the execution project, not session state:\n"
         f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
-        "Reviewer: inspect original requirements, raw evidence and authorized repair changes, "
+        "Engineer: before requesting review, author verification/CONTROL_REVIEW.md with all four "
+        "required sections and the exact measured JSON summary. The runner does not write or approve "
+        "your report. Reviewer does not author missing Engineer reports. "
+        "Reviewer: inspect original requirements, raw evidence, the Engineer's report and authorized repair changes, "
         "then execute the profile-specific read-only checker:\n"
         f"```bash\n{control_check_command()}\n```\n"
         "Manager/Planner preserve all original constraints. Design/repair must pass; "

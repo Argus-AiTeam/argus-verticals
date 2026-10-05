@@ -54,6 +54,17 @@ negative diagnosis. These are finite checks and generic Yosys cell counts, not
 formal equivalence, physical timing/area/power, a complete SoC or silicon results.
 Native process monitoring is shared with CDC without changing its limits.
 
+Final control completion additionally requires the Engineer's structured
+`verification/CONTROL_REVIEW.md`; Reviewer checks it independently and does not
+fill in missing deliverables. Its measured JSON summary must match replayed
+evidence and all original configurations. Native `control.validate` remains
+report-independent for implementation and diagnosis; the profile completion
+checker enforces the final report. Semantic event counts and cycle witnesses,
+including valid completed byte writes, prevent labels alone from establishing
+coverage. Missing coverage cannot qualify as a negative diagnosis.
+Existing accepted projects keep their installed provider and records; the
+strengthened assessment requires fresh results rather than rewriting old ones.
+
 Manifest: `vertical.json` (store metadata; the purpose line above is read from `stages.py`).
 
 Version 1.x requires Argus workflow composition (`VerticalContract.compose_workflow`)
