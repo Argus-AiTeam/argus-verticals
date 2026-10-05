@@ -440,6 +440,7 @@ def _expected_members(name: str) -> list[str]:
 
 
 @pytest.mark.parametrize("vertical,stage,directory,reference", [
+    ("digital_circuit_verification", "simulation", "verification/cdc", "run_cdc_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_robustness_reference"),
     ("rf_design", "analysis", "rf", "run_reference"),
@@ -465,6 +466,8 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
         pytest.skip("KiCad 9 is required for the archive-only executable check")
     if vertical == "package_design" and any(shutil.which(tool) is None for tool in ("gmsh", "ccx")):
         pytest.skip("Gmsh and CalculiX are required for the archive-only executable check")
+    if vertical == "digital_circuit_verification" and any(shutil.which(tool) is None for tool in ("yosys", "iverilog", "vvp")):
+        pytest.skip("Yosys and Icarus are required for the archive-only CDC check")
     dist, payload = release
     local_catalog = json.loads(json.dumps(payload))
     for entry in local_catalog["verticals"].values():
@@ -503,8 +506,9 @@ vertical, stage, directory, reference = sys.argv[1:]
 installed = store.install(vertical, wait=True)
 assert installed["status"] == "done", installed
 load_vertical_contract(vertical)
-stages = importlib.import_module(f"argus_verticals.{vertical}.stages")
-prepare_reference = importlib.import_module(f"argus_verticals.{vertical}.{reference}").prepare_reference
+module = "digital_circuit.verification" if vertical == "digital_circuit_verification" else vertical
+stages = importlib.import_module(f"argus_verticals.{module}.stages")
+prepare_reference = importlib.import_module(f"argus_verticals.{module}.{reference}").prepare_reference
 from argus_verticals.hardware.shared import evidence
 assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve())
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
@@ -516,15 +520,20 @@ prompt = stages.render_role_prompt_fragment(
     role="engineer", operation="mission", stage=stage, scope="", project_root=project,
 )
 commands = re.findall(r"```bash\\n(.*?)\\n```", prompt, re.DOTALL)
-execute = [command for command in commands if "run_analysis(Path.cwd())" in command]
-check = [command for command in commands if "completion_issues" in command]
+execute = [command for command in commands if ("run(Path.cwd())" if directory == "verification/cdc" else "run_analysis(Path.cwd())") in command]
+check = [command for command in commands if "completion_issues" in command and (directory != "verification/cdc" or "for_profile" in command)]
 assert len(execute) == len(check) == 1
 for command in (execute[0], check[0]):
     result = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout
-record = json.loads((project / directory / "results/RESULTS.json").read_text())
-if directory == "pcb":
+record = json.loads((project / directory / ("RESULTS.json" if directory == "verification/cdc" else "results/RESULTS.json")).read_text())
+if directory == "verification/cdc":
+    assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
+    assert record["operation"] == "yosys-icarus-cdc-reset" and len(record["commands"]) == 7
+    assert assessment["task_accepted"] and assessment["status"] == "passed"
+    assert len(assessment["structure"]["chains"]) == len(assessment["simulations"]) == 3
+elif directory == "pcb":
     expected = (["refill"] if reference == "run_zone_reference" else []) + ["erc", "drc", "gerbers", "drill"]
     assert [row["kind"] for row in record["commands"]] == expected
     assert record["kicad_version"].startswith("9.")

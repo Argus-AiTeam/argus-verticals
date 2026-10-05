@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "b282286c5820445a6215b0340df10ed20152e118",
+    "commit": "935bf2013a96be58c9f39ab92bef8f332f291ae2",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -197,8 +197,8 @@
       "paths": [
         "argus_verticals/digital_circuit/verification"
       ],
-      "purpose": "independent RTL verification specialty: requirement-to-test matrices, parameter/seed regressions, protocol scoreboards and nonvacuous formal checks; not RTL implementation, analog simulation, timing closure or fixed-harness benchmark submission",
-      "purpose_zh": "独立数字验证专项：需求覆盖矩阵、参数和种子回归、协议计分板、形式证明及非空洞性检查",
+      "purpose": "independent RTL verification specialty: requirement-to-test matrices, parameter/seed regressions, protocol scoreboards, declared single-bit CDC/reset adapter checks and nonvacuous formal checks; not RTL implementation, analog simulation, timing closure or fixed-harness benchmark submission",
+      "purpose_zh": "独立数字验证专项：需求覆盖矩阵、参数和种子回归、声明的单比特 CDC／复位链原生检查、形式证明及非空洞性检查",
       "python_requirements": [],
       "requires": [
         "digital_circuit"
@@ -211,16 +211,17 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 41010,
+      "size_bytes": 92333,
       "skill_parents": [
         "digital_circuit"
       ],
       "tags": [
         "hardware",
         "verification",
-        "formal"
+        "formal",
+        "cdc"
       ],
-      "version": "0.1.1"
+      "version": "0.2.2"
     },
     "fiction_writing": {
       "api_version": 1,
@@ -277,7 +278,7 @@
         "fpga_design"
       ],
       "shared": [],
-      "size_bytes": 31362,
+      "size_bytes": 31881,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"
@@ -287,7 +288,7 @@
         "fpga",
         "verification"
       ],
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     "kernelbench": {
       "api_version": 1,

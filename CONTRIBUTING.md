@@ -84,6 +84,17 @@ workflow. Hardware example tests
 use Icarus Verilog (`iverilog` and `vvp`); the iCE40 implementation tests also
 use Yosys, nextpnr-ice40 and IceStorm (`icepack`). CI installs these tools so
 documented RTL and native implementation are executed, not only linted.
+The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,
+including bad stage counts, intermediate fanout, wrong clocks, asynchronous
+release and raw-reset paths that digital simulation alone may miss. Keep the
+legacy full verification workflow unchanged; CDC-only work has an explicit
+profile and original specification. Preserve failing design evidence and valid
+negative diagnoses, test fresh native replay and Store-only profile checking,
+and do not claim metastability/MTBF or complete CDC/RDC sign-off.
+CDC follow-up tests must show that swapped independently declared data inputs
+produce trace mismatches, not just structural failures, and that detailed native
+findings survive recomputation. Check live output-budget enforcement, terminated
+command exits and owned process cleanup; never weaken a threshold to pass.
 Analog references additionally require `ngspice`, also installed in CI. They
 execute native operating-point, DC, AC and transient analyses and compare
 waveform measurements against independent circuit equations. Keep parser-only

@@ -54,6 +54,14 @@ source. Changing a clock target or source invalidates that result. The included
 FIFO regression demonstrates the RTL/verification path; adapt the top-level
 ports and independently chosen cases for a board design.
 
+Explicit `"cdc": true` in the verification plan additionally requires the
+specialty's original-input-bound CDC/reset adapter study and a **passing**
+structural/trace result; a negative diagnosis cannot qualify implementation.
+Its native replay and snapshots are enforced by the same shared verification
+checker. Use the independent specialty's `cdc` profile for a CDC-only task with
+no board target. This does not extend the single-clock implementation backend,
+prove complete CDC/RDC safety or authorize programming.
+
 ## Implementation
 
 Write `constraints/board.pcf` with exactly one `set_io port pin` per top-level
