@@ -515,6 +515,9 @@ assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
 project = Path.cwd() / "circuit"
 prepare_reference(project)
+if directory == "verification/control":
+    from argus.skills.vertical_select import persist_vertical
+    persist_vertical(project, "chip_design", workflow_profile="control")
 if directory == "power" or (directory == "analog" and reference == "run_robustness_reference"):
     os.environ["ARGUS_SKILL_SESSION_ROOT"] = str(Path.cwd() / "runtime-state")
 prompt = stages.render_role_prompt_fragment(
@@ -549,6 +552,15 @@ if directory == "verification/control":
     assert len(assessment["configurations"]) == 2
     assert all(c["synthesis"]["passed"] and all(s["passed"] for s in c["simulations"].values()) for c in assessment["configurations"].values())
 elif directory == "verification/cdc":
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+    from argus.skills.vertical_select import persist_vertical
+    from argus_verticals.hardware.shared import review
+    assert Path(review.__file__).resolve().is_relative_to(store.store_root().resolve())
+    persist_vertical(project, vertical, workflow_profile="cdc")
+    gathered = collect_round_evidence(RoundEvidenceRequest(project, project / ".argus/life", 1))
+    host, = [e for e in gathered if e.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert '"issues": []' in host.reviewer_text
+    assert '"workflow_profile": "cdc"' in host.reviewer_text
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
     assert record["operation"] == "yosys-icarus-cdc-reset" and len(record["commands"]) == 7
     assert assessment["task_accepted"] and assessment["status"] == "passed"

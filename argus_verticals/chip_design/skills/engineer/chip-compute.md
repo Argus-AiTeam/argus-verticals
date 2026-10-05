@@ -39,6 +39,15 @@ length and bias. Do not assume 32 bits suffices for every K.
 Track both integer-code agreement and end-task quality; a numerically plausible
 distribution can still violate the exact reference semantics.
 
+For mixed precision, name each boundary separately: packed weight, activation,
+product, group accumulator, full-reduction accumulator, residual and K/V state.
+Do not infer strict FP16 state from FP16 operators when residuals are wider.
+Specify where rounding occurs and whether cross-group reduction consumes exact
+accumulators or rounded outputs. Test cancellation across groups, halfway ties,
+subnormals, overflow and invalid inputs against the original oracle.
+Keep an integer baseline independent of a mixed-precision successor; do not
+silently convert its quantization or present software fallback as RTL execution.
+
 ## Example architecture study
 
 For a 16x16x64 matmul tile, compute 16,384 MACs. At 16 MAC/cycle the compute-only

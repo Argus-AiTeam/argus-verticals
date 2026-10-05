@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "ce75f22a0789bc765811ac719b0137e0991d097a",
+    "commit": "7aaad7999ee88dcfeb2f3adb79bda11b5d90a012",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -52,7 +52,7 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 148542,
+      "size_bytes": 154745,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -84,7 +84,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 222582,
+      "size_bytes": 233186,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -94,7 +94,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.2.3"
+      "version": "1.2.4"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -145,8 +145,10 @@
         "hardware",
         "digital_circuit"
       ],
-      "shared": [],
-      "size_bytes": 95271,
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 107760,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -154,7 +156,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
@@ -213,7 +215,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 92866,
+      "size_bytes": 101323,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -223,7 +225,7 @@
         "formal",
         "cdc"
       ],
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     "fiction_writing": {
       "api_version": 1,
@@ -279,8 +281,10 @@
         "hardware",
         "fpga_design"
       ],
-      "shared": [],
-      "size_bytes": 31881,
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 43421,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"
@@ -290,7 +294,7 @@
         "fpga",
         "verification"
       ],
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     "kernelbench": {
       "api_version": 1,
@@ -510,7 +514,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 89596,
+      "size_bytes": 95799,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -542,7 +546,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 102296,
+      "size_bytes": 108499,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -601,7 +605,7 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 140809,
+      "size_bytes": 147012,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -699,7 +703,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 118180,
+      "size_bytes": 124383,
       "skill_parents": [],
       "tags": [
         "hardware",

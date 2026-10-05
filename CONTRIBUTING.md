@@ -100,6 +100,16 @@ including read-only Reviewer prompts, explicit failures and isolation from
 legacy profiles; native checks must not depend on Reviewer shell permissions.
 Coverage is based on independent reference conditions, so faulty DUT responses
 remain diagnosable; absent stimulus coverage never qualifies as a diagnosis.
+General digital/chip verification and the FPGA checker use the same existing
+Argus host round-evidence API. Test the saved scoped contract against a separate
+execution directory, custom prerequisites, visible failures, and the absence of
+recorded-command replay or project/state mutation. Control keeps its dedicated
+native report check, without a second generic replay. These changes require that
+framework API; they do not activate or migrate historical project runtimes.
+For general simulation/formal, test explicitly declared `supporting_files`
+(precision contracts, oracle dependencies and retained fixtures) for independent
+current copies and invalid paths. Binding inputs does not establish oracle
+independence or substitute for a project's scientific acceptance.
 The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,
 including bad stage counts, intermediate fanout, wrong clocks, asynchronous
 release and raw-reset paths that digital simulation alone may miss. Keep the

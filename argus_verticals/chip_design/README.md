@@ -26,6 +26,21 @@ Inherits `digital_circuit`'s detailed circuit skill tree
 
 Extras: none. Tests: `tests/skills/test_chip_design_vertical.py`.
 
+## Accelerator verification and continuation
+
+Non-control verification receives the shared
+[review contract](../hardware/shared/verification-review.md), not an APB4
+execution recipe. The host runs the existing validator under the saved
+profile, including custom RTL-manifest requirements, and supplies its result
+to a read/search-only Reviewer. Record checks do not run a one-shot numerical
+experiment, resume a stopped runtime or replace project-specific acceptance.
+
+Keep weights, activations, accumulators, residuals and K/V precision distinct.
+Preserve each project's oracle, original tolerances and legal Manager ownership;
+an implementation check is not a numerical result or a hardware claim. Neither
+new knowledge nor host checking automatically migrates a historical campaign.
+The legacy accelerator evidence format and its acceptance rules are unchanged.
+
 ## Bounded APB4 control
 
 The opt-in `control` profile uses the existing verification stage for a bounded

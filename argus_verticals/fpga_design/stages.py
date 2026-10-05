@@ -10,6 +10,7 @@ from argus_verticals.digital_circuit.verification.evidence import (
     project_file,
     verification_evidence_contract,
 )
+from argus_verticals.hardware.shared.review import verification_review_contract
 
 from .evidence import (
     validate_bringup,
@@ -76,8 +77,9 @@ def render_role_prompt_fragment(
         )
     return (
         guidance
-        + "\nEngineer and Reviewer must run this read-only check from the execution "
-        "project before submitting or approving results. [] with exit code 0 accepts record "
+        + "\n" + verification_review_contract()
+        + "\nFor Engineer debugging or an execution-capable operator, run this read-only check from the execution "
+        "project. [] with exit code 0 accepts record "
         "consistency only; independent review of actual work remains required:\n\n"
         f"```bash\n{evidence_check_command('fpga_design', stage)}\n```\n"
         "Repair reported issues and rerun affected checks; explain what prevents completion, "

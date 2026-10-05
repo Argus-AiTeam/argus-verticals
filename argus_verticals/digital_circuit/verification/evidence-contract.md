@@ -29,6 +29,23 @@ known cases and every case is mapped to a requirement. Configuration names
 identify parameters and seeds; retain the exact compile/run arguments so the
 Reviewer can verify their correspondence.
 
+If the check consumes an external numerical contract, an oracle/helper module
+or retained input fixtures, declare those additional project files explicitly:
+
+```json
+{"supporting_files": ["design/numerical-contract.json", "reference/oracle.py", "verification/fixtures/input.hex"]}
+```
+
+This optional field is a distinct, nonempty list of existing project-relative
+files. When present, every listed file must have an independent current byte
+copy in each selected simulation or formal record, just like sources and
+testbenches. A declared but uncopied oracle or contract cannot be silently
+ignored. Existing plans without the field retain their original behavior.
+Declaration does not discover the evaluator's transitive dependencies or prove
+its independence; review the actual consumed inputs and keep the project's
+native model-package checks. Do not change original tolerances or precision
+rules while making the plan.
+
 A simulation-only scope omits the standalone plan stage, not this manifest.
 Reuse an applicable existing plan. If absent, materialize the manifest from the
 provided requirements while preparing the requested tests, without adding a
@@ -57,11 +74,12 @@ than inventing them. Merely naming a nonexistent testbench is not a valid plan.
 }
 ```
 
-`inputs` maps every plan/source/testbench file to an independent, byte-identical
-copy. Include any extra inputs required by the consuming vertical. Self-copies,
+`inputs` maps every plan/source/testbench/supporting file to an independent,
+byte-identical copy. Include any extra inputs required by the consuming vertical. Self-copies,
 hardlinks and paths escaping the project are invalid. Copy the inputs used for
-the run; changes to the plan, RTL or testbench require rerunning affected checks
-and updating the evidence, not merely copying changed files over old snapshots.
+the run; changes to the plan, RTL, testbench or declared supporting files require
+rerunning affected checks and updating the evidence, not merely copying changed
+files over old snapshots.
 
 `runs` contains exactly one record per planned configuration, with no omissions,
 duplicates or extras. `command` is the actual argv list, not a shell command
@@ -109,9 +127,12 @@ work. Every selected stage still requires independent review of its evidence.
 
 The machine checker establishes record consistency, not oracle independence,
 log authenticity, sufficient coverage or adequate formal assumptions. Review
-the actual testbench, command execution and provenance as well as running the
-checker. Do not mutate the operator's RTL to test an oracle without permission;
-use a private copy if a mutation check is needed.
+the actual testbench, command execution and provenance alongside the current
+host-executed checker result. Reviewer is read/search-only; an Engineer's own
+report cannot replace host evidence or independent review. The host does not
+replay arbitrary commands from these records or consume a project's one-shot
+scientific claim. Do not mutate the operator's RTL to test an oracle without
+permission; use a private copy if a mutation check is needed.
 
 ## Optional declared CDC/reset adapter study
 

@@ -15,6 +15,9 @@ from pathlib import Path
 from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
 
+from argus_verticals.hardware.shared.evidence import evidence_check_command
+from argus_verticals.hardware.shared.review import verification_review_contract
+
 from .control_report import validate_completion
 
 if not hasattr(VerticalContract, "compose_workflow"):
@@ -429,6 +432,18 @@ def render_role_prompt_fragment(
 ) -> str:
     if stage != "verification":
         return ""
+    from argus.core.pipeline_state import read_pipeline_state
+
+    if project_root is None or read_pipeline_state(project_root).get("workflow_profile") != "control":
+        return (
+            "Existing accelerator verification retains its original source-bound verification schema; "
+            "do not substitute the APB4 control adapter or invent physical results.\n\n"
+            + verification_review_contract()
+            + "\nFor Engineer debugging or an execution-capable operator, the legacy record check is:\n"
+            f"```bash\n{evidence_check_command('chip_design', stage)}\n```\n"
+            "The host uses the saved profile, including any custom RTL-manifest requirements; "
+            "the standalone legacy check is not approval of that composed scope.\n"
+        )
     script = (
         "from pathlib import Path; from argus.verticals._base import load_vertical_contract; "
         "load_vertical_contract('chip_design'); "
@@ -545,7 +560,7 @@ def role_banner(role: str) -> str:
     if normalized == "reviewer":
         return common + (
             "Act as an independent architecture, verification, implementation, benchmark, and "
-            "tapeout-readiness reviewer. Rerun decisive commands; challenge workload and memory "
+            "tapeout-readiness reviewer. Inspect decisive execution evidence; challenge workload and memory "
             "assumptions, reference independence, CDC/reset/protocol behavior, timing/area/power "
             "constraints, baseline fairness, quality floors, IP licensing, raw file hashes, "
             "and intervention claims. Decline different-node PPA comparisons, simulation presented "

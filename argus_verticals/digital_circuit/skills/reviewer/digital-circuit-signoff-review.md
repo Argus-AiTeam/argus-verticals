@@ -25,7 +25,7 @@ only for evidence that still matches the actual design and claimed behavior.
 1. Read the original task and frozen hardware specification. Write down, for yourself, the interfaces, clock/reset behavior, cycle timing, parameters, edge cases, and required outputs the work must satisfy.
 2. Inspect the actual RTL. Check assignment discipline, completeness, widths/signedness, reset state, counter/FIFO boundaries, state-machine recovery, clock-domain crossings, and simulation-only constructs.
 3. Inspect the oracle and testbench independently. Turn back a reference model that merely duplicates the RTL or assertions that never activate.
-4. Rerun the declared clean verification command. Require observable pass/fail output and retain the failing seed/log/waveform when a test fails.
+4. Inspect the declared clean verification command, raw pass/fail output and current host check for the selected general verification profile. Reviewer is read/search-only: do not claim shell execution or accept Engineer prose as independent checking. Return missing or contradictory evidence for repair; preserve failing seeds/logs/waveforms. Fixed benchmarks retain their own execution and review mechanism.
 5. Check directed boundary tests, randomized/exhaustive coverage appropriate to the design, reset transitions, stalls/backpressure, simultaneous events, and X/Z detection.
 6. Read formal evidence property by property. A bounded or vacuous proof is not a universal proof.
 7. For synthesis claims, inspect the actual tool/version, target, constraints, warnings, timing, utilization/area, latches, loops, undriven nets, and black boxes. A tool missing from the host PATH is no excuse when the project declares an already-local container toolchain.

@@ -136,6 +136,19 @@ def test_real_rtl_only_scope_finishes_without_implementation_or_board(verified, 
     assert not (verified / "bringup").exists()
 
 
+def test_host_checks_target_bound_verification_without_building_or_programming(verified, tmp_path):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
+    persist_vertical(tmp_path, "fpga_design", workflow_profile="verification")
+    before = {p.relative_to(verified): p.read_bytes() for p in verified.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(verified, tmp_path / "handoffs/task", 1))
+    host, = [item for item in gathered if item.provider == "argus_verticals.hardware.shared.review:round_evidence"]
+    assert '"issues": []' in host.reviewer_text
+    assert not host.engineer_note
+    assert before == {p.relative_to(verified): p.read_bytes() for p in verified.rglob("*") if p.is_file()}
+    assert not (verified / "implementation").exists()
+
+
 def test_real_native_implementation_finishes_without_board(implemented, tmp_path):
     persist_vertical(tmp_path, "fpga_design", workflow_profile="implementation")
     advance_stage(tmp_path, target_stage="implementation", reason="verified", evidence_root=implemented)

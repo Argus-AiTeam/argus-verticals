@@ -201,6 +201,28 @@ def test_custom_verification_rejects_missing_existing_manifest(tmp_path):
     )
 
 
+@pytest.mark.parametrize("missing_manifest", [False, True])
+def test_host_legacy_accelerator_check_preserves_custom_prerequisites(tmp_path, missing_manifest):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
+    state = tmp_path / "state"
+    work = _complete_project(tmp_path / "execution")
+    persist_vertical(state, "chip_design", workflow_profile="custom", workflow_requested_stages=("verification",))
+    if missing_manifest:
+        (work / "design/RTL_MANIFEST.json").unlink()
+    before = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1))
+    host, = [item for item in gathered if item.provider == "argus_verticals.hardware.shared.review:round_evidence"]
+    if missing_manifest:
+        assert "RTL_MANIFEST.json" in host.reviewer_text
+        assert host.engineer_note
+    else:
+        assert '"issues": []' in host.reviewer_text
+        assert not host.engineer_note
+    assert '"workflow_profile": "custom"' in host.reviewer_text
+    assert before == {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+
+
 @pytest.fixture(autouse=True)
 def _functional_tool_probe(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_probe(

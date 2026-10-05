@@ -13,6 +13,9 @@ from pathlib import Path
 from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
 
+from argus_verticals.hardware.shared.evidence import evidence_check_command
+from argus_verticals.hardware.shared.review import verification_review_contract
+
 if not hasattr(VerticalContract, "compose_workflow"):
     raise RuntimeError("digital_circuit 1.x requires Argus composable workflow support")
 
@@ -29,7 +32,6 @@ VERTICAL_PURPOSE = (
 )
 VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
 VERTICAL_SKILL_PARENTS: tuple[str, ...] = ()
-
 STAGE_ORDER = ("specification", "rtl", "verification", "synthesis", "delivery")
 CHECKLIST_STAGE_ORDER = STAGE_ORDER
 WORKFLOW_MODE = "staged"
@@ -327,6 +329,18 @@ def stage_completion_issues(
     return ()
 
 
+def render_role_prompt_fragment(
+    *, role: str, operation: str, stage: str, scope: str, project_root: Path | None,
+) -> str:
+    if stage != "verification":
+        return ""
+    return (
+        verification_review_contract()
+        + "\nFor Engineer debugging or an execution-capable operator, the legacy record check is:\n"
+        f"```bash\n{evidence_check_command('digital_circuit', stage)}\n```\n"
+    )
+
+
 def role_banner(role: str) -> str:
     """Frame roles around executable digital-hardware evidence."""
     common = (
@@ -375,7 +389,8 @@ def role_banner(role: str) -> str:
     if role_norm == "reviewer":
         return common + (
             "Act as an independent hardware sign-off reviewer. Inspect the RTL and "
-            "specification, rerun the declared commands, challenge the oracle, check "
+            "specification, inspect declared commands and independently obtained results, "
+            "challenge the oracle, check "
             "reset/clock/width/CDC/X behavior, and trace synthesis/timing claims to "
             "fresh raw reports. For benchmarks, check workspace isolation, patch "
             "non-emptiness, hidden-input non-exposure, and separate first-attempt and "

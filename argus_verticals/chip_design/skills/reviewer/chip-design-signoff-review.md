@@ -34,14 +34,22 @@ Selecting `signoff` includes the full workflow and cannot weaken target-level
 checks. A scope change requires an operator handoff; old evidence is reusable
 only while its inputs, constraints and source bindings remain valid.
 
-Review the raw files and rerun decisive commands only when material evidence is
-missing, stale, contradictory, implausible, or not reproducible from the recorded
+For non-control verification, read the shared mixed-precision contract and the
+host check for the saved profile. It preserves custom scope requirements but is
+not independent proof of a numerical hypothesis. Check each claimed precision
+boundary and original tolerance against the project oracle, not just a passing
+unit test or a repaired import. An entry failure before numerical execution is
+unmeasured, not a rejected hypothesis. Do not acquire an experimental claim,
+replay a historical run or resume a daemon to fill an evidence gap.
+
+Review the raw files and request authorized decisive execution only when
+material evidence is missing, stale, contradictory, implausible, or not reproducible from the recorded
 command. Never certify from the Engineer summary alone. A successful canonical
 PPA record that binds the current RTL, verification, constraints, target library,
 toolchain, and raw log hashes is itself the decisive same-hash run: inspect those
 files and their consistency, but do not launch a second full Yosys/ABC PPA
-solely for ceremony. Rerun PPA only after a source/constraint/toolchain binding
-changes or when the canonical evidence is incomplete or suspect.
+solely for ceremony. Request PPA execution only after a source/constraint/toolchain
+binding changes or when the canonical evidence is incomplete or suspect.
 
 ## Delivery-level boundaries
 

@@ -290,6 +290,7 @@ def test_host_replays_control_evidence_before_read_only_review(reference, tmp_pa
     evidence = collect_round_evidence(RoundEvidenceRequest(reference, packet.parent, 1))
     control_evidence = [e for e in evidence if e.provider.startswith("argus_verticals.chip_design.")]
     assert len(control_evidence) == 1
+    assert not any(e.provider.startswith("argus_verticals.hardware.shared.review:") for e in evidence)
     assert "Host-executed control completion check" in control_evidence[0].reviewer_text
     assert '"issues": []' in control_evidence[0].reviewer_text
     assert '"engineering_status": "passed"' in control_evidence[0].reviewer_text

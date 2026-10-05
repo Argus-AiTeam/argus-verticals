@@ -51,3 +51,15 @@ functional correctness cannot stand in for timing, physical or foundry checks.
 Preserve commands, exit codes, model/source provenance, seeds, raw artifacts and
 coverage explanations in the existing verification schema. A summary-only pass,
 self-referential oracle or absent raw output must fail acceptance.
+
+The host provides the current completion check to the read/search-only Reviewer.
+Do not impersonate Reviewer execution or solve missing authority with another
+Engineer-only checking task. For numerical work, bind the original precision
+contract, oracle dependencies and retained inputs using the existing project
+records; the general verification specialty supports explicit `supporting_files`.
+
+Historical campaigns keep their own runtime, native task and experiment rules.
+Validate a repaired command entry and fresh-process import order with synthetic,
+no-claim fixtures before requesting a new scientific owner. Do not run a closed
+prefix, acquire a claim, replay a rejected attempt or relabel an unmeasured
+entry failure merely to produce a passing verification record.
