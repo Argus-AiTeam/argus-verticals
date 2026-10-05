@@ -95,6 +95,9 @@ Final control acceptance also checks the Engineer report and its exact measured
 summary. Test missing/contradictory reports and that malformed reports fail before
 native replay. Verify event-count and cycle-witness recomputation, completed
 strobe coverage, and rejection of idle frames carrying impressive case labels.
+Exercise the registered host round-evidence hook in a fresh Store process,
+including read-only Reviewer prompts, explicit failures and isolation from
+legacy profiles; native checks must not depend on Reviewer shell permissions.
 Coverage is based on independent reference conditions, so faulty DUT responses
 remain diagnosable; absent stimulus coverage never qualifies as a diagnosis.
 The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,

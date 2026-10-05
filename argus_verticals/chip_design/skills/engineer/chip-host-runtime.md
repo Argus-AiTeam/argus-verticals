@@ -28,6 +28,9 @@ required narrative sections and exact measured summary from `control_report.summ
 The final checker requires this report; Reviewer does not write missing
 Engineer deliverables. Confirm positive semantic event counts and completed
 write-strobe coverage, not only scenario labels or a passing simulator exit.
+The host independently checks current evidence after your turn and supplies
+the result to Reviewer. Do not impersonate Reviewer execution or create a
+separate validation-only task to work around the Reviewer's read-only tools.
 
 ## Ownership and coherence
 

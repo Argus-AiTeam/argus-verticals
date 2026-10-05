@@ -15,6 +15,8 @@ from pathlib import Path
 from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
 
+from .control_report import validate_completion
+
 if not hasattr(VerticalContract, "compose_workflow"):
     raise RuntimeError("chip_design 1.x requires Argus composable workflow support")
 
@@ -359,8 +361,6 @@ def stage_completion_issues(
     if workflow_profile == "control":
         from argus_verticals.hardware.shared.evidence import EvidenceError as ControlEvidenceError
 
-        from .control_report import validate_completion
-
         if stage_name != "verification":
             return ("control profile only executes its bounded verification stage",)
         try:
@@ -443,8 +443,12 @@ def render_role_prompt_fragment(
         "Engineer: before requesting review, author verification/CONTROL_REVIEW.md with all four "
         "required sections and the exact measured JSON summary. The runner does not write or approve "
         "your report. Reviewer does not author missing Engineer reports. "
-        "Reviewer: inspect original requirements, raw evidence, the Engineer's report and authorized repair changes, "
-        "then execute the profile-specific read-only checker:\n"
+        "Reviewer: inspect original requirements, raw evidence, the Engineer's report and authorized repair changes. "
+        "The host runs the profile-specific read-only checker before review and provides its current result "
+        "as raw evidence. Use that host evidence, not Engineer testimony; your read/search-only tools need "
+        "no shell permission. Missing or failed host evidence remains incomplete, and must not be replaced "
+        "by an Engineer-authored Reviewer execution record. Do not request a separate validation-only task. "
+        "For Engineer debugging or an execution-capable operator, the equivalent command is:\n"
         f"```bash\n{control_check_command()}\n```\n"
         "Manager/Planner preserve all original constraints. Design/repair must pass; "
         "only an originally requested diagnose goal may conclude with engineering failure. "

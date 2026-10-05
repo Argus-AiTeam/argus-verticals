@@ -5,6 +5,13 @@ import json
 import re
 from pathlib import Path
 
+from argus.core.pipeline_state import read_pipeline_state
+from argus.engineer.round_evidence import (
+    RoundEvidence,
+    RoundEvidenceRequest,
+    register_round_evidence_provider,
+)
+
 from argus_verticals.hardware.shared.evidence import EvidenceError, project_file, record
 
 from . import control
@@ -110,3 +117,23 @@ def validate_completion(root: Path) -> dict:
     except OSError as exc:
         raise EvidenceError(f"{REPORT}: cannot recheck report: {exc}") from exc
     return measured
+
+
+@register_round_evidence_provider
+def round_evidence(request: RoundEvidenceRequest) -> RoundEvidence | None:
+    # Both mission handoffs/<id> and the standalone .argus/life root are two levels below state.
+    pipeline = read_pipeline_state(request.life_dir.parent.parent)
+    if pipeline.get("vertical") != "chip_design" or pipeline.get("workflow_profile") != "control":
+        return None
+    title = "Host-executed control completion check (not Engineer testimony or Reviewer approval)"
+    try:
+        measured = validate_completion(request.workdir)
+    except (EvidenceError, OSError) as exc:
+        issue = f"Control completion check failed: {exc}"
+        return RoundEvidence(reviewer_text=f"{title}\n{issue}", engineer_note=issue)
+    return RoundEvidence(
+        reviewer_text=f"{title}\n"
+        + json.dumps({"issues": [], **summary(request.workdir, measured)}, indent=2)
+        + "\nThe host independently replayed current native evidence and checked the report. "
+        "Reviewer still judges original constraints, source changes and narrative; no Reviewer shell is required.",
+    )

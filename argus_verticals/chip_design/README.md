@@ -62,6 +62,10 @@ report-independent for implementation and diagnosis; the profile completion
 checker enforces the final report. Semantic event counts and cycle witnesses,
 including valid completed byte writes, prevent labels alone from establishing
 coverage. Missing coverage cannot qualify as a negative diagnosis.
+The existing Argus round-evidence hook independently runs this checker on the
+host before review and supplies the result to the read/search-only Reviewer.
+No Reviewer shell permission or Engineer-authored proxy execution record is
+needed. The final completion gate remains enforced separately.
 Existing accepted projects keep their installed provider and records; the
 strengthened assessment requires fresh results rather than rewriting old ones.
 

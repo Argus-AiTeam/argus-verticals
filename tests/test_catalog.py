@@ -536,6 +536,13 @@ for index, command in enumerate((execute[0], check[0])):
 assert result.stdout.strip() == "[]", result.stdout
 record = json.loads((project / directory / ("RESULTS.json" if digital_profile else "results/RESULTS.json")).read_text())
 if directory == "verification/control":
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+    from argus.skills.vertical_select import persist_vertical
+    persist_vertical(project, "chip_design", workflow_profile="control")
+    gathered = collect_round_evidence(RoundEvidenceRequest(project, project / ".argus/life", 1))
+    item, = [e for e in gathered if e.provider.startswith("argus_verticals.chip_design.")]
+    assert '"issues": []' in item.reviewer_text
+    assert '"engineering_status": "passed"' in item.reviewer_text
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
     assert record["operation"] == "yosys-icarus-apb4-control" and len(record["commands"]) == 10
     assert assessment["task_accepted"] and assessment["status"] == "passed"

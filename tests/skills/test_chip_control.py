@@ -261,6 +261,8 @@ def test_control_roles_receive_exact_original_contract(tmp_path, role, operation
     assert Path(stages.__file__).with_name("control-contract.md").read_text() in prompt.role_banner
     assert stages.control_check_command() in prompt.role_banner
     assert "Design/repair must pass" in prompt.role_banner
+    assert "your read/search-only tools need no shell permission" in prompt.role_banner
+    assert "Missing or failed host evidence remains incomplete" in prompt.role_banner
     assert stages.WORKFLOW_PROFILES["full"]["stages"] == stages.STAGE_ORDER
     assert len(stages.STAGE_ORDER) == 9
 
@@ -273,6 +275,59 @@ def test_classifier_visible_purpose_explains_self_contained_control_scope():
     assert "control profile already includes authorized RTL repair" in purpose
     assert "generic counts are not PPA" in purpose
     assert "do not require custom rtl+ppa stages" in purpose
+
+
+def test_host_replays_control_evidence_before_read_only_review(reference, tmp_path):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+    from argus.life.context_packet import create_mission_context
+
+    state = tmp_path / "state"
+    persist_vertical(state, "chip_design", workflow_profile="control")
+    packet = create_mission_context(
+        life_dir=state, mission_id="control", stage="verification", objective="Verify original control inputs",
+    )
+    before = {p.relative_to(reference): p.read_bytes() for p in reference.rglob("*") if p.is_file()}
+    evidence = collect_round_evidence(RoundEvidenceRequest(reference, packet.parent, 1))
+    control_evidence = [e for e in evidence if e.provider.startswith("argus_verticals.chip_design.")]
+    assert len(control_evidence) == 1
+    assert "Host-executed control completion check" in control_evidence[0].reviewer_text
+    assert '"issues": []' in control_evidence[0].reviewer_text
+    assert '"engineering_status": "passed"' in control_evidence[0].reviewer_text
+    assert before == {p.relative_to(reference): p.read_bytes() for p in reference.rglob("*") if p.is_file()}
+
+
+@pytest.mark.parametrize("profile", ["", "verification", "full"])
+def test_host_control_evidence_ignores_legacy_profiles(work, tmp_path, monkeypatch, profile):
+    from argus.core.pipeline_state import write_pipeline_state
+    from argus.engineer.round_evidence import RoundEvidenceRequest
+
+    from argus_verticals.chip_design import control_report
+
+    state = tmp_path / "state"
+    write_pipeline_state(state, {"vertical": "chip_design", "workflow_profile": profile})
+    monkeypatch.setattr(control_report, "validate_completion", lambda _: pytest.fail("legacy profile replayed control"))
+    assert control_report.round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1)) is None
+
+
+@pytest.mark.parametrize("failure", ["missing_report", "os_error"])
+def test_host_control_failures_are_evidence_not_success(work, tmp_path, monkeypatch, failure):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
+    from argus_verticals.chip_design import control_report
+
+    state = tmp_path / "state"
+    persist_vertical(state, "chip_design", workflow_profile="control")
+    if failure == "missing_report":
+        (work / control_report.REPORT).unlink()
+    else:
+        def unavailable(_):
+            raise OSError("native evidence unavailable")
+        monkeypatch.setattr(control_report, "validate_completion", unavailable)
+    evidence = collect_round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1))
+    item, = [e for e in evidence if e.provider.startswith("argus_verticals.chip_design.")]
+    assert "Control completion check failed:" in item.reviewer_text
+    assert item.engineer_note in item.reviewer_text
+    assert '"issues": []' not in item.reviewer_text
 
 
 @pytest.mark.parametrize("report", [None, "", "TODO", "## Scope\nOriginal inputs.\n## Findings and changes\nNo changes.\n## Evidence\n```json\n{}\n```\n## Limitations\nFinite checks only.\n"])
@@ -464,6 +519,8 @@ def test_report_cannot_change_during_native_replay(work, monkeypatch):
 
 
 def test_negative_diagnosis_can_complete_with_truthful_report(fresh):
+    from argus.engineer.round_evidence import RoundEvidenceRequest
+
     from argus_verticals.chip_design import control_report
     from argus_verticals.chip_design.run_control_reference import write_reference_report
 
@@ -472,6 +529,9 @@ def test_negative_diagnosis_can_complete_with_truthful_report(fresh):
     assert measured["status"] == "failed" and measured["task_accepted"]
     write_reference_report(fresh)
     assert control_report.validate_completion(fresh) == measured
+    persist_vertical(fresh, "chip_design", workflow_profile="control")
+    host = control_report.round_evidence(RoundEvidenceRequest(fresh, fresh / ".argus/life", 1))
+    assert '"issues": []' in host.reviewer_text and '"engineering_status": "failed"' in host.reviewer_text
     path = fresh / control_report.REPORT
     path.write_text(path.read_text().replace('"engineering_status": "failed"', '"engineering_status": "passed"'))
     assert stages.stage_completion_issues("verification", fresh, workflow_profile="control")

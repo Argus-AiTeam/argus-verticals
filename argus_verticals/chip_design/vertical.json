@@ -1,6 +1,6 @@
 {
   "name": "chip_design",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "module": "argus_verticals.chip_design.stages",
   "purpose_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，含有界 APB4 寄存器／定时器／中断设计与修复",
   "paths": [

@@ -200,7 +200,17 @@ stale or contradictory values, duplicate keys and malformed JSON are rejected.
 Report edits do not rewrite native evidence; final validation is read-only.
 
 Reviewer must inspect original constraints, meaningful coverage, oracle
-independence, narrative accuracy and any repair diff, then execute the
-profile-specific checker. Structural report checks cannot judge the truth of
+independence, narrative accuracy and any repair diff. After each Engineer turn,
+the host's existing round-evidence hook runs the profile-specific read-only
+checker and supplies its current result directly to Reviewer as raw evidence.
+This preserves the Copilot Reviewer's read/search-only permission boundary:
+Reviewer does not need shell access and must not claim personal execution.
+Engineer testimony or a file labeling an Engineer run as Reviewer execution
+cannot substitute for host evidence. Missing or failed host evidence is
+incomplete; do not create a separate validation-only task or loop Engineer
+reruns to impersonate Reviewer. Final stage completion still independently
+enforces the same deterministic checker before issuing a certificate.
+
+Structural report checks cannot judge the truth of
 arbitrary prose or replace independent review. A native tool exit zero,
 Engineer's report or generic cell count alone is not acceptance.

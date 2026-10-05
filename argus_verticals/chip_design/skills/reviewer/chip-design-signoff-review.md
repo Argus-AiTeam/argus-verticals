@@ -17,7 +17,11 @@ For the bounded `control` profile, apply the injected APB4 contract instead of
 the accelerator delivery checklists below. Engineer must already have authored
 `verification/CONTROL_REVIEW.md`, with required narrative and the exact measured
 JSON summary. Return missing or inaccurate deliverables to Engineer; do not
-write them on Engineer's behalf. Execute the profile-specific final checker,
+write them on Engineer's behalf. Read the host-executed profile-specific checker
+result supplied as current raw evidence; your read/search-only tool surface does
+not need shell access. Missing or failed host evidence is incomplete, and an
+Engineer-authored record cannot substitute for it. Do not request a separate
+validation-only task or claim that you executed a shell command yourself. Also
 inspect semantic event counts and cycle witnesses, and distinguish reference
 stimulus coverage from a faulty DUT's behavior. Missing coverage is not a valid
 negative diagnosis. A fully evidenced negative diagnosis can finish, but design
