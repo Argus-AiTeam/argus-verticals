@@ -11,6 +11,7 @@ from argus_verticals.hardware.shared.evidence import (
     evidence_check_command,
     project_file,
 )
+from argus_verticals.hardware.shared.review import hardware_review_contract
 
 from .model import validate_model, validate_specification
 from .study import resolve_study
@@ -60,18 +61,19 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
             "from argus_verticals.power_electronics.run_analysis import run_analysis; print(run_analysis(Path.cwd()))"
         )
         execution = (
-            "\nExecute selected studies from the project. Existing power/results is never overwritten; "
+            "\nEngineer: execute selected studies from the project. Existing power/results is never overwritten; "
             "retain failed attempts before an intentional rerun.\n"
             f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
         )
     return (
         f"## Power work: {stage}\nPreserve the original engineering question and requested scope.\n\n"
         + Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
-        + execution
+        + execution + "\n" + hardware_review_contract()
         + "\nEngineer: run actual ngspice. Reviewer: independently examine circuit topology, "
         "units, PWM timing, load change, source signs, stored energy and time-step sensitivity. "
         "Manager/Planner: preserve original limits and do not require unrelated implementation.\n"
-        "Use this checker from the execution project. It independently replays new or changed "
+        "For Engineer debugging or an execution-capable operator, use this checker from the "
+        "execution project. It independently replays new or changed "
         "numerical evidence and reuses unchanged verified files from runtime state without "
         "modifying the project; [] and exit 0 establish bounded numerical agreement, "
         "not hardware safety, device qualification or measured efficiency.\n"

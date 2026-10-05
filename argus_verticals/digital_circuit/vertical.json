@@ -1,6 +1,6 @@
 {
   "name": "digital_circuit",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "module": "argus_verticals.digital_circuit.stages",
   "purpose_zh": "体系化数字电路知识与 RTL：组合/时序、算术、FSM、FIFO、协议、CDC、验证和综合，支持按任务范围选择流程",
   "paths": [

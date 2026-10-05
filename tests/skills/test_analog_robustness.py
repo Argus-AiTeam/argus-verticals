@@ -153,7 +153,12 @@ def test_worst_headroom_and_every_failure_are_recomputed(reference):
 
 
 def test_accepted_diagnosis_reuses_native_evidence_across_report_changes(work, tmp_path, monkeypatch):
+    from argus.core.pipeline_state import read_pipeline_state
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
     state = tmp_path / "state"
+    persist_vertical(state, "analog_mixed_signal", workflow_profile="simulation")
+    selected = read_pipeline_state(state)
     calls = []
     execute = robustness._execute
 
@@ -163,7 +168,11 @@ def test_accepted_diagnosis_reuses_native_evidence_across_report_changes(work, t
 
     monkeypatch.setattr(robustness, "_execute", counted)
     before = {p.relative_to(work): p.read_bytes() for p in work.rglob("*") if p.is_file()}
-    assert not stages.stage_completion_issues("simulation", work, state_root=state)
+    gathered = collect_round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1))
+    host, = [item for item in gathered if item.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert '"issues": []' in host.reviewer_text
+    assert read_pipeline_state(state) == selected
+    assert (state / "analog-validation/implementation/shared/native.py").is_file()
     assert len(calls) == 6
     assert before == {p.relative_to(work): p.read_bytes() for p in work.rglob("*") if p.is_file()}
     report = work / "analog/REVIEW.md"

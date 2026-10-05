@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "7aaad7999ee88dcfeb2f3adb79bda11b5d90a012",
+    "commit": "f7fa8bf826bb6478cda4cd864eeef447b9e902e1",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -52,14 +52,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 154745,
+      "size_bytes": 157620,
       "skill_parents": [],
       "tags": [
         "hardware",
         "analog",
         "spice"
       ],
-      "version": "0.2.2"
+      "version": "0.2.3"
     },
     "chip_design": {
       "api_version": 1,
@@ -84,7 +84,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 233186,
+      "size_bytes": 235513,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -94,7 +94,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.2.4"
+      "version": "1.2.5"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -148,7 +148,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 107760,
+      "size_bytes": 110087,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -156,7 +156,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.1.1"
+      "version": "1.1.2"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
@@ -215,7 +215,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 101323,
+      "size_bytes": 103650,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -225,7 +225,7 @@
         "formal",
         "cdc"
       ],
-      "version": "0.2.4"
+      "version": "0.2.5"
     },
     "fiction_writing": {
       "api_version": 1,
@@ -284,7 +284,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 43421,
+      "size_bytes": 45748,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"
@@ -294,7 +294,7 @@
         "fpga",
         "verification"
       ],
-      "version": "0.1.2"
+      "version": "0.1.3"
     },
     "kernelbench": {
       "api_version": 1,
@@ -514,14 +514,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 95799,
+      "size_bytes": 99485,
       "skill_parents": [],
       "tags": [
         "hardware",
         "package",
         "thermal"
       ],
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     "pcb_design": {
       "api_version": 1,
@@ -546,14 +546,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 108499,
+      "size_bytes": 112160,
       "skill_parents": [],
       "tags": [
         "hardware",
         "pcb",
         "kicad"
       ],
-      "version": "0.2.0"
+      "version": "0.2.1"
     },
     "physics": {
       "api_version": 1,
@@ -605,14 +605,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 147012,
+      "size_bytes": 150124,
       "skill_parents": [],
       "tags": [
         "hardware",
         "power",
         "spice"
       ],
-      "version": "0.2.2"
+      "version": "0.2.3"
     },
     "prose": {
       "api_version": 1,
@@ -703,14 +703,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 124383,
+      "size_bytes": 127407,
       "skill_parents": [],
       "tags": [
         "hardware",
         "rf",
         "network-analysis"
       ],
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     "speedrun": {
       "api_version": 1,

@@ -12,6 +12,10 @@ Profiles are `specification`, `design`, `verification`, `review` and optional
 review requires only the selected verification, not every design stage.
 The canonical [evidence contract](evidence-contract.md) is inserted in all
 four real role prompts.
+The shared [review rules](../hardware/shared/hardware-review.md) also apply:
+the host supplies current scoped checks directly to the read/search-only
+Reviewer. Native replay uses temporary copies; it does not rewrite the
+execution project or change the selected task.
 
 ## Native execution
 
@@ -34,6 +38,11 @@ outline and two 1 mm plated holes. It executes ERC, DRC with schematic parity,
 five Gerber layers and separate PTH/NPTH drill files. The checker independently
 replays native operations, not just JSON counts or filename existence.
 Failures are retained; a results directory is never silently overwritten.
+Native command consoles stream to disk instead of unbounded memory capture.
+The existing 180-second per-command timeout is preserved, with live termination
+when console output exceeds 32 MiB. These are execution budgets, not relaxed
+engineering limits. Owned POSIX process groups are cleaned up on failure or parent
+exit; partial logs, actual exits and stop reasons remain available.
 
 Version 0.2.0 adds explicit `zone_refill: true`: discard stored copper fills on
 a separate working copy, run KiCad's native filler, and use that same board for

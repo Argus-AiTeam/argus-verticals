@@ -1,6 +1,6 @@
 {
   "name": "pcb_design",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "module": "argus_verticals.pcb_design.stages",
   "purpose_zh": "PCB 原理图、器件封装、叠层布局布线与制造准备；KiCad 铜区副本重填、ERC/DRC、图板一致性和 Gerber/钻孔输出",
   "paths": ["argus_verticals/pcb_design"],

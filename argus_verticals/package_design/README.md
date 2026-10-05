@@ -10,6 +10,10 @@ Profiles are `specification`, `model`, `thermal`, `review` and optional `full`.
 Thermal-only analysis of a supplied model is valid. Review adds current thermal
 evidence, not unrelated physical-design or manufacturing stages. The
 [canonical contract](evidence-contract.md) is included in real role prompts.
+The shared [review rules](../hardware/shared/hardware-review.md) supply the
+host's current scoped checker result to the read/search-only Reviewer.
+Independent numerical replay remains provider-owned; no Reviewer shell,
+project mutation or physical qualification is implied.
 
 ## Executable thermal studies
 
@@ -27,6 +31,11 @@ Native fields, material volumes, shared interfaces, boundary areas, total power
 and heat balance are checked. A separate temporary native replay verifies the
 saved results without changing the project. This is not a homemade solver or a
 PASS-shaped JSON substitute.
+Native consoles stream to disk under the existing 180-second per-command
+timeout. A live monitor stops commands whose console output exceeds 32 MiB,
+cleans up owned POSIX process groups and retains partial logs and actual exit codes.
+These execution budgets do not change thermal limits or refinement tolerances;
+an interrupted study is incomplete, not an accepted negative result.
 
 ```bash
 # Ubuntu 24.04 native tools:

@@ -11,6 +11,7 @@ from argus_verticals.hardware.shared.evidence import (
     evidence_check_command,
     project_file,
 )
+from argus_verticals.hardware.shared.review import hardware_review_contract
 
 from .evidence import validate_thermal
 from .model import validate_model, validate_specification
@@ -59,18 +60,19 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
             "from argus_verticals.package_design.run_analysis import run_analysis; print(run_analysis(Path.cwd()))"
         )
         execution = (
-            "\nExecute the selected native studies from the project. Existing package/results is "
+            "\nEngineer: execute the selected native studies from the project. Existing package/results is "
             "never overwritten; retain failed attempts before an intentional rerun.\n"
             f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
         )
     return (
         f"## Package work: {stage}\nPreserve the original engineering question and selected scope.\n\n"
         + Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
-        + execution
+        + execution + "\n" + hardware_review_contract()
         + "\nEngineer: execute genuine native tools. Reviewer: independently check units, "
         "interfaces, boundary conditions, conserved heat and mesh sensitivity. Manager/Planner: "
         "preserve original bounds and do not force unrelated stages.\n"
-        "Use this checker from the execution project, not session state. It re-executes native "
+        "For Engineer debugging or an execution-capable operator, use this checker from the "
+        "execution project, not session state. It re-executes native "
         "studies temporarily without changing the project; [] and exit 0 establish model "
         "consistency and selected numerical acceptance, not physical package qualification.\n"
         f"```bash\n{evidence_check_command('package_design', stage)}\n```\n"

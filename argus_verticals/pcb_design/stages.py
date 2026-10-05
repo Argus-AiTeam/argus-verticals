@@ -11,6 +11,7 @@ from argus_verticals.hardware.shared.evidence import (
     evidence_check_command,
     project_file,
 )
+from argus_verticals.hardware.shared.review import hardware_review_contract
 
 from .design import validate_plan, validate_specification
 from .evidence import validate_verification
@@ -61,7 +62,7 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
             "from argus_verticals.pcb_design.run_analysis import run_analysis; print(run_analysis(Path.cwd()))"
         )
         execution = (
-            "\nExecute only the selected operations from the project directory. Existing pcb/results "
+            "\nEngineer: execute only the selected operations from the project directory. Existing pcb/results "
             "is never overwritten; preserve failed attempts before an intentional rerun.\n"
             f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
         )
@@ -69,11 +70,12 @@ def render_role_prompt_fragment(*, role: str, operation: str, stage: str, scope:
         f"## PCB work: {stage}\nPreserve the user's selected scope and original requirements.\n"
         f"Installed PCB provider source: `{Path(__file__).resolve().parent}`.\n\n"
         + Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
-        + execution
+        + execution + "\n" + hardware_review_contract()
         + "\nEngineer: run genuine native tools. Reviewer: independently inspect constraints, "
         "connectivity, manufacturing conventions and current outputs. Manager/Planner: do not "
         "require unrelated stages or relax acceptance to make results pass.\n"
-        "Use this checker from the execution project, not session state. It creates a temporary "
+        "For Engineer debugging or an execution-capable operator, use this checker from the "
+        "execution project, not session state. It creates a temporary "
         "native replay without changing the project; [] and exit 0 confirm only the selected "
         "recorded checks and exports, not physical board qualification.\n"
         f"```bash\n{evidence_check_command('pcb_design', stage)}\n```\n"

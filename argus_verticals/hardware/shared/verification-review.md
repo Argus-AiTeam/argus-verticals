@@ -1,20 +1,3 @@
-## Host checks and independent review
-
-The host supplies the selected provider's current completion check as raw
-evidence after the Engineer turn. Reviewer uses read/search tools to inspect
-original requirements, source, oracle, raw observations and that host result;
-Reviewer does not need shell permission and must not claim personal execution.
-Missing or failed host evidence is incomplete. An Engineer-authored file
-labeling a run as Reviewer execution is not a substitute. Do not create a
-separate validation-only task or repeat Engineer runs to impersonate Reviewer.
-
-The host checks the execution project under the saved workflow scope, not
-the session-state directory or an unscoped full workflow. Ordinary record checks
-do not replay commands from project records. Explicitly selected bounded native
-adapters retain their own replay rules. A record check does not run an arbitrary
-project evaluator, acquire a claim, issue an owner or resume a stopped daemon.
-The final stage still enforces its deterministic completion check.
-
 ## Accelerator precision and claim boundaries
 
 For accelerator work, preserve the project's original numerical contract and

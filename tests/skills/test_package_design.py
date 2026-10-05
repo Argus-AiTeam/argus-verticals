@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 import shutil
-import subprocess
 from itertools import combinations
 from pathlib import Path
 
@@ -383,7 +382,12 @@ def test_missing_native_tool_is_an_explicit_failure(slab, monkeypatch):
 
 def test_zero_exit_with_native_error_is_not_success(slab, tmp_path, monkeypatch):
     plan, models, _ = validate_plan(slab)
-    monkeypatch.setattr(native.subprocess, "run", lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, "", "Error : meshing failed\n"))
+
+    def failed_mesh(command, *, log, **kwargs):
+        log.write_text("Error : meshing failed\n")
+        return 0, ""
+
+    monkeypatch.setattr(native, "run_logged", failed_mesh)
     output = tmp_path / "native"
     with pytest.raises(EvidenceError, match="did not complete successfully"):
         native.execute(models["design/slab.json"], plan["runs"][0], output)

@@ -22,6 +22,11 @@ Store-only installations. It defines port order, power-wave conventions, units,
 frequency limits, supported input formats and meaningful acceptance checks.
 Generic file/number helpers come from `argus_verticals.hardware.shared`, bundled
 by the manifest; they do not import another domain's workflow.
+The host runs the selected checker and supplies its current result to the
+read/search-only Reviewer under shared [review rules](../hardware/shared/hardware-review.md).
+It does not replace independent examination of the physical assumptions, run
+arbitrary recorded project commands or turn an accepted diagnosis into a
+passing design.
 
 ## Local execution
 

@@ -39,7 +39,13 @@ def work(reference, tmp_path):
 
 
 def test_native_validation_reused_across_stages_and_processes(work, tmp_path, monkeypatch):
+    from argus.core.pipeline_state import read_pipeline_state
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+    from argus.skills.vertical_select import persist_vertical
+
     state = tmp_path / "state"
+    persist_vertical(state, "power_electronics", workflow_profile="simulation")
+    selected = read_pipeline_state(state)
     calls = []
     execute = native.execute
 
@@ -48,7 +54,11 @@ def test_native_validation_reused_across_stages_and_processes(work, tmp_path, mo
         return execute(*args, **kwargs)
 
     monkeypatch.setattr(native, "execute", counted)
-    assert not stages.stage_completion_issues("simulation", work, state_root=state)
+    gathered = collect_round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1))
+    host, = [item for item in gathered if item.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert '"issues": []' in host.reviewer_text
+    assert read_pipeline_state(state) == selected
+    assert (state / "power-validation/implementation/shared/native.py").is_file()
     assert len(calls) == 6
     report = work / "power/REVIEW.md"
     report.write_text("Complete finite diagnosis; no hardware qualification.")

@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from argus_verticals.hardware.shared import evidence as shared_evidence
+from argus_verticals.hardware.shared import native as shared_native
 from argus_verticals.hardware.shared.evidence import record
 from argus_verticals.hardware.spice import batch, raw
 from argus_verticals.hardware.spice import validation as cached
@@ -20,6 +21,7 @@ def _implementation_sources() -> dict[str, Path]:
     return {
         **{f"implementation/power/{p.name}": p for p in Path(__file__).parent.glob("*.py")},
         "implementation/shared/evidence.py": Path(shared_evidence.__file__),
+        "implementation/shared/native.py": Path(shared_native.__file__),
         "implementation/spice/raw.py": Path(raw.__file__),
         "implementation/spice/batch.py": Path(batch.__file__),
         "implementation/spice/validation.py": Path(cached.__file__),

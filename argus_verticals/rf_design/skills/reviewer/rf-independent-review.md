@@ -10,7 +10,10 @@ whether inputs are measured, simulated or analytic; inspect the reference
 planes, port map, normalization, bias and frequency coverage. A syntactically
 valid file does not prove an appropriate physical model or calibration.
 
-Run the supplied read-only checker from the execution project. Inspect the
+Read the host-executed checker result for the saved scope and execution project.
+Reviewer is read/search-only; missing or failed host evidence is incomplete.
+Do not claim shell execution or substitute an Engineer-authored Reviewer run.
+Inspect the
 exported Touchstone files and actual execution record. Compare the result
 against an independent equation or justified reference, not solely against
 another invocation of the same algorithm. Reject changed bounds that were

@@ -16,11 +16,20 @@ _STAGES = {
     "digital_circuit": {"verification"},
     "digital_circuit_verification": {"plan", "simulation", "formal", "review"},
     "fpga_design": {"requirements", "rtl", "verification", "implementation", "bringup", "delivery"},
+    "analog_mixed_signal": {"specification", "model", "simulation", "review"},
+    "rf_design": {"specification", "model", "analysis", "review"},
+    "pcb_design": {"specification", "design", "verification", "review"},
+    "package_design": {"specification", "model", "thermal", "review"},
+    "power_electronics": {"specification", "model", "simulation", "review"},
 }
 
 
+def hardware_review_contract() -> str:
+    return Path(__file__).with_name("hardware-review.md").read_text(encoding="utf-8")
+
+
 def verification_review_contract() -> str:
-    return Path(__file__).with_name("verification-review.md").read_text(encoding="utf-8")
+    return hardware_review_contract() + "\n" + Path(__file__).with_name("verification-review.md").read_text(encoding="utf-8")
 
 
 @register_round_evidence_provider

@@ -121,8 +121,21 @@ CDC follow-up tests must show that swapped independently declared data inputs
 produce trace mismatches, not just structural failures, and that detailed native
 findings survive recomputation. Check live output-budget enforcement, terminated
 command exits and owned process cleanup; never weaken a threshold to pass.
-The shared native process monitor serves CDC and chip-control execution; changes
-to it must also preserve CDC time/output limits, diagnostics and cleanup.
+The shared native process monitor serves CDC, chip control, SPICE and
+PCB/package command execution. Preserve each caller's original time/output
+limits, native exits and diagnostics. Test observation exceptions and a parent
+that exits while its child still runs; cleanup must target only owned process
+POSIX groups. PCB/package consoles stream to disk with a live 32 MiB stop threshold,
+not an unbounded memory capture. Numerical acceptance is separate from these
+execution budgets.
+The five independent analog/RF/PCB/package/power workflows also supply scoped
+host evidence to read-only Reviewers. Cover all declared stages and actual
+native results, project immutability and unchanged task selection. Existing
+analog/power proof copies may be written only in separate runtime state.
+Exercise both original and extended studies in fresh Store-only processes;
+shared-helper source changes must invalidate reused numerical validation.
+When changing a shared directory, bump every manifest that bundles it so an
+unchanged provider version never silently receives different archive bytes.
 Analog references additionally require `ngspice`, also installed in CI. They
 execute native operating-point, DC, AC and transient analyses and compare
 waveform measurements against independent circuit equations. Keep parser-only

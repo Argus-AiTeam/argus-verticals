@@ -115,6 +115,31 @@ declared single-bit level/reset adapters. It preserves valid negative diagnosis
 and requires a passing result when composed into FPGA design verification.
 It is not complete CDC/RDC sign-off or a multiclock FPGA implementation backend.
 
+### Hardware readiness boundaries
+
+All eight domains have scoped completion checks; the common host-review path
+covers digital/chip verification, every verification-specialty/FPGA stage and
+the five independent analog/RF/PCB/package/power workflows. Chip control retains
+its dedicated native report checker. Host evidence is not Reviewer approval.
+Original acceptance and final completion checks remain in force, including
+the distinction between a supported negative diagnosis and a passing design.
+
+| Domain | Current executable or checked support | Not established by that support |
+|---|---|---|
+| Digital | RTL regressions, formal-record checks, bounded native level/reset CDC adapters | Automatic general formal proof, full CDC/RDC or industrial protocol coverage |
+| Chip | Accelerator source-bound evidence checks; native APB4 RTL/synthesized simulation | A project-specific mixed-precision evaluator, independent physical/DFT/tapeout execution |
+| FPGA | RTL checks and single-clock iCE40 implementation | Multiclock/backend portability or measured board operation without original measurements |
+| Analog | ngspice OP/DC/AC/transient and finite operating-envelope/refinement checks | Foundry PDK, noise/PSS, mixed-language or silicon qualification |
+| RF | scikit-rf network calculations and finite component/frequency studies | Full-wave EM, nonlinear RF, calibration or measured physical performance |
+| PCB | KiCad ERC/DRC/parity, copper refill and manufacturing-file checks | Field-solved SI/PI, general DFM or fabrication/assembly approval |
+| Package | Gmsh/CalculiX bounded steady conduction and prescribed convection | CFD, transient/contact models, stress/warpage or reliability qualification |
+| Power | ngspice bounded Buck/Boost and finite operating-envelope checks | Hardware safety, measured efficiency, unspecified device dynamics or electrothermal qualification |
+
+These are capability boundaries, not unfinished stages to add to every task.
+Expand a native backend only when the original engineering question requires it.
+Keep project-specific runtime/entry/ownership acceptance separate from vertical
+installation; general record checks cannot certify a new accelerator experiment.
+
 | entry point | module | purpose (as shown in the Manager's menu) | skill parents |
 |---|---|---|---|
 | `ale_last_exam` | `argus_verticals.ale_last_exam` | Agents' Last Exam long-horizon professional workflow in a real sandbox with hidden-reference, artifact-first GUI+CLI delivery | |
@@ -149,8 +174,9 @@ contract, the artifact manifest, the source registry and its provenance log,
 each with a JSON schema.
 
 `argus_verticals/hardware/shared/` similarly shares file/copy/numeric record
-utilities between independent hardware domains, without inheriting their
-knowledge, stages or acceptance methods.
+utilities, scoped host-review evidence and owned native-process monitoring
+between independent hardware domains, without inheriting their knowledge,
+stages or acceptance methods.
 `argus_verticals/hardware/spice/` shares the native waveform reader, scalar
 measurements, bounded process execution and byte-bound numerical validation
 storage between analog and power domains, without sharing their workflows.

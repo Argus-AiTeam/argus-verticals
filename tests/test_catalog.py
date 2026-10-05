@@ -538,13 +538,24 @@ for index, command in enumerate((execute[0], check[0])):
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout
 record = json.loads((project / directory / ("RESULTS.json" if digital_profile else "results/RESULTS.json")).read_text())
+from argus.core.pipeline_state import read_pipeline_state
+from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+from argus.skills.vertical_select import persist_vertical
+from argus_verticals.hardware.shared import review
+assert Path(review.__file__).resolve().is_relative_to(store.store_root().resolve())
+state = Path.cwd() / "runtime-state"
+profile = "control" if directory == "verification/control" else "cdc" if directory == "verification/cdc" else stage
+persist_vertical(state, vertical, workflow_profile=profile)
+selected = read_pipeline_state(state)
+before = {p.relative_to(project): p.read_bytes() for p in project.rglob("*") if p.is_file()}
+gathered = collect_round_evidence(RoundEvidenceRequest(project, state / "handoffs/store-check", 1))
+owner = "argus_verticals.chip_design." if profile == "control" else "argus_verticals.hardware.shared.review:"
+item, = [e for e in gathered if e.provider.startswith(owner)]
+assert '"issues": []' in item.reviewer_text
+assert read_pipeline_state(state) == selected
+assert before == {p.relative_to(project): p.read_bytes() for p in project.rglob("*") if p.is_file()}
 if directory == "verification/control":
-    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
-    from argus.skills.vertical_select import persist_vertical
-    persist_vertical(project, "chip_design", workflow_profile="control")
-    gathered = collect_round_evidence(RoundEvidenceRequest(project, project / ".argus/life", 1))
-    item, = [e for e in gathered if e.provider.startswith("argus_verticals.chip_design.")]
-    assert '"issues": []' in item.reviewer_text
+    assert not any(e.provider.startswith("argus_verticals.hardware.shared.review:") for e in gathered)
     assert '"engineering_status": "passed"' in item.reviewer_text
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
     assert record["operation"] == "yosys-icarus-apb4-control" and len(record["commands"]) == 10
@@ -552,15 +563,7 @@ if directory == "verification/control":
     assert len(assessment["configurations"]) == 2
     assert all(c["synthesis"]["passed"] and all(s["passed"] for s in c["simulations"].values()) for c in assessment["configurations"].values())
 elif directory == "verification/cdc":
-    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
-    from argus.skills.vertical_select import persist_vertical
-    from argus_verticals.hardware.shared import review
-    assert Path(review.__file__).resolve().is_relative_to(store.store_root().resolve())
-    persist_vertical(project, vertical, workflow_profile="cdc")
-    gathered = collect_round_evidence(RoundEvidenceRequest(project, project / ".argus/life", 1))
-    host, = [e for e in gathered if e.provider.startswith("argus_verticals.hardware.shared.review:")]
-    assert '"issues": []' in host.reviewer_text
-    assert '"workflow_profile": "cdc"' in host.reviewer_text
+    assert '"workflow_profile": "cdc"' in item.reviewer_text
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
     assert record["operation"] == "yosys-icarus-cdc-reset" and len(record["commands"]) == 7
     assert assessment["task_accepted"] and assessment["status"] == "passed"

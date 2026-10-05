@@ -79,6 +79,8 @@ def test_complete_real_network_exports_match_independent_complex_equations(refer
 
 @pytest.mark.parametrize("goal", ["diagnose", "design"])
 def test_nominal_pass_does_not_hide_failed_corners(planned, tmp_path, goal):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
     spec = load(planned)
     spec["goal"] = goal
     for axis in spec["axes"]:
@@ -97,6 +99,11 @@ def test_nominal_pass_does_not_hide_failed_corners(planned, tmp_path, goal):
     assert any(row["kind"] == "limit" and row["check"] == "reflection" for row in report["failures"])
     state = tmp_path / "state"
     persist_vertical(state, "rf_design", workflow_profile="analysis")
+    before = {p.relative_to(planned): p.read_bytes() for p in planned.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(planned, state / "handoffs/task", 1))
+    host, = [item for item in gathered if item.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert ('"issues": []' in host.reviewer_text) == (goal == "diagnose")
+    assert before == {p.relative_to(planned): p.read_bytes() for p in planned.rglob("*") if p.is_file()}
     if goal == "diagnose":
         complete_final_stage(state, reason="valid diagnosis retains failed original limits", evidence_root=planned)
     else:
