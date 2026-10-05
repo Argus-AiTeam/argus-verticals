@@ -3,10 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
-import signal
-import subprocess
 import tempfile
 import time
 from pathlib import Path
@@ -18,6 +15,7 @@ from argus_verticals.hardware.shared.evidence import (
     project_file,
     record,
 )
+from argus_verticals.hardware.shared.native import run_monitored
 
 from . import cdc_simulation
 from .cdc_model import ASSESSMENT, DIRECTORY, LIMITS, RESULTS, resolve, structure
@@ -73,25 +71,11 @@ def _execute(root: Path, spec: dict, result: dict) -> None:
             stream.write("$ " + json.dumps(command) + "\n")
             stream.flush()
             try:
-                with subprocess.Popen(
-                    command, cwd=root, stdout=stream, stderr=subprocess.STDOUT,
-                    start_new_session=os.name == "posix",
-                ) as process:
-                    while process.poll() is None:
-                        if stopped := limit(command_deadline):
-                            if os.name == "posix":
-                                try:
-                                    os.killpg(process.pid, signal.SIGKILL)
-                                except ProcessLookupError:
-                                    process.wait()
-                            else:
-                                process.kill()
-                            break
-                        time.sleep(0.05)
-                    row["exit_code"] = process.wait()
+                row["exit_code"], stopped = run_monitored(
+                    command, root=root, stream=stream, deadline=command_deadline, limit=limit,
+                )
             except OSError as exc:
                 raise EvidenceError(f"{name}: native command could not finish: {exc}") from exc
-        stopped = stopped or limit(command_deadline)
         if stopped:
             row["stop_reason"] = stopped
         _write(root / RESULTS, result)

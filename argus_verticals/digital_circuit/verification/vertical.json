@@ -1,6 +1,6 @@
 {
   "name": "digital_circuit_verification",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "module": "argus_verticals.digital_circuit.verification.stages",
   "purpose_zh": "独立数字验证专项：需求覆盖矩阵、参数和种子回归、声明的单比特 CDC／复位链原生检查、形式证明及非空洞性检查",
   "paths": ["argus_verticals/digital_circuit/verification"],

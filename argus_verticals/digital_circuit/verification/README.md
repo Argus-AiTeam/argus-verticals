@@ -47,6 +47,8 @@ inputs cannot hide behind identical stimuli. Structural findings name the native
 cell/bit and expected versus observed clock/reset connection, and keep inspecting
 remaining direct stages after a defect. Native time/output limits are monitored
 during execution; terminated commands retain their actual exits and reasons.
+The process monitor is shared with bounded chip-control execution; CDC's limits,
+stimuli and evidence format remain unchanged.
 The canonical contract below defines the two/three-stage adapter boundary,
 diagnosis versus design goals, independent raw traces and native replay. Use
 `"cdc": true` in an existing general/FPGA verification plan only when explicitly

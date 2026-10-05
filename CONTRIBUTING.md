@@ -84,6 +84,13 @@ workflow. Hardware example tests
 use Icarus Verilog (`iverilog` and `vvp`); the iCE40 implementation tests also
 use Yosys, nextpnr-ice40 and IceStorm (`icepack`). CI installs these tools so
 documented RTL and native implementation are executed, not only linted.
+Bounded chip-control tests use Yosys and Icarus for both RTL and synthesized
+simulation against the original APB4 peripheral contract. Cover all byte
+strobes, exact waits, unmapped/RO errors, timer boundaries, set-dominant W1C,
+IRQ masks and asynchronous reset during traffic. Mutate actual RTL and require
+both models to expose defects; verify inclusive original generic-cell caps,
+fresh native replay and Store-only profile acceptance. Preserve authorized
+repair diffs and failed attempts; never claim physical PPA from generic cells.
 The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,
 including bad stage counts, intermediate fanout, wrong clocks, asynchronous
 release and raw-reset paths that digital simulation alone may miss. Keep the
@@ -95,6 +102,8 @@ CDC follow-up tests must show that swapped independently declared data inputs
 produce trace mismatches, not just structural failures, and that detailed native
 findings survive recomputation. Check live output-budget enforcement, terminated
 command exits and owned process cleanup; never weaken a threshold to pass.
+The shared native process monitor serves CDC and chip-control execution; changes
+to it must also preserve CDC time/output limits, diagnostics and cleanup.
 Analog references additionally require `ngspice`, also installed in CI. They
 execute native operating-point, DC, AC and transient analyses and compare
 waveform measurements against independent circuit equations. Keep parser-only

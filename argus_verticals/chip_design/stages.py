@@ -8,6 +8,8 @@ missions without pretending those delivery levels are interchangeable.
 
 from __future__ import annotations
 
+import shlex
+import sys
 from pathlib import Path
 
 from argus.core.vertical_contract import VerticalContract
@@ -24,7 +26,8 @@ ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_ROUTING_PATH = ("hardware", "chip_design")
 VERTICAL_PURPOSE = (
     "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, "
-    "memory/DMA, interconnect and host integration; scoped architecture/RTL/PPA tasks "
+    "memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt "
+    "control design, repair and diagnosis; scoped architecture/RTL/PPA tasks "
     "or explicit full implementation and sign-off, not GPU software kernels"
 )
 VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
@@ -59,6 +62,10 @@ WORKFLOW_PROFILES = {
     },
     "verification": {
         "purpose": "independently verify an existing chip subsystem against its frozen contract",
+        "stages": ("verification",),
+    },
+    "control": {
+        "purpose": "bounded APB4 register/timer/interrupt RTL design, authorized repair or diagnosis against original inputs; native RTL and synthesized simulation plus generic cell limits, not physical PPA",
         "stages": ("verification",),
     },
     "ppa": {
@@ -210,7 +217,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
                 "RTL outputs and state transitions are checked against an independent executable reference "
                 "or formally specified properties, including numerical tolerances and quality constraints."
             ),
-            evidence_hint="verification/PLAN.md, reference/, formal/, and verification/RESULTS.json",
+            evidence_hint="verification/PLAN.md, reference/, formal/, and verification/RESULTS.json; control profile uses CONTROL_PLAN.json and control/ASSESSMENT.json",
         ),
         ChecklistItem(
             id="verification.coverage-stress",
@@ -224,9 +231,10 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
             id="verification.reproducible-green",
             statement=(
                 "Fresh simulator/formal commands exit successfully, the referenced raw files exist, "
-                "and passing summaries contain no contradictory failures."
+                "and passing summaries contain no contradictory failures. A control-profile "
+                "diagnosis may retain real failures; control design/repair must pass both RTL and synthesized simulation."
             ),
-            evidence_hint="verification/RESULTS.json and verification/raw/",
+            evidence_hint="verification/RESULTS.json and verification/raw/; control profile uses verification/control/",
         ),
     ),
     "ppa": (
@@ -345,6 +353,19 @@ def stage_completion_issues(
     stage_name = (stage or "").strip().lower()
     root = Path(project_root)
 
+    if workflow_profile == "control":
+        from argus_verticals.hardware.shared.evidence import EvidenceError as ControlEvidenceError
+
+        from .control import validate
+
+        if stage_name != "verification":
+            return ("control profile only executes its bounded verification stage",)
+        try:
+            validate(root)
+        except ControlEvidenceError as exc:
+            return (str(exc),)
+        return ()
+
     if stage_name == "environment":
         from .environment_audit import check
 
@@ -390,12 +411,47 @@ def stage_completion_issues(
     return tuple(issues)
 
 
+def control_check_command() -> str:
+    script = (
+        "from pathlib import Path; from argus.verticals._base import load_vertical_contract; "
+        "contract = load_vertical_contract('chip_design').for_profile('control'); "
+        "issues = contract.completion_issues('verification', Path.cwd()); "
+        "print(list(issues)); raise SystemExit(bool(issues))"
+    )
+    return f"{shlex.quote(sys.executable)} -c {shlex.quote(script)}"
+
+
+def render_role_prompt_fragment(
+    *, role: str, operation: str, stage: str, scope: str, project_root: Path | None,
+) -> str:
+    if stage != "verification":
+        return ""
+    script = (
+        "from pathlib import Path; from argus.verticals._base import load_vertical_contract; "
+        "load_vertical_contract('chip_design'); "
+        "from argus_verticals.chip_design.control import run; run(Path.cwd())"
+    )
+    return (
+        "Only for the selected control profile, use this original-input contract. "
+        "Legacy accelerator verification uses its existing evidence requirements.\n\n"
+        + Path(__file__).with_name("control-contract.md").read_text(encoding="utf-8")
+        + "\nEngineer: execute the native study from the execution project, not session state:\n"
+        f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
+        "Reviewer: inspect original requirements, raw evidence and authorized repair changes, "
+        "then execute the profile-specific read-only checker:\n"
+        f"```bash\n{control_check_command()}\n```\n"
+        "Manager/Planner preserve all original constraints. Design/repair must pass; "
+        "only an originally requested diagnose goal may conclude with engineering failure. "
+        "Neither passing RTL alone nor generic synthesis statistics establish physical PPA.\n"
+    )
+
+
 def role_banner(role: str) -> str:
     """Frame roles around auditable chip-design evidence."""
     common = (
         "MISSION TYPE: CHIP / ACCELERATOR DESIGN. Each claim requires checkable "
         "evidence. Use the active workflow profile: architecture, RTL, verification, "
-        "PPA, prototype, benchmark or explicitly full design. If no profile was saved, "
+        "PPA, prototype, benchmark, bounded APB4 control, or explicitly full design. If no profile was saved, "
         "preserve the legacy full flow. Do not demand outputs from omitted stages. "
         "This is NOT ordinary software work or GPU kernel programming. "
         "Delivery level describes the target; only completed, reviewed stages may "

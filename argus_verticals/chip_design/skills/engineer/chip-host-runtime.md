@@ -17,6 +17,13 @@ completion destination and ownership. Include versioning only where the actual
 interface needs evolution; do not add a general schema framework to a tiny block.
 Invalid values must produce explicit errors, not silent reinterpretation.
 
+For the opt-in bounded APB4 `control` profile, use the injected
+`apb4-timer-v1` contract rather than inventing descriptor or accelerator models.
+Respect exact waits, all byte strobes, read-only/error semantics and old-state
+timer ordering; timer-event set dominates simultaneous W1C. Repair only authorized
+RTL, retain failed attempts and verify both RTL and synthesized models with the
+original configuration matrix and generic-cell cap. This is not physical PPA.
+
 ## Ownership and coherence
 
 Define who owns buffers while a command is in flight. Host virtual addresses are

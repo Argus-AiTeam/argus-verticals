@@ -102,9 +102,12 @@ adds complete finite Cartesian input/load/temperature/component samples,
 common design decisions and original-limit headroom, with distinct diagnosis
 and design acceptance. These complete the eight primary domain
 registrations, not industrial coverage of every subject within those domains.
-The existing `chip_design` architecture model remains accelerator-oriented in
-this batch; a general control-SoC model and independent physical/DFT execution
-are still separate work, not capabilities implied by the taxonomy.
+The existing `chip_design` architecture model remains accelerator-oriented.
+Its opt-in `control` profile separately adds bounded APB4 registers, a timer and
+interrupts: native RTL and synthesized-model comparison against an independent
+state model, original generic-cell limits, and authorized RTL repair without
+weakening requirements. A general control SoC and independent physical/DFT
+execution remain separate work; generic Yosys counts are not physical PPA.
 
 The digital verification specialty also offers an opt-in CDC/reset profile:
 native Yosys structural checks and Icarus clock/phase traces for explicitly

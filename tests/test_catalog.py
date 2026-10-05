@@ -440,6 +440,7 @@ def _expected_members(name: str) -> list[str]:
 
 
 @pytest.mark.parametrize("vertical,stage,directory,reference", [
+    ("chip_design", "verification", "verification/control", "run_control_reference"),
     ("digital_circuit_verification", "simulation", "verification/cdc", "run_cdc_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_robustness_reference"),
@@ -466,8 +467,8 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
         pytest.skip("KiCad 9 is required for the archive-only executable check")
     if vertical == "package_design" and any(shutil.which(tool) is None for tool in ("gmsh", "ccx")):
         pytest.skip("Gmsh and CalculiX are required for the archive-only executable check")
-    if vertical == "digital_circuit_verification" and any(shutil.which(tool) is None for tool in ("yosys", "iverilog", "vvp")):
-        pytest.skip("Yosys and Icarus are required for the archive-only CDC check")
+    if vertical in {"chip_design", "digital_circuit_verification"} and any(shutil.which(tool) is None for tool in ("yosys", "iverilog", "vvp")):
+        pytest.skip("Yosys and Icarus are required for the archive-only digital checks")
     dist, payload = release
     local_catalog = json.loads(json.dumps(payload))
     for entry in local_catalog["verticals"].values():
@@ -520,15 +521,22 @@ prompt = stages.render_role_prompt_fragment(
     role="engineer", operation="mission", stage=stage, scope="", project_root=project,
 )
 commands = re.findall(r"```bash\\n(.*?)\\n```", prompt, re.DOTALL)
-execute = [command for command in commands if ("run(Path.cwd())" if directory == "verification/cdc" else "run_analysis(Path.cwd())") in command]
-check = [command for command in commands if "completion_issues" in command and (directory != "verification/cdc" or "for_profile" in command)]
+digital_profile = directory in {"verification/cdc", "verification/control"}
+execute = [command for command in commands if ("run(Path.cwd())" if digital_profile else "run_analysis(Path.cwd())") in command]
+check = [command for command in commands if "completion_issues" in command and (not digital_profile or "for_profile" in command)]
 assert len(execute) == len(check) == 1
 for command in (execute[0], check[0]):
     result = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout
-record = json.loads((project / directory / ("RESULTS.json" if directory == "verification/cdc" else "results/RESULTS.json")).read_text())
-if directory == "verification/cdc":
+record = json.loads((project / directory / ("RESULTS.json" if digital_profile else "results/RESULTS.json")).read_text())
+if directory == "verification/control":
+    assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
+    assert record["operation"] == "yosys-icarus-apb4-control" and len(record["commands"]) == 10
+    assert assessment["task_accepted"] and assessment["status"] == "passed"
+    assert len(assessment["configurations"]) == 2
+    assert all(c["synthesis"]["passed"] and all(s["passed"] for s in c["simulations"].values()) for c in assessment["configurations"].values())
+elif directory == "verification/cdc":
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
     assert record["operation"] == "yosys-icarus-cdc-reset" and len(record["commands"]) == 7
     assert assessment["task_accepted"] and assessment["status"] == "passed"
