@@ -321,6 +321,58 @@ def test_legacy_full_profile_does_not_force_cdc():
     assert stages.WORKFLOW_PROFILES["full"]["stages"] == ("plan", "simulation", "formal", "review")
 
 
+@pytest.mark.parametrize("flag", [None, False])
+def test_legacy_review_ignores_unused_cdc_plan(tmp_path, monkeypatch, flag):
+    from argus_verticals.digital_circuit.verification.run_reference import run_reference as run_fifo
+
+    root = tmp_path / "legacy"
+    run_fifo(root)
+    if flag is not None:
+        edit(root, "verification/PLAN.json", lambda p: p.update(cdc=flag))
+        result = json.loads((root / "verification/RESULTS.json").read_text())
+        shutil.copyfile(root / "verification/PLAN.json", root / result["inputs"]["verification/PLAN.json"])
+    (root / PLAN).write_text('{"specification": "unused-missing-spec.json"}')
+    (root / "verification/REVIEW.md").write_text("Independent legacy verification review.")
+    monkeypatch.setattr(stages, "validate_formal", lambda root: None)
+    assert stages.stage_completion_issues("review", root) == ()
+
+
+@pytest.mark.parametrize("field", ["ports", "netnames", "connections", "attributes"])
+def test_malformed_native_objects_are_evidence_issues(work, field):
+    relative = f"{DIRECTORY}/netlist.json"
+    netlist = json.loads((work / relative).read_text())
+    top = netlist["modules"]["cdc_reference"]
+    if field == "ports":
+        top["ports"]["clk_src"] = []
+    elif field == "netnames":
+        top["netnames"] = []
+    else:
+        next(iter(top["cells"].values()))[field] = []
+    (work / relative).write_text(json.dumps(netlist))
+    retained(work, relative)
+    issues = stages.stage_completion_issues("simulation", work, workflow_profile="cdc")
+    assert len(issues) == 1 and "invalid native Yosys" in issues[0]
+
+
+@pytest.mark.parametrize("failure", ["encoding", "read"])
+def test_trace_read_failures_are_evidence_errors(work, monkeypatch, failure):
+    relative = f"{DIRECTORY}/source_fast.simulate.log"
+    if failure == "encoding":
+        (work / relative).write_bytes(b"\xff")
+    else:
+        read_text = Path.read_text
+
+        def unreadable(path, *args, **kwargs):
+            if path == work / relative:
+                raise OSError("controlled trace read failure")
+            return read_text(path, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "read_text", unreadable)
+    spec, _ = cdc_model.resolve(work)
+    with pytest.raises(EvidenceError, match="trace"):
+        cdc._assessment(work, spec)
+
+
 @pytest.mark.parametrize("role,operation", [
     ("manager", "stage_decision"), ("planner", "plan_preview"),
     ("engineer", "mission"), ("reviewer", "evaluate"),

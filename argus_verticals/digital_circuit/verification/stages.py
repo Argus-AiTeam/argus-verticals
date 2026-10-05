@@ -7,7 +7,6 @@ from argus.skills.stage_machine import ChecklistItem
 from argus.verticals._registry import VerticalPlugin
 
 from .cdc import validate as validate_cdc
-from .cdc_model import PLAN as CDC_PLAN
 from .evidence import (
     EvidenceError,
     evidence_check_command,
@@ -121,8 +120,6 @@ def stage_completion_issues(
         elif stage == "review":
             validate_simulation(root)
             validate_formal(root)
-            if (root / CDC_PLAN).exists():
-                validate_cdc(root, require_pass=True)
             project_file(root, "verification/REVIEW.md")
         else:
             raise ValueError(f"unknown verification stage: {stage}")

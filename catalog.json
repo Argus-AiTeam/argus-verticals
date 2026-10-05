@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "1f8a589699b7e16c2fd03e343af6e958a2eb185d",
+    "commit": "935bf2013a96be58c9f39ab92bef8f332f291ae2",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -211,7 +211,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 91919,
+      "size_bytes": 92333,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -221,7 +221,7 @@
         "formal",
         "cdc"
       ],
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     "fiction_writing": {
       "api_version": 1,

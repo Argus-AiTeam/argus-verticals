@@ -92,3 +92,9 @@ they cannot establish that an arbitrary testbench is independent, that manually
 supplied logs are authentic, or that assumptions describe the intended system.
 Argus's independent review remains required. The bundled runnable example is
 simulation-based; it is not evidence that a formal toolchain was installed.
+# Review-boundary compatibility
+
+Only an explicit `cdc: true` in the general verification plan composes CDC into
+simulation, formal checks and final review. An unused `CDC_PLAN.json` does not
+opt a legacy workflow in. Invalid native JSON shapes and unreadable trace text
+are reported as evidence errors, not unhandled validation exceptions.

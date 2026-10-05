@@ -129,7 +129,7 @@ def interface(spec: dict) -> tuple[list[str], list[str]]:
 def structure(spec: dict, netlist: dict) -> dict:
     try:
         return _structure(spec, netlist)
-    except (KeyError, TypeError, IndexError, ValueError) as exc:
+    except (KeyError, TypeError, IndexError, ValueError, AttributeError) as exc:
         raise EvidenceError(f"invalid native Yosys cell/connection record: {exc}") from exc
 
 

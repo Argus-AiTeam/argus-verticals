@@ -102,10 +102,14 @@ def _execute(root: Path, spec: dict, result: dict) -> None:
 
 def _assessment(root: Path, spec: dict) -> dict:
     structural = structure(spec, record(root, f"{DIRECTORY}/netlist.json"))
-    simulations = {
-        name: cdc_simulation.measure(spec, configuration, project_file(root, f"{DIRECTORY}/{name}.simulate.log").read_text(encoding="utf-8"))
-        for name, configuration in spec["configurations"].items()
-    }
+    simulations = {}
+    for name, configuration in spec["configurations"].items():
+        path = project_file(root, f"{DIRECTORY}/{name}.simulate.log")
+        try:
+            trace = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            raise EvidenceError(f"{name}: cannot read CDC trace: {exc}") from exc
+        simulations[name] = cdc_simulation.measure(spec, configuration, trace)
     passed = structural["passed"] and all(row["passed"] for row in simulations.values())
     return {
         "goal": spec["goal"], "status": "passed" if passed else "failed",
