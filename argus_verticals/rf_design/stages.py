@@ -22,7 +22,7 @@ VERTICAL_ROUTING_PATH = ("hardware", "rf_design")
 VERTICAL_PURPOSE = (
     "RF and microwave network design: Touchstone/S parameters, impedance matching, "
     "transmission lines, port order and reference impedances, passive cascades, "
-    "noise and stability reasoning; executable scikit-rf network analysis, "
+    "noise and stability reasoning; executable scikit-rf network analysis and finite component-tolerance/frequency robustness, "
     "not RTL, general SPICE transients, full-wave EM, PCB layout or physical certification"
 )
 VERTICAL_SKILLS = Path(__file__).parent / "skills"
@@ -44,7 +44,7 @@ WORKFLOW_STAGE_REQUIREMENTS = {
 CHECKLIST_ITEMS = {
     "specification": (ChecklistItem("rf.requirements", "Observables, physical assumptions and exclusions are explicit.", "rf/PLAN.json"),),
     "model": (ChecklistItem("rf.models", "Network sources, port conventions, frequency grids and model limits are defined.", "rf/PLAN.json and actual Touchstone inputs"),),
-    "analysis": (ChecklistItem("rf.network-results", "Current exported networks agree with the declared calculations and satisfy independently chosen bounds.", "rf/results/RESULTS.json and retained Touchstone results"),),
+    "analysis": (ChecklistItem("rf.network-results", "Current exported networks agree with the declared calculations and task goal: design meets original limits; diagnosis may validly report failures.", "rf/results/RESULTS.json, retained Touchstone results and selected robustness assessment"),),
     "review": (ChecklistItem("rf.conclusion", "The conclusion distinguishes sampled network calculations from calibration, full-wave and measured hardware claims.", "rf/REVIEW.md and current analysis evidence"),),
 }
 
@@ -74,7 +74,9 @@ def render_role_prompt_fragment(
         "the reference planes, models, conventions and numerical comparisons. Manager/Planner "
         "must preserve the original acceptance conditions.\n"
         "Use this read-only checker from the execution project, not the session-state directory; "
-        "[] and exit 0 mean the record and numerical checks passed, not physical certification.\n"
+        "[] and exit 0 mean the declared task goal was accepted, not physical certification. "
+        "In robustness diagnosis, inspect ASSESSMENT.json: a valid conclusion may report failed "
+        "original limits. Design must pass every original check and required margin.\n"
         f"```bash\n{evidence_check_command('rf_design', stage)}\n```\n"
         "Explain failed bounds or unavailable methods explicitly. Do not invent measured data, "
         "clip bad values, relax requirements to pass, or forge completion records.\n"

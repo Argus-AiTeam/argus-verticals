@@ -27,3 +27,9 @@ Single-frequency matching does not establish useful bandwidth. Component Q,
 self-resonance, parasitics, tolerances and load variation can dominate practical
 performance. The bundled L-match is an ideal linear model, not a component
 selection, power-rating check, nonlinear amplifier match or manufactured layout.
+
+When finite component tolerances are requested, retain every declared
+Cartesian combination and the common nominal design. Use the same design at
+all corners and inspect the worst sampled reflection/transmission frequency,
+not only the nominal match. Frequency refinement adds real model evaluations,
+but does not prove a continuous-band or continuous-tolerance guarantee.
