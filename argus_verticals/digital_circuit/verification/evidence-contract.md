@@ -5,7 +5,7 @@ and identify nonempty files. Do not use absolute paths or `..` in record paths.
 These are schema examples, not completed results. Substitute the operator's
 actual sources, requirements, cases and complete configuration matrix.
 
-## Plan manifest: required even for a simulation-only scope
+## Plan manifest: required for the general simulation scope
 
 `verification/PLAN.json` records the inputs and acceptance matrix:
 
@@ -112,3 +112,143 @@ log authenticity, sufficient coverage or adequate formal assumptions. Review
 the actual testbench, command execution and provenance as well as running the
 checker. Do not mutate the operator's RTL to test an oracle without permission;
 use a private copy if a mutation check is needed.
+
+## Optional declared CDC/reset adapter study
+
+The `cdc` workflow profile uses the existing `simulation` stage with a different,
+explicit input contract. It requires **only** `verification/CDC_PLAN.json` and
+its original specification/RTL, not the general `PLAN.json`, FIFO regression or
+formal records above. The legacy `full` profile is unchanged; it does not silently
+add CDC work. Use the profile-specific read-only command supplied in the stage
+prompt, rather than the general matrix checker.
+
+`verification/CDC_PLAN.json` contains exactly:
+
+```json
+{"specification": "design/cdc-study.json"}
+```
+
+The external original specification owns the goal, top, source list, complete
+scalar port/domain inventory, clock configurations and requirements. Do not
+rewrite it or the operator's RTL to make checks pass. This bounded adapter
+supports two to four independent positive-edge clocks, one to four single-bit
+level crossings, and one active-low asynchronous-assert/synchronous-release reset
+chain per clock. Each data path has **one source-domain launch register followed
+by exactly two or three destination-domain registers**. Each uses the local
+synchronized reset for its domain. Each reset chain has two or three stages,
+asynchronous zero reset, and a constant-one release input.
+
+There are no other top-level ports, data logic, state, waivers or black boxes in
+the accepted adapter model. It is suitable for a separately declared adapter
+top, not for claiming an arbitrary SoC has no undiscovered crossings. Rejected
+structures mean the original adapter requirements were not met; they do not
+prove every alternative CDC architecture unsafe.
+
+Example original specification (the RTL must implement these actual ports):
+
+```json
+{
+  "goal": "design",
+  "top": "cdc_reference",
+  "sources": ["rtl/cdc_reference.sv"],
+  "clocks": ["clk_src", "clk_dst"],
+  "resets": {
+    "clk_src": {"input": "arst_n", "output": "reset_src_n", "stages": 2},
+    "clk_dst": {"input": "arst_n", "output": "reset_dst_n", "stages": 2}
+  },
+  "crossings": {
+    "status_level": {
+      "input": "level_in", "output": "level_out",
+      "source_clock": "clk_src", "destination_clock": "clk_dst", "stages": 2
+    }
+  },
+  "configurations": {
+    "source_fast": {
+      "clk_src": {"period_ticks": 10, "phase_ticks": 0},
+      "clk_dst": {"period_ticks": 14, "phase_ticks": 3}
+    },
+    "destination_fast": {
+      "clk_src": {"period_ticks": 18, "phase_ticks": 4},
+      "clk_dst": {"period_ticks": 8, "phase_ticks": 1}
+    }
+  },
+  "requirements": {
+    "level_latency": "Source launch then exactly two destination edges; no early-stage use.",
+    "reset_assert": "Local resets assert asynchronously, including between clock edges.",
+    "reset_release": "Each reset releases after exactly two edges of its own clock."
+  },
+  "limitations": ["Ideal digital level transport; no physical CDC or metastability claim."]
+}
+```
+
+All listed fields are required; unknown fields are rejected rather than treated
+as waivers. Plain project-relative `.v`/`.sv` inputs are limited to 16 files and
+256 KiB total. Includes, macros, external data files and simulation system tasks
+are not supported; `timescale`, `default_nettype`, `$clog2` and `$bits` are allowed.
+The specification is at most 64 KiB. Port/module/configuration identifiers are
+plain RTL identifiers. Ports are distinct, except a reset input may be shared
+by several domains; separate reset inputs are also supported.
+There must be two to eight distinct complete clock configurations, each with
+even integer periods from 8 to 64 ticks and integer phases from zero through
+period minus one. Clocks are initially low and first rise at phase plus one;
+one tick is one simulated nanosecond, not a qualified operating frequency.
+
+Execute with native Yosys and Icarus Verilog installed:
+
+```bash
+python -m argus_verticals.digital_circuit.verification.cdc /path/to/project
+```
+
+For Store-only child processes expose the resolved Store directory through
+`PYTHONPATH`, or use the loader-based execution command in the role prompt.
+The runner refuses an existing `verification/cdc/` directory. Preserve old
+results before a deliberate rerun; never overwrite snapshots to conceal changed
+inputs. Native tool failure, missing ports that prevent elaboration, missing
+traces or invalid declarations are incomplete work, not accepted diagnoses.
+
+The runner extracts a flattened native Yosys netlist without register merging,
+checks clock/reset polarity, chain length, complete sequential-state inventory,
+direct data connections and intermediate-stage fanout. Digital traces alone
+cannot substitute for these structural checks: raw-reset usage can look correct
+in simulation while still failing the declared synchronization structure.
+It then compiles/runs an independently generated Icarus stimulus for **every**
+original configuration. Stable low/high transitions, staggered initial reset
+release and an individual mid-traffic pulse on every reset input are exercised.
+Later reset assertions/releases occur between every domain's active edges.
+The host compares every output at every tick against a separate synchronous
+state/history calculation, including coincident-clock old-value semantics and
+unknown outputs. Counts are actual comparisons, not elapsed cycles.
+
+`verification/cdc/RESULTS.json` records exact native argv, integer exits, raw
+logs, independent original input copies, and retained generated netlist,
+testbenches, executables, traces and `ASSESSMENT.json`. The assessment contains
+structural findings, per-configuration comparison/mismatch counts and first
+counterexample ticks. Execution is bounded to 180 seconds per study, 30 seconds
+per command and 128 MiB generated files before retained copies.
+The read-only checker recomputes the assessment, executes a fresh native replay
+in a temporary directory, and compares the native netlist, generated stimuli
+and raw traces without changing the project. Compiled Icarus files contain
+process-specific addresses; retaining them is not a bit-identical rebuild claim.
+
+`goal: "diagnose"` may finish with `status: "failed"` and
+`task_accepted: true` after complete, valid execution: report the negative
+engineering conclusion and witnesses. `goal: "design"` requires all declared
+structures and all trace comparisons to pass. There is no acceptance waiver.
+Independent Reviewer inspection of the source, original inventory, model limits
+and real tool execution remains necessary even after the machine check passes.
+
+For explicitly **composed** general or FPGA verification, set `"cdc": true` in
+the general `verification/PLAN.json`. Its source list must include all CDC
+sources. Simulation/formal input snapshots must additionally include the
+`CDC_PLAN.json`, external specification, CDC sources, and CDC `RESULTS.json` and
+`ASSESSMENT.json`. The composed check requires CDC engineering status **passed**;
+an accepted negative diagnosis cannot establish design/implementation success.
+The standalone `cdc` profile does not require a board target or physical tools.
+FPGA implementation remains single-clock iCE40; this feature adds neither
+multiclock place-and-route nor board programming.
+
+Limits: no metastability waveform model or injection claim, MTBF estimate,
+placement/attributes sign-off, STA/skew constraint validation, pulses, coherent
+buses, asynchronous FIFO verification, analog behavior, or complete CDC/RDC
+closure. Finite phase samples and logical reset behavior are not physical safety
+certification. Preserve these limits in the report.

@@ -39,3 +39,14 @@ valid. Simulation can expose reset/protocol bugs but cannot simulate
 metastability or replace structural CDC/RDC analysis. Record uncovered
 crossings explicitly and select external analysis work when needed; do not
 report CDC closure from this specialty's simulation success.
+
+For the bounded executable `cdc` profile, use the canonical `CDC_PLAN.json`
+and original external declarations, then the supplied native runner. It checks
+source-launched single-bit levels with two/three destination stages and local
+active-low reset synchronizers using flattened Yosys structure and real Icarus
+phase/reset traces. It does not support pulse/bus/FIFO structures or hidden
+logic/state outside the declared adapter. Never replace a failed structure with
+a passing digital waveform: raw asynchronous reset release can be invisible in
+the finite simulation while the structural check correctly rejects it.
+Preserve original source/specification bytes and report valid negative diagnosis
+when requested; design and composed FPGA verification must pass.

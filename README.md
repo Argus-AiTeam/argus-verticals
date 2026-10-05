@@ -106,6 +106,12 @@ The existing `chip_design` architecture model remains accelerator-oriented in
 this batch; a general control-SoC model and independent physical/DFT execution
 are still separate work, not capabilities implied by the taxonomy.
 
+The digital verification specialty also offers an opt-in CDC/reset profile:
+native Yosys structural checks and Icarus clock/phase traces for explicitly
+declared single-bit level/reset adapters. It preserves valid negative diagnosis
+and requires a passing result when composed into FPGA design verification.
+It is not complete CDC/RDC sign-off or a multiclock FPGA implementation backend.
+
 | entry point | module | purpose (as shown in the Manager's menu) | skill parents |
 |---|---|---|---|
 | `ale_last_exam` | `argus_verticals.ale_last_exam` | Agents' Last Exam long-horizon professional workflow in a real sandbox with hidden-reference, artifact-first GUI+CLI delivery | |
@@ -114,7 +120,7 @@ are still separate work, not capabilities implied by the taxonomy.
 | `classical_poetry` | `argus_verticals.classical_poetry` | compose or check classical Chinese 近体诗/古体/词 with reproducible 押韵/平仄 prosody and literary review | |
 | `digital_circuit` | `argus_verticals.digital_circuit` | Verilog/SystemVerilog RTL, testbenches, formal verification, FPGA/ASIC synthesis, timing, and sign-off | |
 | `digital_circuit_benchmark` | `argus_verticals.digital_circuit.benchmark` | single-stage fixed-harness RTL benchmark: interface, RTL, local verification, pre-score elaboration, and attempt handoff | `digital_circuit` |
-| `digital_circuit_verification` | `argus_verticals.digital_circuit.verification` | independent configuration/scenario regression and nonvacuous formal checks | `digital_circuit` |
+| `digital_circuit_verification` | `argus_verticals.digital_circuit.verification` | independent regressions, declared CDC/reset adapter checks and nonvacuous formal checks | `digital_circuit` |
 | `fpga_design` | `argus_verticals.fpga_design` | scoped FPGA work with single-clock iCE40 implementation and measured board acceptance | `digital_circuit`, `digital_circuit_verification` |
 | `fiction_writing` | `argus_verticals.fiction_writing` | write or continue original fiction narrative prose while preserving characters, world, and timeline; not a literature review or research task | |
 | `kernelbench` | `argus_verticals.kernelbench` | maximize correctness-checked SOL score/speedup for GPU kernels on B200 SOL-ExecBench/KernelBench | `kernel_engineering` (Argus built-in) |

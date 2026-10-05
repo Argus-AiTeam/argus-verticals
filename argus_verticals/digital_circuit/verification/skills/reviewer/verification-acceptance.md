@@ -15,3 +15,12 @@ strength, the property harness and cover witnesses; preserve the bounded versus
 inductive distinction. Current input snapshots establish consistency, not
 authenticity or sufficient coverage. Do not approve missing CDC/STA/physical
 claims based on simulation alone.
+
+For the `cdc` profile inspect the entire declared adapter inventory, native
+Yosys stage/clock/reset/fanout findings and every Icarus phase/reset trace.
+Run the profile-specific native replay checker from the execution project;
+the generic simulation-matrix checker has a different input contract.
+Check the original requirement goal: valid negative diagnosis is not a passing
+design. Do not allow a structurally bad reset path merely because its ideal
+digital waveforms pass. Explain excluded metastability, MTBF, placement, timing,
+pulse/bus coherence and system-level reset recovery claims.

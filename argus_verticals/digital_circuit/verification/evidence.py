@@ -44,13 +44,33 @@ def validate_plan(root: Path) -> dict:
         covered.update(linked)
     if covered != set(cases):
         raise EvidenceError("requirements: every case needs an explicit requirement")
+    if "cdc" in plan:
+        if type(plan["cdc"]) is not bool:
+            raise EvidenceError("cdc: use an explicit boolean to compose CDC/reset checks")
+        if plan["cdc"]:
+            from .cdc_model import resolve
+
+            spec, _ = resolve(root)
+            if not set(spec["sources"]) <= set(plan["sources"]):
+                raise EvidenceError("CDC sources must also belong to the verification source list")
     return plan
+
+
+def _cdc_inputs(root: Path, plan: dict) -> list[str]:
+    if not plan.get("cdc", False):
+        return []
+    from .cdc import validate
+    from .cdc_model import ASSESSMENT, RESULTS, resolve
+
+    _, inputs = resolve(root)
+    validate(root, require_pass=True)
+    return [*inputs, RESULTS, ASSESSMENT]
 
 
 def validate_simulation(root: Path, *, additional_inputs: tuple[str, ...] = ()) -> None:
     plan = validate_plan(root)
     results = record(root, "verification/RESULTS.json")
-    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *additional_inputs])
+    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *additional_inputs, *_cdc_inputs(root, plan)])
     runs = results.get("runs")
     if not isinstance(runs, list) or not runs:
         raise EvidenceError("runs: a nonempty executed regression is required")
@@ -93,7 +113,7 @@ def validate_formal(root: Path) -> None:
     ):
         raise EvidenceError("formal.assumptions: list every assumption and its reason, or explicitly use []")
     results = record(root, "verification/FORMAL.json")
-    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"]])
+    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *_cdc_inputs(root, plan)])
     for key, expected in (("assertions", assertions), ("covers", covers)):
         entries = results.get(key)
         if not isinstance(entries, dict) or set(entries) != set(expected):

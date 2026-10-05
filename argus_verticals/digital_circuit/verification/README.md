@@ -18,6 +18,7 @@ an explicit upgrade message.
 | `plan` | plan | Requirement/case/configuration matrix for existing sources |
 | `simulation` | simulation | Executed matrix with nonzero independent comparisons |
 | `formal` | formal | Declared bounded/inductive checks plus reached cover traces |
+| `cdc` | simulation | Native declared single-bit level/reset structures and finite clock/phase traces |
 | `full` | plan, simulation, formal, review | Both methods and a review of their limits |
 
 Custom combinations use the existing Argus scope mechanism. Simulation and
@@ -25,8 +26,26 @@ formal goals require a valid plan manifest. Reuse an applicable existing plan;
 when absent, prepare the manifest from the supplied requirements within the
 selected execution stage, without adding a standalone plan stage. Review requires
 both methods; choose a narrower scope rather than inventing N/A formal results.
-This specialty does not establish CDC structural safety, STA closure, DFT
-coverage, analog behavior, or certification.
+The optional `cdc` profile instead uses `verification/CDC_PLAN.json` and a
+separate original specification; it does not require general matrix/formal
+records. It checks a bounded, completely declared synchronizer adapter, not all
+crossings in an arbitrary design. The legacy `full` profile stays unchanged.
+No profile establishes complete CDC/RDC sign-off, STA closure, DFT coverage,
+analog behavior, metastability/MTBF qualification or certification.
+
+With native Yosys and Icarus Verilog installed, the separate CDC/reset reference
+is runnable in a new directory:
+
+```bash
+python -m argus_verticals.digital_circuit.verification.run_cdc_reference /tmp/new-cdc-study
+```
+
+It checks source-faster, destination-faster and coincident-edge schedules, native
+stage counts and fanout, asynchronous reset assertion and domain-local release.
+The canonical contract below defines the two/three-stage adapter boundary,
+diagnosis versus design goals, independent raw traces and native replay. Use
+`"cdc": true` in an existing general/FPGA verification plan only when explicitly
+composing this additional work; composition requires a passing CDC result.
 
 ## Runnable reference
 
