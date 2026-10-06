@@ -84,6 +84,24 @@ PYPROJECT_REQUIREMENTS: set[str] = {
     for requirement in extra
 }
 
+
+@pytest.mark.parametrize("name", [
+    "digital_circuit", "digital_circuit_verification", "chip_design", "fpga_design",
+    "analog_mixed_signal", "rf_design", "pcb_design", "package_design", "power_electronics",
+])
+def test_host_review_providers_declare_actual_argus_features(name):
+    assert MANIFESTS[name]["argus_features"] == [
+        "composable-workflow-profiles", "vertical-routing-paths", "host-round-evidence",
+    ]
+
+
+@pytest.mark.parametrize("features", [None, "host-round-evidence", [""], [7], ["host-round-evidence"] * 2])
+def test_manifest_rejects_malformed_argus_features(features):
+    manifest = {**MANIFESTS["chip_design"], "argus_features": features}
+    with pytest.raises(build_catalog.CatalogError, match="argus_features"):
+        build_catalog.validate_against_schema(manifest, SCHEMA, "chip_design")
+
+
 @pytest.mark.parametrize("raw", ["hardware/digital_circuit", ("hardware",), ("Hardware", "digital_circuit"), ("hardware", 7)])
 def test_invalid_provider_routing_path_is_rejected(tmp_path, raw):
     source = tmp_path / "stages.py"

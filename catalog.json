@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "d9048b788b1de89eb5d7640d434ad67610dd18ef",
+    "commit": "2bdd514aae1a82b7c9c4ce44617610fbb2834258",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -32,6 +32,11 @@
     },
     "analog_mixed_signal": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -52,17 +57,22 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 157620,
+      "size_bytes": 157723,
       "skill_parents": [],
       "tags": [
         "hardware",
         "analog",
         "spice"
       ],
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     "chip_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "composable-workflow-profiles",
@@ -84,7 +94,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 243897,
+      "size_bytes": 244000,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -94,7 +104,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -129,6 +139,11 @@
     },
     "digital_circuit": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "composable-workflow-profiles",
@@ -148,7 +163,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 110087,
+      "size_bytes": 110190,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -156,7 +171,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.1.2"
+      "version": "1.1.3"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
@@ -193,6 +208,11 @@
     },
     "digital_circuit_verification": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -215,7 +235,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 103650,
+      "size_bytes": 103753,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -225,7 +245,7 @@
         "formal",
         "cdc"
       ],
-      "version": "0.2.5"
+      "version": "0.2.6"
     },
     "fiction_writing": {
       "api_version": 1,
@@ -262,6 +282,11 @@
     },
     "fpga_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -284,7 +309,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 45748,
+      "size_bytes": 45851,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"
@@ -294,7 +319,7 @@
         "fpga",
         "verification"
       ],
-      "version": "0.1.3"
+      "version": "0.1.4"
     },
     "kernelbench": {
       "api_version": 1,
@@ -493,6 +518,11 @@
     },
     "package_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -514,17 +544,22 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 99485,
+      "size_bytes": 99588,
       "skill_parents": [],
       "tags": [
         "hardware",
         "package",
         "thermal"
       ],
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     "pcb_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -546,14 +581,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 112160,
+      "size_bytes": 112263,
       "skill_parents": [],
       "tags": [
         "hardware",
         "pcb",
         "kicad"
       ],
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     "physics": {
       "api_version": 1,
@@ -583,6 +618,11 @@
     },
     "power_electronics": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -605,14 +645,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 150124,
+      "size_bytes": 150227,
       "skill_parents": [],
       "tags": [
         "hardware",
         "power",
         "spice"
       ],
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     "prose": {
       "api_version": 1,
@@ -681,6 +721,11 @@
     },
     "rf_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -703,14 +748,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 127407,
+      "size_bytes": 127510,
       "skill_parents": [],
       "tags": [
         "hardware",
         "rf",
         "network-analysis"
       ],
-      "version": "0.2.2"
+      "version": "0.2.3"
     },
     "speedrun": {
       "api_version": 1,

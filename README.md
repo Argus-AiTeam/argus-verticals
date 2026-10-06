@@ -204,7 +204,19 @@ from Argus.
 | `requires` | other catalog verticals the store installs alongside: the code imports them (`chip_design` → `digital_circuit`) or `VERTICAL_SKILL_PARENTS` names them (`nanogpt_speedrun` → `speedrun`); Argus built-ins such as `kernel_engineering` are not listed |
 | `shared` | helper directories bundled into the archive because the code imports them (the five literary verticals → `argus_verticals/literary/shared`) |
 | `python_requirements`, `optional_python_requirements` | pip requirements the runtime code imports, unguarded or behind a guard, spelled exactly as in an extra of `pyproject.toml`; the store shows them, it does not install them |
-| `tags`, `maintainers`, `min_argus` | 2–4 browsing tags; GitHub handles; the Argus commit family the vertical is written for (`2026-09-14-split`; the store compares by feature probe, not by this string) |
+| `tags`, `maintainers`, `min_argus` | 2–4 browsing tags; GitHub handles; an informational Argus commit-family label, not an enforced version constraint |
+| `argus_features` (optional) | required framework features: `composable-workflow-profiles`, `vertical-routing-paths`, `host-round-evidence`; a feature-aware Store checks the complete dependency selection before installation |
+
+The nine hardware providers using shared host review declare these three
+features. A feature-aware Store reports missing or unknown requirements before
+downloading or replacing any selected provider, retains the declarations for
+offline checks, and distinguishes an incompatible catalog update from an
+otherwise usable installed version. It probes only known framework APIs, not
+plugin code or project commands; this is not scientific or toolchain acceptance.
+Legacy manifests without `argus_features` retain their existing behavior.
+Older Stores ignore this field: the framework-side support must be installed
+separately before relying on the early refusal. A provider update does not
+upgrade a frozen project runtime or migrate historical projects.
 
 **`catalog.json`** at the repository root — the browsing index, committed and
 kept current by CI (`python scripts/build_catalog.py --check` fails when it is

@@ -1,6 +1,6 @@
 {
   "name": "fpga_design",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "module": "argus_verticals.fpga_design.stages",
   "purpose_zh": "FPGA 工程、资源推断、引脚和时钟约束及板级调试；首个可执行实现流程限定单时钟 iCE40，上板需真实测量",
   "paths": ["argus_verticals/fpga_design"],
@@ -9,5 +9,6 @@
   "python_requirements": [],
   "tags": ["hardware", "fpga", "verification"],
   "maintainers": [],
-  "min_argus": "vertical-routing-paths"
+  "min_argus": "vertical-routing-paths",
+  "argus_features": ["composable-workflow-profiles", "vertical-routing-paths", "host-round-evidence"]
 }

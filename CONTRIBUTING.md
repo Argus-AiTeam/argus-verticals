@@ -106,6 +106,12 @@ execution directory, custom prerequisites, visible failures, and the absence of
 recorded-command replay or project/state mutation. Control keeps its dedicated
 native report check, without a second generic replay. These changes require that
 framework API; they do not activate or migrate historical project runtimes.
+Keep the hardware manifests' `argus_features` declarations aligned with those
+real dependencies. The feature-aware Store must refuse an unsupported selected
+dependency before changing installed files, preserve old installed versions
+when only a catalog update is incompatible, and expose the cause to operators.
+`min_argus` is informational; an older Store ignoring the new field is not an
+enforcement boundary. Do not automatically upgrade frozen project runtimes.
 For general simulation/formal, test explicitly declared `supporting_files`
 (precision contracts, oracle dependencies and retained fixtures) for independent
 current copies and invalid paths. Binding inputs does not establish oracle
