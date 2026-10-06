@@ -199,6 +199,8 @@ def test_point_budget_is_for_all_corners(planned, monkeypatch):
 
 
 def test_native_design_pass_and_negative_diagnosis_have_distinct_meanings(native_references, tmp_path):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
     for name, root in native_references.items():
         report = inspect_study(root)
         assert report["conclusion_valid"] and report["coverage"]["complete"]
@@ -208,12 +210,17 @@ def test_native_design_pass_and_negative_diagnosis_have_distinct_meanings(native
         assert report["status"] == ("passed" if name == "design" else "failed")
         assert report["task_accepted"] == (name != "failed")
         assert load(root, RESULTS)["status"] == ("failed" if name == "failed" else "complete")
+        state = tmp_path / name
+        persist_vertical(state, "power_electronics", workflow_profile="simulation")
+        before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+        gathered = collect_round_evidence(RoundEvidenceRequest(root, state / "handoffs/task", 1))
+        host, = [item for item in gathered if item.provider.startswith("argus_verticals.hardware.shared.review:")]
+        assert ('"issues": []' in host.reviewer_text) == (name != "failed")
+        assert before == {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
         if name == "failed":
             with pytest.raises(EvidenceError, match="task not accepted"):
                 validate_simulation(root)
         else:
-            state = tmp_path / name
-            persist_vertical(state, "power_electronics", workflow_profile="simulation")
             complete_final_stage(state, reason="Complete finite native study", evidence_root=root)
             assert vertical_completion_certificate_status(state, "power_electronics")["ok"]
         if name != "design":

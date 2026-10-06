@@ -84,6 +84,53 @@ workflow. Hardware example tests
 use Icarus Verilog (`iverilog` and `vvp`); the iCE40 implementation tests also
 use Yosys, nextpnr-ice40 and IceStorm (`icepack`). CI installs these tools so
 documented RTL and native implementation are executed, not only linted.
+Bounded chip-control tests use Yosys and Icarus for both RTL and synthesized
+simulation against the original APB4 peripheral contract. Cover all byte
+strobes, exact waits, unmapped/RO errors, timer boundaries, set-dominant W1C,
+IRQ masks and asynchronous reset during traffic. Mutate actual RTL and require
+both models to expose defects; verify inclusive original generic-cell caps,
+fresh native replay and Store-only profile acceptance. Preserve authorized
+repair diffs and failed attempts; never claim physical PPA from generic cells.
+Final control acceptance also checks the Engineer report and its exact measured
+summary. Test missing/contradictory reports and that malformed reports fail before
+native replay. Verify event-count and cycle-witness recomputation, completed
+strobe coverage, and rejection of idle frames carrying impressive case labels.
+Exercise the registered host round-evidence hook in a fresh Store process,
+including read-only Reviewer prompts, explicit failures and isolation from
+legacy profiles; native checks must not depend on Reviewer shell permissions.
+Coverage is based on independent reference conditions, so faulty DUT responses
+remain diagnosable; absent stimulus coverage never qualifies as a diagnosis.
+General digital/chip verification and the FPGA checker use the same existing
+Argus host round-evidence API. Test the saved scoped contract against a separate
+execution directory, custom prerequisites, visible failures, and the absence of
+recorded-command replay or project/state mutation. Control keeps its dedicated
+native report check, without a second generic replay. These changes require that
+framework API; they do not activate or migrate historical project runtimes.
+Keep the hardware manifests' `argus_features` declarations aligned with those
+real dependencies. The feature-aware Store must refuse an unsupported selected
+dependency before changing installed files, preserve old installed versions
+when only a catalog update is incompatible, and expose the cause to operators.
+`min_argus` is informational; an older Store ignoring the new field is not an
+enforcement boundary. Do not automatically upgrade frozen project runtimes.
+CI pins the feature-aware Store implementation through `ARGUS_REF` in
+`.github/workflows/tests.yml`. The release-catalog test checks the actual Store
+parser and feature refusal against the current manifests; fresh Store-only
+native cases also require the declarations to survive installation.
+The framework's existing Linux suite separately consumes a fixed provider
+checkout through `ARGUS_VERTICALS_REPO`, without pip-installing these providers.
+Keep both CI references explicit when changing this contract. They are test
+inputs, not runtime migration instructions or scientific acceptance receipts.
+For general simulation/formal, test explicitly declared `supporting_files`
+(precision contracts, oracle dependencies and retained fixtures) for independent
+current copies and invalid paths. Binding inputs does not establish oracle
+independence or substitute for a project's scientific acceptance.
+Chip's legacy verification format uses its existing `source_hashes`, not the
+specialty's copies. Test all declared entries, duplicate/malformed bindings,
+original numerical contracts and evaluator/helper changes. An optional
+`verification/PLAN.json` and every `supporting_files` entry must be bound.
+Exercise the same failures through host review and final completion, without
+executing recorded commands. Preserve valid legacy records, exact numerical
+variant selection, integer command exits and finite unambiguous JSON.
 The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,
 including bad stage counts, intermediate fanout, wrong clocks, asynchronous
 release and raw-reset paths that digital simulation alone may miss. Keep the
@@ -95,6 +142,21 @@ CDC follow-up tests must show that swapped independently declared data inputs
 produce trace mismatches, not just structural failures, and that detailed native
 findings survive recomputation. Check live output-budget enforcement, terminated
 command exits and owned process cleanup; never weaken a threshold to pass.
+The shared native process monitor serves CDC, chip control, SPICE and
+PCB/package command execution. Preserve each caller's original time/output
+limits, native exits and diagnostics. Test observation exceptions and a parent
+that exits while its child still runs; cleanup must target only owned process
+POSIX groups. PCB/package consoles stream to disk with a live 32 MiB stop threshold,
+not an unbounded memory capture. Numerical acceptance is separate from these
+execution budgets.
+The five independent analog/RF/PCB/package/power workflows also supply scoped
+host evidence to read-only Reviewers. Cover all declared stages and actual
+native results, project immutability and unchanged task selection. Existing
+analog/power proof copies may be written only in separate runtime state.
+Exercise both original and extended studies in fresh Store-only processes;
+shared-helper source changes must invalidate reused numerical validation.
+When changing a shared directory, bump every manifest that bundles it so an
+unchanged provider version never silently receives different archive bytes.
 Analog references additionally require `ngspice`, also installed in CI. They
 execute native operating-point, DC, AC and transient analyses and compare
 waveform measurements against independent circuit equations. Keep parser-only

@@ -8,7 +8,9 @@ description: "Check original assumptions, native fields, heat balance and the li
 Read the original request and canonical contract independently of the
 Engineer's explanation. Confirm geometry, layer ordering, conductivity,
 source distribution, boundary conditions and original thresholds are unchanged.
-Run the supplied checker from the actual project.
+Read the host-executed checker result for the saved scope and actual project.
+Reviewer is read/search-only; missing or failed host evidence is incomplete.
+Do not claim shell execution or use an Engineer-authored Reviewer run instead.
 
 Inspect real native logs, completed-step fields, conformal interface evidence
 and heat balance. Where one-dimensional assumptions apply, independently

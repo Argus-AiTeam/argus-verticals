@@ -13,6 +13,20 @@ current prerequisites but do not recreate unchanged upstream work. Full delivery
 and legacy no-profile projects retain the complete target-level requirements.
 Do not request ceremonial N/A files for omitted stages.
 
+For the bounded `control` profile, apply the injected APB4 contract instead of
+the accelerator delivery checklists below. Engineer must already have authored
+`verification/CONTROL_REVIEW.md`, with required narrative and the exact measured
+JSON summary. Return missing or inaccurate deliverables to Engineer; do not
+write them on Engineer's behalf. Read the host-executed profile-specific checker
+result supplied as current raw evidence; your read/search-only tool surface does
+not need shell access. Missing or failed host evidence is incomplete, and an
+Engineer-authored record cannot substitute for it. Do not request a separate
+validation-only task or claim that you executed a shell command yourself. Also
+inspect semantic event counts and cycle witnesses, and distinguish reference
+stimulus coverage from a faulty DUT's behavior. Missing coverage is not a valid
+negative diagnosis. A fully evidenced negative diagnosis can finish, but design
+and repair must pass without changing original conditions.
+
 For `custom`, inspect requested goals and their resolved companions, not just a
 Manager narrative. RTL/PPA work includes definition, architecture, environment
 and verification but need not prototype, benchmark or certify full delivery.
@@ -20,14 +34,22 @@ Selecting `signoff` includes the full workflow and cannot weaken target-level
 checks. A scope change requires an operator handoff; old evidence is reusable
 only while its inputs, constraints and source bindings remain valid.
 
-Review the raw files and rerun decisive commands only when material evidence is
-missing, stale, contradictory, implausible, or not reproducible from the recorded
+For non-control verification, read the shared mixed-precision contract and the
+host check for the saved profile. It preserves custom scope requirements but is
+not independent proof of a numerical hypothesis. Check each claimed precision
+boundary and original tolerance against the project oracle, not just a passing
+unit test or a repaired import. An entry failure before numerical execution is
+unmeasured, not a rejected hypothesis. Do not acquire an experimental claim,
+replay a historical run or resume a daemon to fill an evidence gap.
+
+Review the raw files and request authorized decisive execution only when
+material evidence is missing, stale, contradictory, implausible, or not reproducible from the recorded
 command. Never certify from the Engineer summary alone. A successful canonical
 PPA record that binds the current RTL, verification, constraints, target library,
 toolchain, and raw log hashes is itself the decisive same-hash run: inspect those
 files and their consistency, but do not launch a second full Yosys/ABC PPA
-solely for ceremony. Rerun PPA only after a source/constraint/toolchain binding
-changes or when the canonical evidence is incomplete or suspect.
+solely for ceremony. Request PPA execution only after a source/constraint/toolchain
+binding changes or when the canonical evidence is incomplete or suspect.
 
 ## Delivery-level boundaries
 
@@ -101,6 +123,13 @@ failure logs/waves.
 
 Numerical accelerator review includes quality/tolerance, overflow, saturation,
 rounding, quantization scales, exceptional values, and cross-configuration parity.
+Check the exact operator and selected parameter mode, including group versus
+full-reduction results and bias placement. Do not substitute an earlier
+primitive's overflow/zero policy for the current project's acceptance.
+Inspect all declared `source_hashes` and any `verification/PLAN.json` supporting
+file closure; missing or changed numerical dependencies invalidate the record.
+The checker does not discover undeclared transitive imports or establish the
+scientific hypothesis from these bindings alone.
 
 Compile-only evidence, one happy-path test, stale output, or weakened expected
 values never suffice. Until verification passes, PPA and benchmark numbers are

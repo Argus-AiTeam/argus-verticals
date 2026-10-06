@@ -56,6 +56,10 @@ PYTHONPATH="$STORE_ROOT${PYTHONPATH:+:$PYTHONPATH}" python -m argus_verticals.an
 The role prompts include the **same canonical [evidence contract](evidence-contract.md)**
 and separate execution/read-only commands using Argus's own interpreter and
 provider loader.
+The host supplies the saved-scope checker result directly to the read/search-only
+Reviewer under the shared [review rules](../hardware/shared/hardware-review.md).
+Missing host evidence is incomplete; command examples are for Engineer or an
+execution-capable operator, not a request for Reviewer shell permissions.
 The checker does not depend on optional skill retrieval. Shared file/copy/number
 checks are bundled from `argus_verticals.hardware.shared`; they do not import
 digital verification rules or select a parent workflow.
@@ -111,6 +115,9 @@ waveform. Subsequent checks compare byte copies in external Argus runtime state;
 unchanged numerical evidence is reused across report-only changes. Source/tool
 changes invalidate reuse, and changed code in a running checker requires restart.
 This uses trusted host state, not a sandbox against processes allowed to edit it.
+The shared native process monitor is also part of the bound checker source.
+Timeouts, output-limit failures and observation errors clean up owned POSIX process groups;
+they cannot become a valid negative diagnosis.
 
 The new reference exercises a loaded RC network and an explicitly modeled diode
 at 17 conditions with all four analysis kinds. Independent expectations include

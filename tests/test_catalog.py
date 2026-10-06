@@ -84,6 +84,24 @@ PYPROJECT_REQUIREMENTS: set[str] = {
     for requirement in extra
 }
 
+
+@pytest.mark.parametrize("name", [
+    "digital_circuit", "digital_circuit_verification", "chip_design", "fpga_design",
+    "analog_mixed_signal", "rf_design", "pcb_design", "package_design", "power_electronics",
+])
+def test_host_review_providers_declare_actual_argus_features(name):
+    assert MANIFESTS[name]["argus_features"] == [
+        "composable-workflow-profiles", "vertical-routing-paths", "host-round-evidence",
+    ]
+
+
+@pytest.mark.parametrize("features", [None, "host-round-evidence", [""], [7], ["host-round-evidence"] * 2])
+def test_manifest_rejects_malformed_argus_features(features):
+    manifest = {**MANIFESTS["chip_design"], "argus_features": features}
+    with pytest.raises(build_catalog.CatalogError, match="argus_features"):
+        build_catalog.validate_against_schema(manifest, SCHEMA, "chip_design")
+
+
 @pytest.mark.parametrize("raw", ["hardware/digital_circuit", ("hardware",), ("Hardware", "digital_circuit"), ("hardware", 7)])
 def test_invalid_provider_routing_path_is_rejected(tmp_path, raw):
     source = tmp_path / "stages.py"
@@ -439,7 +457,30 @@ def _expected_members(name: str) -> list[str]:
     return sorted(members)
 
 
+def test_release_requirements_are_enforced_by_the_paired_store(release):
+    from argus.engineer import round_evidence
+    from argus.verticals import store
+
+    assert callable(getattr(store, "runtime_issues", None)), (
+        "The paired framework lacks Store feature enforcement; update ARGUS_REF in tests.yml"
+    )
+    _, payload = release
+    entries = store.validate_catalog(payload, local_source=False)["verticals"]
+    for name, manifest in MANIFESTS.items():
+        if not manifest.get("argus_features"):
+            continue
+        assert entries[name]["argus_features"] == manifest["argus_features"]
+        assert not store.runtime_issues(entries, name)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.delattr(round_evidence, "RoundEvidenceRequest")
+        for name, manifest in MANIFESTS.items():
+            if "host-round-evidence" in manifest.get("argus_features", []):
+                issues = store.runtime_issues(entries, name)
+                assert any("host-round-evidence" in issue and "RoundEvidenceRequest" in issue for issue in issues)
+
+
 @pytest.mark.parametrize("vertical,stage,directory,reference", [
+    ("chip_design", "verification", "verification/control", "run_control_reference"),
     ("digital_circuit_verification", "simulation", "verification/cdc", "run_cdc_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_reference"),
     ("analog_mixed_signal", "simulation", "analog", "run_robustness_reference"),
@@ -466,8 +507,8 @@ def test_hardware_archive_executes_and_checks_in_fresh_store_only_processes(rele
         pytest.skip("KiCad 9 is required for the archive-only executable check")
     if vertical == "package_design" and any(shutil.which(tool) is None for tool in ("gmsh", "ccx")):
         pytest.skip("Gmsh and CalculiX are required for the archive-only executable check")
-    if vertical == "digital_circuit_verification" and any(shutil.which(tool) is None for tool in ("yosys", "iverilog", "vvp")):
-        pytest.skip("Yosys and Icarus are required for the archive-only CDC check")
+    if vertical in {"chip_design", "digital_circuit_verification"} and any(shutil.which(tool) is None for tool in ("yosys", "iverilog", "vvp")):
+        pytest.skip("Yosys and Icarus are required for the archive-only digital checks")
     dist, payload = release
     local_catalog = json.loads(json.dumps(payload))
     for entry in local_catalog["verticals"].values():
@@ -505,6 +546,9 @@ from argus.verticals._base import load_vertical_contract
 vertical, stage, directory, reference = sys.argv[1:]
 installed = store.install(vertical, wait=True)
 assert installed["status"] == "done", installed
+requirements = store.load_catalog()["catalog"]["verticals"][vertical]["argus_features"]
+assert "host-round-evidence" in requirements
+assert store.installed()[vertical]["argus_features"] == requirements
 load_vertical_contract(vertical)
 module = "digital_circuit.verification" if vertical == "digital_circuit_verification" else vertical
 stages = importlib.import_module(f"argus_verticals.{module}.stages")
@@ -514,21 +558,98 @@ assert Path(stages.__file__).resolve().is_relative_to(store.store_root().resolve
 assert Path(evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
 project = Path.cwd() / "circuit"
 prepare_reference(project)
+if directory == "verification/control":
+    from argus.skills.vertical_select import persist_vertical
+    persist_vertical(project, "chip_design", workflow_profile="control")
 if directory == "power" or (directory == "analog" and reference == "run_robustness_reference"):
     os.environ["ARGUS_SKILL_SESSION_ROOT"] = str(Path.cwd() / "runtime-state")
 prompt = stages.render_role_prompt_fragment(
     role="engineer", operation="mission", stage=stage, scope="", project_root=project,
 )
 commands = re.findall(r"```bash\\n(.*?)\\n```", prompt, re.DOTALL)
-execute = [command for command in commands if ("run(Path.cwd())" if directory == "verification/cdc" else "run_analysis(Path.cwd())") in command]
-check = [command for command in commands if "completion_issues" in command and (directory != "verification/cdc" or "for_profile" in command)]
+digital_profile = directory in {"verification/cdc", "verification/control"}
+execute = [command for command in commands if ("run(Path.cwd())" if digital_profile else "run_analysis(Path.cwd())") in command]
+check = [command for command in commands if "completion_issues" in command and (not digital_profile or "for_profile" in command)]
 assert len(execute) == len(check) == 1
-for command in (execute[0], check[0]):
+for index, command in enumerate((execute[0], check[0])):
+    if directory == "verification/control" and index == 1:
+        missing = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
+        assert missing.returncode != 0 and "CONTROL_REVIEW.md" in missing.stdout
+        write_reference_report = importlib.import_module(f"argus_verticals.{module}.{reference}").write_reference_report
+        write_reference_report(project)
     result = subprocess.run(shlex.split(command), cwd=project, capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, (result.stdout, result.stderr)
 assert result.stdout.strip() == "[]", result.stdout
-record = json.loads((project / directory / ("RESULTS.json" if directory == "verification/cdc" else "results/RESULTS.json")).read_text())
-if directory == "verification/cdc":
+record = json.loads((project / directory / ("RESULTS.json" if digital_profile else "results/RESULTS.json")).read_text())
+from argus.core.pipeline_state import read_pipeline_state
+from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+from argus.skills.vertical_select import persist_vertical
+from argus_verticals.hardware.shared import review
+assert Path(review.__file__).resolve().is_relative_to(store.store_root().resolve())
+state = Path.cwd() / "runtime-state"
+profile = "control" if directory == "verification/control" else "cdc" if directory == "verification/cdc" else stage
+persist_vertical(state, vertical, workflow_profile=profile)
+selected = read_pipeline_state(state)
+before = {p.relative_to(project): p.read_bytes() for p in project.rglob("*") if p.is_file()}
+gathered = collect_round_evidence(RoundEvidenceRequest(project, state / "handoffs/store-check", 1))
+owner = "argus_verticals.chip_design." if profile == "control" else "argus_verticals.hardware.shared.review:"
+item, = [e for e in gathered if e.provider.startswith(owner)]
+assert '"issues": []' in item.reviewer_text
+assert read_pipeline_state(state) == selected
+assert before == {p.relative_to(project): p.read_bytes() for p in project.rglob("*") if p.is_file()}
+if directory == "verification/control":
+    assert not any(e.provider.startswith("argus_verticals.hardware.shared.review:") for e in gathered)
+    assert '"engineering_status": "passed"' in item.reviewer_text
+    assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
+    assert record["operation"] == "yosys-icarus-apb4-control" and len(record["commands"]) == 10
+    assert assessment["task_accepted"] and assessment["status"] == "passed"
+    assert len(assessment["configurations"]) == 2
+    assert all(c["synthesis"]["passed"] and all(s["passed"] for s in c["simulations"].values()) for c in assessment["configurations"].values())
+    # A separate synthetic legacy record checks installed bindings, not ACE science.
+    import hashlib
+    from argus_verticals.chip_design import evidence as chip_evidence
+    assert Path(chip_evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
+    legacy = Path.cwd() / "legacy-numerical"
+    files = {
+        "rtl/top.sv": "module top(input wire clk); endmodule\\n",
+        "reference/oracle.py": "ROUNDING = 'original-project-mode'\\n",
+        "design/numerical-contract.json": '{"overflow":"reject-nonfinite-output"}',
+        "verification/raw/check.log": "Synthetic record-consistency fixture, not a numerical run.\\n",
+        "design/RTL_MANIFEST.json": json.dumps({"source_files": ["rtl/top.sv"]}),
+        "verification/PLAN.json": json.dumps({"supporting_files": [
+            "reference/oracle.py", "design/numerical-contract.json",
+        ]}),
+    }
+    for name, content in files.items():
+        path = legacy / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    result_path = legacy / "verification/RESULTS.json"
+    result_path.write_text(json.dumps({
+        "status": "pass", "commands": [{"argv": [sys.executable, "-c",
+            "from pathlib import Path; Path('must-not-execute').touch()"], "exit_code": 0}],
+        "coverage": {"fixture_only": True}, "scenarios": ["source-binding"],
+        "numerical": {"fixture_only": True}, "raw_artifacts": ["verification/raw/check.log"],
+        "source_hashes": {name: hashlib.sha256((legacy / name).read_bytes()).hexdigest() for name in files},
+    }))
+    legacy_state = Path.cwd() / "legacy-state"
+    persist_vertical(legacy_state, "chip_design", workflow_profile="verification")
+    fragment = stages.render_role_prompt_fragment(
+        role="reviewer", operation="evaluate", stage="verification", scope="", project_root=legacy_state,
+    )
+    assert Path(stages.__file__).with_name("verification-contract.md").read_text() in fragment
+    contract = load_vertical_contract("chip_design", legacy_state)
+    assert not contract.completion_issues("verification", legacy, state_root=legacy_state)
+    (legacy / "reference/oracle.py").write_text("ROUNDING = 'changed-mode'\\n")
+    before = {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(legacy, legacy_state / "handoffs/task", 1))
+    host, = [e for e in gathered if e.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert "source_hashes is stale for reference/oracle.py" in host.reviewer_text
+    assert contract.completion_issues("verification", legacy, state_root=legacy_state)
+    assert before == {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    assert not (legacy / "must-not-execute").exists()
+elif directory == "verification/cdc":
+    assert '"workflow_profile": "cdc"' in item.reviewer_text
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())
     assert record["operation"] == "yosys-icarus-cdc-reset" and len(record["commands"]) == 7
     assert assessment["task_accepted"] and assessment["status"] == "passed"

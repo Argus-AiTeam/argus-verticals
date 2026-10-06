@@ -58,6 +58,112 @@ def test_missing_simulation_does_not_complete(tmp_path):
         complete_final_stage(tmp_path, reason="unexecuted")
 
 
+@pytest.mark.parametrize("vertical,profile", [
+    ("digital_circuit_verification", "simulation"), ("digital_circuit", "verification"),
+])
+def test_host_checks_selected_simulation_without_replaying_recorded_commands(work, tmp_path, vertical, profile):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+
+    state = tmp_path / "state"
+    persist_vertical(state, vertical, workflow_profile=profile)
+    marker = work / "must-not-acquire-a-claim"
+    edit_json(work, "verification/RESULTS.json", lambda data: data["runs"][0].update(
+        command=["python", "-c", f"open({str(marker)!r}, 'w').write('claimed')"],
+    ))
+    before = {p.relative_to(work): p.read_bytes() for p in work.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1))
+    host = [item for item in gathered if "Host-executed hardware evidence check" in item.reviewer_text]
+    assert len(host) == 1
+    assert '"issues": []' in host[0].reviewer_text
+    assert f'"workflow_profile": "{profile}"' in host[0].reviewer_text
+    assert not marker.exists()
+    assert before == {p.relative_to(work): p.read_bytes() for p in work.rglob("*") if p.is_file()}
+
+
+@pytest.mark.parametrize("failure", ["missing_copy", "changed_oracle", "invalid_path"])
+def test_supporting_numerical_inputs_must_be_bound_to_the_run(work, failure):
+    oracle = work / "reference/original_oracle.py"
+    oracle.parent.mkdir()
+    oracle.write_text("ROUNDING = 'round_once_after_full_reduction'\n")
+    edit_json(work, "verification/PLAN.json", lambda plan: plan.update(
+        supporting_files=["reference/original_oracle.py" if failure != "invalid_path" else "../outside.py"],
+    ))
+    result = json.loads((work / "verification/RESULTS.json").read_text())
+    shutil.copyfile(work / "verification/PLAN.json", work / result["inputs"]["verification/PLAN.json"])
+    if failure == "changed_oracle":
+        retained = "verification/inputs/original_oracle.py"
+        shutil.copyfile(oracle, work / retained)
+        result["inputs"]["reference/original_oracle.py"] = retained
+        (work / "verification/RESULTS.json").write_text(json.dumps(result))
+        oracle.write_text("ROUNDING = 'round_each_group'\n")
+    with pytest.raises(EvidenceError):
+        validate_simulation(work)
+
+
+@pytest.mark.parametrize("kind", ["simulation", "formal"])
+@pytest.mark.parametrize("mutation", [
+    "none", "missing_copy", "changed_oracle", "changed_fixture", "changed_contract",
+    "missing_source", "invalid_path", "empty_list", "duplicate", "null", "not_list",
+    "self_snapshot", "hardlink_snapshot",
+])
+def test_declared_numerical_inputs_bind_both_record_formats(work, kind, mutation):
+    files = {
+        "reference/original_oracle.py": "ROUNDING = 'round_once_after_full_reduction'\n",
+        "design/numerical-contract.json": '{"accumulator": "exact", "rounding": "RTZ"}\n',
+        "verification/fixtures/input.hex": "3c00 bc00\n",
+    }
+    results = json.loads((work / "verification/RESULTS.json").read_text())
+    for relative, content in files.items():
+        source = work / relative
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(content)
+        retained = f"verification/inputs/{source.name}"
+        shutil.copyfile(source, work / retained)
+        results["inputs"][relative] = retained
+    edit_json(work, "verification/PLAN.json", lambda data: data.update(supporting_files=list(files)))
+    (work / "verification/RESULTS.json").write_text(json.dumps(results))
+    if kind == "formal":
+        results = _formal_record(work)
+    plan = json.loads((work / "verification/PLAN.json").read_text())
+    oracle = "reference/original_oracle.py"
+    if mutation == "missing_copy":
+        results["inputs"].pop(oracle)
+    elif mutation in {"changed_oracle", "changed_fixture", "changed_contract"}:
+        relative = {
+            "changed_oracle": oracle, "changed_fixture": "verification/fixtures/input.hex",
+            "changed_contract": "design/numerical-contract.json",
+        }[mutation]
+        (work / relative).write_text("different consumed input\n")
+    elif mutation == "missing_source":
+        (work / oracle).unlink()
+    elif mutation == "invalid_path":
+        plan["supporting_files"] = ["../outside.py"]
+    elif mutation == "empty_list":
+        plan["supporting_files"] = []
+    elif mutation == "duplicate":
+        plan["supporting_files"] = [oracle, oracle]
+    elif mutation == "null":
+        plan["supporting_files"] = None
+    elif mutation == "not_list":
+        plan["supporting_files"] = oracle
+    elif mutation == "self_snapshot":
+        results["inputs"][oracle] = oracle
+    elif mutation == "hardlink_snapshot":
+        copy = work / results["inputs"][oracle]
+        copy.unlink()
+        copy.hardlink_to(work / oracle)
+    (work / "verification/PLAN.json").write_text(json.dumps(plan))
+    shutil.copyfile(work / "verification/PLAN.json", work / results["inputs"]["verification/PLAN.json"])
+    filename = "FORMAL.json" if kind == "formal" else "RESULTS.json"
+    (work / "verification" / filename).write_text(json.dumps(results))
+    validate = validate_formal if kind == "formal" else validate_simulation
+    if mutation == "none":
+        validate(work)
+    else:
+        with pytest.raises(EvidenceError):
+            validate(work)
+
+
 @pytest.mark.parametrize("mutation", ["missing_plan", "legacy_shape", "missing_run", "duplicate_run", "bad_exit", "zero_checks", "false_pass", "changed_source", "changed_plan", "self_snapshot", "external_snapshot"])
 def test_regression_rejects_incomplete_or_contradictory_evidence(work, tmp_path, mutation):
     result = json.loads((work / "verification/RESULTS.json").read_text())
@@ -113,7 +219,9 @@ def test_runtime_roles_receive_the_canonical_evidence_contract(tmp_path, role, o
     ))
     assert verification_evidence_contract() in prompt.role_banner
     assert stages.evidence_check_command("digital_circuit_verification", stage) in prompt.role_banner
-    assert "Reviewer: independently inspect the oracle and run the checker" in prompt.role_banner
+    assert "Reviewer: independently inspect the oracle and the host-executed checker result" in prompt.role_banner
+    assert "Reviewer does not need shell permission" in " ".join(prompt.role_banner.split())
+    assert "Rounding once after the full reduction" in prompt.role_banner
     assert "not the internal session-state directory" in prompt.role_banner
     assert prompt.stage_order == (stages.STAGE_ORDER if stage == "review" else (stage,))
 
@@ -149,7 +257,7 @@ def test_illegal_reference_parameter_is_rejected(work, parameter):
         assert "illegal FIFO parameters" in result.stdout
 
 
-def test_formal_checks_require_reached_covers_and_declared_assumptions(work):
+def _formal_record(work):
     plan = json.loads((work / "verification/PLAN.json").read_text())
     plan["formal"] = {
         "mode": "prove", "depth": 20, "assertions": ["ordering"], "covers": ["traffic"],
@@ -168,6 +276,11 @@ def test_formal_checks_require_reached_covers_and_declared_assumptions(work):
         "covers": {"traffic": {**run, "mode": "cover", "witness": "verification/cover.vcd"}},
     }
     (work / "verification/FORMAL.json").write_text(json.dumps(formal))
+    return formal
+
+
+def test_formal_checks_require_reached_covers_and_declared_assumptions(work):
+    formal = _formal_record(work)
     validate_formal(work)
     formal["covers"]["traffic"].pop("witness")
     (work / "verification/FORMAL.json").write_text(json.dumps(formal))

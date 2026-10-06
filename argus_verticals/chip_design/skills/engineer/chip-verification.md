@@ -51,3 +51,22 @@ functional correctness cannot stand in for timing, physical or foundry checks.
 Preserve commands, exit codes, model/source provenance, seeds, raw artifacts and
 coverage explanations in the existing verification schema. A summary-only pass,
 self-referential oracle or absent raw output must fail acceptance.
+
+The host provides the current completion check to the read/search-only Reviewer.
+Do not impersonate Reviewer execution or solve missing authority with another
+Engineer-only checking task. For numerical work, bind the original precision
+contract, oracle dependencies and retained inputs using the existing project
+records. In the chip format, optional `verification/PLAN.json.supporting_files`
+requires the plan and its declared dependencies in `RESULTS.json.source_hashes`;
+every extra binding is checked, not only RTL. The general verification specialty
+uses the same declaration spelling with its own independent input copies.
+Retain the original evaluator and selected operator/parameter contract. A
+single-group primitive's rounded or saturated output need not be the value a
+full projection consumes. Bias placement, negative underflow zero and overflow
+policies can differ across modes; matching one mode does not qualify another.
+
+Historical campaigns keep their own runtime, native task and experiment rules.
+Validate a repaired command entry and fresh-process import order with synthetic,
+no-claim fixtures before requesting a new scientific owner. Do not run a closed
+prefix, acquire a claim, replay a rejected attempt or relabel an unmeasured
+entry failure merely to produce a passing verification record.

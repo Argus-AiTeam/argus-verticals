@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 from argus_verticals.hardware.shared.evidence import EvidenceError, record
+from argus_verticals.hardware.shared.native import run_logged
 
 from .design import text, validate_plan
 
@@ -86,19 +87,26 @@ def execute(inputs: Path, plan: dict, output: Path, *, save=None) -> list[dict]:
         if save is not None:
             save(commands)
         try:
-            result = subprocess.run(
-                arguments, cwd=work, env=environment(output / "config"),
-                capture_output=True, text=True, timeout=180,
+            row["exit_code"], stopped = run_logged(
+                arguments, root=work, env=environment(output / "config"),
+                log=log, timeout=180,
             )
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            log.write_text(f"{kind}: {exc}\n", encoding="utf-8")
+        except OSError as exc:
+            with log.open("a", encoding="utf-8") as stream:
+                stream.write(f"{kind}: {exc}\n")
             raise EvidenceError(f"{kind}: native execution failed: {exc}") from exc
-        log.write_text(result.stdout + result.stderr or "(no console output)\n", encoding="utf-8")
-        row["exit_code"] = result.returncode
+        if not log.stat().st_size:
+            log.write_text("(no console output)\n", encoding="utf-8")
+        if stopped:
+            row["stop_reason"] = stopped
+            with log.open("a", encoding="utf-8") as stream:
+                stream.write(f"{stopped}\n")
         if save is not None:
             save(commands)
-        if result.returncode not in ((0, 5) if kind in ("erc", "drc") else (0,)):
-            raise EvidenceError(f"{kind}: native command exited {result.returncode}; inspect {log}")
+        if stopped:
+            raise EvidenceError(f"{kind}: {stopped}; inspect {log}")
+        if row["exit_code"] not in ((0, 5) if kind in ("erc", "drc") else (0,)):
+            raise EvidenceError(f"{kind}: native command exited {row['exit_code']}; inspect {log}")
     for relative in required:
         if relative != plan["design"]["board"] and (work / relative).read_bytes() != (inputs / relative).read_bytes():
             raise EvidenceError(f"native execution modified copied settings or dependencies: {relative}")

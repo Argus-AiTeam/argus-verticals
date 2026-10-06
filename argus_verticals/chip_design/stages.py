@@ -8,10 +8,17 @@ missions without pretending those delivery levels are interchangeable.
 
 from __future__ import annotations
 
+import shlex
+import sys
 from pathlib import Path
 
 from argus.core.vertical_contract import VerticalContract
 from argus.skills.stage_machine import ChecklistItem
+
+from argus_verticals.hardware.shared.evidence import evidence_check_command
+from argus_verticals.hardware.shared.review import verification_review_contract
+
+from .control_report import validate_completion
 
 if not hasattr(VerticalContract, "compose_workflow"):
     raise RuntimeError("chip_design 1.x requires Argus composable workflow support")
@@ -24,7 +31,11 @@ ARGUS_VERTICAL_API_VERSION = 1
 VERTICAL_ROUTING_PATH = ("hardware", "chip_design")
 VERTICAL_PURPOSE = (
     "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, "
-    "memory/DMA, interconnect and host integration; scoped architecture/RTL/PPA tasks "
+    "memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt "
+    "control design, repair and diagnosis. For the fixed apb4-timer-v1 contract, the control "
+    "profile already includes authorized RTL repair, native synthesis, both RTL/synthesized "
+    "simulations and generic-cell limits within verification; these generic counts are not "
+    "PPA and do not require custom rtl+ppa stages. Other requests use scoped architecture/RTL/PPA tasks "
     "or explicit full implementation and sign-off, not GPU software kernels"
 )
 VERTICAL_SKILLS = Path(__file__).resolve().parent / "skills"
@@ -59,6 +70,10 @@ WORKFLOW_PROFILES = {
     },
     "verification": {
         "purpose": "independently verify an existing chip subsystem against its frozen contract",
+        "stages": ("verification",),
+    },
+    "control": {
+        "purpose": "bounded APB4 register/timer/interrupt RTL design, authorized repair or diagnosis against original inputs; native RTL and synthesized simulation plus generic cell limits, not physical PPA",
         "stages": ("verification",),
     },
     "ppa": {
@@ -210,7 +225,7 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
                 "RTL outputs and state transitions are checked against an independent executable reference "
                 "or formally specified properties, including numerical tolerances and quality constraints."
             ),
-            evidence_hint="verification/PLAN.md, reference/, formal/, and verification/RESULTS.json",
+            evidence_hint="verification/PLAN.md, reference/, formal/, and verification/RESULTS.json; control profile uses CONTROL_PLAN.json and control/ASSESSMENT.json",
         ),
         ChecklistItem(
             id="verification.coverage-stress",
@@ -224,9 +239,10 @@ CHECKLIST_ITEMS: dict[str, tuple[ChecklistItem, ...]] = {
             id="verification.reproducible-green",
             statement=(
                 "Fresh simulator/formal commands exit successfully, the referenced raw files exist, "
-                "and passing summaries contain no contradictory failures."
+                "and passing summaries contain no contradictory failures. A control-profile "
+                "diagnosis may retain real failures; control design/repair must pass both RTL and synthesized simulation."
             ),
-            evidence_hint="verification/RESULTS.json and verification/raw/",
+            evidence_hint="verification/RESULTS.json and verification/raw/; control profile uses verification/control/ and the Engineer-authored verification/CONTROL_REVIEW.md",
         ),
     ),
     "ppa": (
@@ -345,6 +361,17 @@ def stage_completion_issues(
     stage_name = (stage or "").strip().lower()
     root = Path(project_root)
 
+    if workflow_profile == "control":
+        from argus_verticals.hardware.shared.evidence import EvidenceError as ControlEvidenceError
+
+        if stage_name != "verification":
+            return ("control profile only executes its bounded verification stage",)
+        try:
+            validate_completion(root)
+        except ControlEvidenceError as exc:
+            return (str(exc),)
+        return ()
+
     if stage_name == "environment":
         from .environment_audit import check
 
@@ -390,13 +417,71 @@ def stage_completion_issues(
     return tuple(issues)
 
 
+def control_check_command() -> str:
+    script = (
+        "from pathlib import Path; from argus.verticals._base import load_vertical_contract; "
+        "contract = load_vertical_contract('chip_design').for_profile('control'); "
+        "issues = contract.completion_issues('verification', Path.cwd()); "
+        "print(list(issues)); raise SystemExit(bool(issues))"
+    )
+    return f"{shlex.quote(sys.executable)} -c {shlex.quote(script)}"
+
+
+def render_role_prompt_fragment(
+    *, role: str, operation: str, stage: str, scope: str, project_root: Path | None,
+) -> str:
+    if stage != "verification":
+        return ""
+    from argus.core.pipeline_state import read_pipeline_state
+
+    if project_root is None or read_pipeline_state(project_root).get("workflow_profile") != "control":
+        return (
+            "Existing accelerator verification retains its original source-bound verification schema; "
+            "do not substitute the APB4 control adapter or invent physical results.\n\n"
+            + verification_review_contract()
+            + "\n" + Path(__file__).with_name("verification-contract.md").read_text(encoding="utf-8")
+            + "\nFor Engineer debugging or an execution-capable operator, the legacy record check is:\n"
+            f"```bash\n{evidence_check_command('chip_design', stage)}\n```\n"
+            "The host uses the saved profile, including any custom RTL-manifest requirements; "
+            "the standalone legacy check is not approval of that composed scope.\n"
+        )
+    script = (
+        "from pathlib import Path; from argus.verticals._base import load_vertical_contract; "
+        "load_vertical_contract('chip_design'); "
+        "from argus_verticals.chip_design.control import run; run(Path.cwd())"
+    )
+    return (
+        "Only for the selected control profile, use this original-input contract. "
+        "Legacy accelerator verification uses its existing evidence requirements.\n\n"
+        + Path(__file__).with_name("control-contract.md").read_text(encoding="utf-8")
+        + "\nEngineer: execute the native study from the execution project, not session state:\n"
+        f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
+        "Engineer: before requesting review, author verification/CONTROL_REVIEW.md with all four "
+        "required sections and the exact measured JSON summary. The runner does not write or approve "
+        "your report. Reviewer does not author missing Engineer reports. "
+        "Reviewer: inspect original requirements, raw evidence, the Engineer's report and authorized repair changes. "
+        "The host runs the profile-specific read-only checker before review and provides its current result "
+        "as raw evidence. Use that host evidence, not Engineer testimony; your read/search-only tools need "
+        "no shell permission. Missing or failed host evidence remains incomplete, and must not be replaced "
+        "by an Engineer-authored Reviewer execution record. Do not request a separate validation-only task. "
+        "For Engineer debugging or an execution-capable operator, the equivalent command is:\n"
+        f"```bash\n{control_check_command()}\n```\n"
+        "Manager/Planner preserve all original constraints. Design/repair must pass; "
+        "only an originally requested diagnose goal may conclude with engineering failure. "
+        "Neither passing RTL alone nor generic synthesis statistics establish physical PPA.\n"
+    )
+
+
 def role_banner(role: str) -> str:
     """Frame roles around auditable chip-design evidence."""
     common = (
         "MISSION TYPE: CHIP / ACCELERATOR DESIGN. Each claim requires checkable "
         "evidence. Use the active workflow profile: architecture, RTL, verification, "
-        "PPA, prototype, benchmark or explicitly full design. If no profile was saved, "
+        "PPA, prototype, benchmark, bounded APB4 control, or explicitly full design. If no profile was saved, "
         "preserve the legacy full flow. Do not demand outputs from omitted stages. "
+        "For the fixed apb4-timer-v1 peripheral contract, control is a self-contained "
+        "implementation/repair and native verification profile, not verification-only reuse. "
+        "Generic synthesis cell counts do not request a separate PPA stage. "
         "This is NOT ordinary software work or GPU kernel programming. "
         "Delivery level describes the target; only completed, reviewed stages may "
         "be claimed as delivered. "
@@ -476,7 +561,7 @@ def role_banner(role: str) -> str:
     if normalized == "reviewer":
         return common + (
             "Act as an independent architecture, verification, implementation, benchmark, and "
-            "tapeout-readiness reviewer. Rerun decisive commands; challenge workload and memory "
+            "tapeout-readiness reviewer. Inspect decisive execution evidence; challenge workload and memory "
             "assumptions, reference independence, CDC/reset/protocol behavior, timing/area/power "
             "constraints, baseline fairness, quality floors, IP licensing, raw file hashes, "
             "and intervention claims. Decline different-node PPA comparisons, simulation presented "

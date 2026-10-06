@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from argus_verticals.hardware.shared.evidence import EvidenceError
+from argus_verticals.hardware.shared.native import run_logged
 
 from .mesh import Mesh, deck, geometry, read_mesh
 from .model import temperature_offset
@@ -62,16 +63,25 @@ def execute(model: dict, run: dict, output: Path, *, save=None) -> list[dict]:
         if save is not None:
             save(commands)
         try:
-            result = subprocess.run(arguments(tool), cwd=output, env=env, capture_output=True, text=True, timeout=180)
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            log.write_text(f"{tool}: {exc}\n", encoding="utf-8")
+            row["exit_code"], stopped = run_logged(
+                arguments(tool), root=output, env=env, log=log, timeout=180,
+            )
+        except OSError as exc:
+            with log.open("a", encoding="utf-8") as stream:
+                stream.write(f"{tool}: {exc}\n")
             raise EvidenceError(f"{tool} execution failed: {exc}") from exc
-        message = result.stdout + result.stderr
-        log.write_text(message or "(no console output)\n", encoding="utf-8")
-        row["exit_code"] = result.returncode
+        if stopped:
+            row["stop_reason"] = stopped
+            with log.open("a", encoding="utf-8") as stream:
+                stream.write(f"{stopped}\n")
         if save is not None:
             save(commands)
-        if result.returncode != 0 or re.search(r"^\s*(?:Error\s*:|\*ERROR)", message, re.MULTILINE | re.IGNORECASE):
+        if stopped:
+            raise EvidenceError(f"{tool}: {stopped}; inspect {log}")
+        message = log.read_text(encoding="utf-8")
+        if not message:
+            log.write_text("(no console output)\n", encoding="utf-8")
+        if row["exit_code"] != 0 or re.search(r"^\s*(?:Error\s*:|\*ERROR)", message, re.MULTILINE | re.IGNORECASE):
             raise EvidenceError(f"{tool} did not complete successfully; inspect {log}")
         if tool == "calculix" and "Job finished" not in message:
             raise EvidenceError("CalculiX did not report a finished job")

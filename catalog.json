@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "935bf2013a96be58c9f39ab92bef8f332f291ae2",
+    "commit": "2bdd514aae1a82b7c9c4ce44617610fbb2834258",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -32,6 +32,11 @@
     },
     "analog_mixed_signal": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -52,17 +57,22 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 147475,
+      "size_bytes": 157723,
       "skill_parents": [],
       "tags": [
         "hardware",
         "analog",
         "spice"
       ],
-      "version": "0.2.2"
+      "version": "0.2.4"
     },
     "chip_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "composable-workflow-profiles",
@@ -71,8 +81,8 @@
       "paths": [
         "argus_verticals/chip_design"
       ],
-      "purpose": "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, memory/DMA, interconnect and host integration; scoped architecture/RTL/PPA tasks or explicit full implementation and sign-off, not GPU software kernels",
-      "purpose_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，可选局部任务或完整交付流程",
+      "purpose": "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt control design, repair and diagnosis. For the fixed apb4-timer-v1 contract, the control profile already includes authorized RTL repair, native synthesis, both RTL/synthesized simulations and generic-cell limits within verification; these generic counts are not PPA and do not require custom rtl+ppa stages. Other requests use scoped architecture/RTL/PPA tasks or explicit full implementation and sign-off, not GPU software kernels",
+      "purpose_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，含有界 APB4 寄存器／定时器／中断设计与修复",
       "python_requirements": [],
       "requires": [
         "digital_circuit"
@@ -81,8 +91,10 @@
         "hardware",
         "chip_design"
       ],
-      "shared": [],
-      "size_bytes": 150800,
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 244000,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -92,7 +104,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.1.0"
+      "version": "1.3.1"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -127,6 +139,11 @@
     },
     "digital_circuit": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "composable-workflow-profiles",
@@ -143,8 +160,10 @@
         "hardware",
         "digital_circuit"
       ],
-      "shared": [],
-      "size_bytes": 95271,
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 110190,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -152,7 +171,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.1.0"
+      "version": "1.1.3"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
@@ -189,6 +208,11 @@
     },
     "digital_circuit_verification": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -211,7 +235,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 92333,
+      "size_bytes": 103753,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -221,7 +245,7 @@
         "formal",
         "cdc"
       ],
-      "version": "0.2.2"
+      "version": "0.2.6"
     },
     "fiction_writing": {
       "api_version": 1,
@@ -258,6 +282,11 @@
     },
     "fpga_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -277,8 +306,10 @@
         "hardware",
         "fpga_design"
       ],
-      "shared": [],
-      "size_bytes": 31881,
+      "shared": [
+        "argus_verticals/hardware/shared"
+      ],
+      "size_bytes": 45851,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"
@@ -288,7 +319,7 @@
         "fpga",
         "verification"
       ],
-      "version": "0.1.1"
+      "version": "0.1.4"
     },
     "kernelbench": {
       "api_version": 1,
@@ -487,6 +518,11 @@
     },
     "package_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -508,17 +544,22 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 88529,
+      "size_bytes": 99588,
       "skill_parents": [],
       "tags": [
         "hardware",
         "package",
         "thermal"
       ],
-      "version": "0.2.0"
+      "version": "0.2.2"
     },
     "pcb_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -540,14 +581,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 101229,
+      "size_bytes": 112263,
       "skill_parents": [],
       "tags": [
         "hardware",
         "pcb",
         "kicad"
       ],
-      "version": "0.2.0"
+      "version": "0.2.2"
     },
     "physics": {
       "api_version": 1,
@@ -577,6 +618,11 @@
     },
     "power_electronics": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -599,14 +645,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 139742,
+      "size_bytes": 150227,
       "skill_parents": [],
       "tags": [
         "hardware",
         "power",
         "spice"
       ],
-      "version": "0.2.2"
+      "version": "0.2.4"
     },
     "prose": {
       "api_version": 1,
@@ -675,6 +721,11 @@
     },
     "rf_design": {
       "api_version": 1,
+      "argus_features": [
+        "composable-workflow-profiles",
+        "vertical-routing-paths",
+        "host-round-evidence"
+      ],
       "has_skills": true,
       "maintainers": [],
       "min_argus": "vertical-routing-paths",
@@ -697,14 +748,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 117113,
+      "size_bytes": 127510,
       "skill_parents": [],
       "tags": [
         "hardware",
         "rf",
         "network-analysis"
       ],
-      "version": "0.2.1"
+      "version": "0.2.3"
     },
     "speedrun": {
       "api_version": 1,

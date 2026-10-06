@@ -38,6 +38,7 @@ its name and required stage order. It does not edit global provider stages.
 | `architecture` | definition, architecture |
 | `rtl` | definition, architecture, environment, rtl, verification |
 | `verification` | verification |
+| `control` | verification; bounded original-input APB4 register/timer/IRQ flow |
 | `ppa` | verification, ppa |
 | `prototype` | verification, ppa, prototype |
 | `benchmark` | verification, ppa, benchmark |
@@ -47,6 +48,12 @@ An omitted stage is outside scope, not skipped/accepted evidence. Its files are
 not required. Selected stages retain their existing checks and independent
 review; existing-design profiles need valid current inputs. Changing profiles
 requires a new operator-authorized handoff. No existing project is auto-migrated.
+
+The `control` profile has its own [fixed peripheral contract](../control-contract.md)
+and native runner/checker. It is not a shortcut for arbitrary accelerator or
+physical design acceptance. Original requirements and cell caps remain immutable;
+authorized repair edits RTL only and must pass RTL and synthesized simulation.
+Generic cell counts do not satisfy the legacy physical PPA stage.
 
 Delivery level describes the target, not a claim that all work toward it was
 completed. An architecture study targeting FPGA remains an architecture result.

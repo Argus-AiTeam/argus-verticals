@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from argus_verticals.hardware.shared import evidence
+from argus_verticals.hardware.shared import evidence, native
 from argus_verticals.hardware.spice import batch, raw
 from argus_verticals.hardware.spice import validation as cached
 
@@ -15,6 +15,7 @@ def _implementation_sources() -> dict[str, Path]:
     return {
         **{f"implementation/analog/{path.name}": path for path in Path(__file__).parent.glob("*.py")},
         "implementation/shared/evidence.py": Path(evidence.__file__),
+        "implementation/shared/native.py": Path(native.__file__),
         **{f"implementation/spice/{path.name}": path for path in Path(raw.__file__).parent.glob("*.py")},
     }
 

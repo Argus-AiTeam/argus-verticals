@@ -17,6 +17,21 @@ completion destination and ownership. Include versioning only where the actual
 interface needs evolution; do not add a general schema framework to a tiny block.
 Invalid values must produce explicit errors, not silent reinterpretation.
 
+For the opt-in bounded APB4 `control` profile, use the injected
+`apb4-timer-v1` contract rather than inventing descriptor or accelerator models.
+Respect exact waits, all byte strobes, read-only/error semantics and old-state
+timer ordering; timer-event set dominates simultaneous W1C. Repair only authorized
+RTL, retain failed attempts and verify both RTL and synthesized models with the
+original configuration matrix and generic-cell cap. This is not physical PPA.
+Deliver `verification/CONTROL_REVIEW.md` before requesting review, with the
+required narrative sections and exact measured summary from `control_report.summary`.
+The final checker requires this report; Reviewer does not write missing
+Engineer deliverables. Confirm positive semantic event counts and completed
+write-strobe coverage, not only scenario labels or a passing simulator exit.
+The host independently checks current evidence after your turn and supplies
+the result to Reviewer. Do not impersonate Reviewer execution or create a
+separate validation-only task to work around the Reviewer's read-only tools.
+
 ## Ownership and coherence
 
 Define who owns buffers while a command is in flight. Host virtual addresses are

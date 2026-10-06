@@ -7,8 +7,11 @@ description: "Verify native input identity, engineering assumptions and manufact
 
 Read the original request and canonical contract before the Engineer's
 conclusion. Check that selected operations, error/warning bounds, layer list
-and drill counts were not weakened. Run the supplied checker from the actual
-project; inspect retained native JSON and logs, not only the summary.
+and drill counts were not weakened. Read the host-executed checker result for
+the saved scope and actual execution project; inspect retained native JSON
+and logs, not only the summary. Reviewer is read/search-only. Missing or failed
+host evidence is incomplete; do not claim shell execution or accept an
+Engineer-authored Reviewer run as its replacement.
 
 Confirm the project settings and local library closure match current sources.
 Inspect component/pad mapping, power/return assumptions, outline and holes at

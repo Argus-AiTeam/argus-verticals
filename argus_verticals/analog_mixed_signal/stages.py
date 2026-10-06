@@ -13,6 +13,7 @@ from argus_verticals.hardware.shared.evidence import (
     project_file,
     record,
 )
+from argus_verticals.hardware.shared.review import hardware_review_contract
 
 from .evidence import PLAN, validate_model, validate_simulation, validate_specification
 from .study import resolve_study
@@ -74,18 +75,19 @@ def render_role_prompt_fragment(
             "print(run_analysis(Path.cwd()))"
         )
         execution = (
-            "\nIf the required simulations have not been performed, run this from the "
+            "\nEngineer: if the required simulations have not been performed, run this from the "
             "execution project. It requires analog/PLAN.json and refuses existing results:\n\n"
             f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
         )
     return (
         f"## Analog work: {stage}\nApply only the selected scope and requested analysis kinds. "
         "The examples below define record formats, not extra work to perform.\n\n"
-        + locations + "\n" + contract + execution
+        + locations + "\n" + contract + execution + "\n" + hardware_review_contract()
         + "\nEngineer: create records from actual execution. Reviewer: independently "
         "check circuit assumptions, model validity, numerical tolerances and native results "
         "before approving them. Manager/Planner must preserve the stated acceptance conditions.\n"
-        "Run this read-only check from the execution project directory; [] and exit 0 "
+        "For Engineer debugging or an execution-capable operator, run this read-only check "
+        "from the execution project directory; [] and exit 0 "
         "mean the stage's record checks passed, not that the physical circuit is qualified:\n\n"
         f"```bash\n{evidence_check_command('analog_mixed_signal', stage)}\n```\n"
         "Explain missing inputs/tools or failed bounds explicitly. Never manufacture "

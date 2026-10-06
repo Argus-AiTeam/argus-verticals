@@ -11,8 +11,11 @@ ranges and the physical meaning of the excitation. Confirm that every named
 condition corresponds to the actual deck, not merely its filename. A model
 that omits saturation or noise cannot establish those aspects of performance.
 
-Run the supplied read-only stage checker from the execution project directory.
-Inspect native ngspice output and the exact commands as well. Passing copies
+Read the host-executed stage checker result for the saved scope and actual
+execution project. Reviewer is read/search-only; do not claim shell execution.
+Missing or failed host evidence is incomplete, not a request to impersonate
+Reviewer through another Engineer run. Inspect native ngspice output and the
+exact commands as well. Passing copies
 and numeric bounds establish consistency, not genuine execution or adequate
 physics. Verify the comparison is independent and the declared tolerance is
 justified. Look for post-hoc bounds, stale waveforms, relaxed solver settings

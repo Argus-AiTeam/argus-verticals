@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from argus_verticals.hardware.shared.evidence import EvidenceError
+from argus_verticals.hardware.shared.native import run_monitored
 
 
 def version() -> str:
@@ -30,29 +31,23 @@ def run_batch(command: list[str], cwd: Path, output: Path, files: tuple[str, ...
     row = {"command": command, "cwd": str(cwd), "log": str(output / "ngspice.log"), "exit_code": None}
     if save:
         save(row)
-    stopped = ""
+    def limit(deadline: float) -> str:
+        if time.monotonic() >= deadline:
+            return f"native simulation exceeded {timeout:g} seconds"
+        if sum((output / name).stat().st_size for name in files if (output / name).exists()) > output_budget:
+            return f"native output exceeded {output_budget} bytes"
+        return ""
+
     try:
         with (output / "console.log").open("w") as console:
-            with subprocess.Popen(command, cwd=cwd, env=env, stdout=console, stderr=subprocess.STDOUT) as process:
-                deadline = time.monotonic() + timeout
-                while process.poll() is None:
-                    if time.monotonic() >= deadline:
-                        stopped = f"native simulation exceeded {timeout:g} seconds"
-                    elif sum((output / name).stat().st_size for name in files if (output / name).exists()) > output_budget:
-                        stopped = f"native output exceeded {output_budget} bytes"
-                    if stopped:
-                        process.kill()
-                        break
-                    time.sleep(0.05)
-                row["exit_code"] = process.wait()
+            row["exit_code"], stopped = run_monitored(
+                command, root=cwd, stream=console, env=env,
+                deadline=time.monotonic() + timeout, limit=limit,
+            )
     except OSError as exc:
         raise EvidenceError(f"ngspice execution failed: {exc}") from exc
     if save:
         save(row)
-    if time.monotonic() >= deadline:
-        stopped = f"native simulation exceeded {timeout:g} seconds"
-    if sum((output / name).stat().st_size for name in files if (output / name).exists()) > output_budget:
-        stopped = f"native output exceeded {output_budget} bytes"
     if stopped or row["exit_code"] != 0:
         raise EvidenceError(f"{stopped or 'ngspice failed'}; inspect {output}")
     return row

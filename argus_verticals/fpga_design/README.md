@@ -48,8 +48,11 @@ programming. Supported part flags are `hx1k`, `hx8k`, `lp8k`, `up5k`.
 Use the verification specialty's [evidence contract](../digital_circuit/verification/evidence-contract.md)
 for `PLAN.json` / `RESULTS.json`. Its canonical text is included in every role's
 verification-stage prompt, along with a read-only check of this FPGA provider.
-The
-result's input snapshots must additionally include the target and every target
+The host's existing round-evidence hook runs the selected stage checker and
+provides the result to the read/search-only Reviewer; no Reviewer shell or
+board programming is required. This is evidence checking, not a new native
+implementation or scientific execution. The result's input snapshots must
+additionally include the target and every target
 source. Changing a clock target or source invalidates that result. The included
 FIFO regression demonstrates the RTL/verification path; adapt the top-level
 ports and independently chosen cases for a board design.

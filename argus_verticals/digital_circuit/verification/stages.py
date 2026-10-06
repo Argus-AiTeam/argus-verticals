@@ -6,6 +6,8 @@ from pathlib import Path
 from argus.skills.stage_machine import ChecklistItem
 from argus.verticals._registry import VerticalPlugin
 
+from argus_verticals.hardware.shared.review import verification_review_contract
+
 from .cdc import validate as validate_cdc
 from .evidence import (
     EvidenceError,
@@ -89,11 +91,13 @@ def render_role_prompt_fragment(
         "execution evidence or instructions to run omitted stages.\n\n"
         + verification_evidence_contract()
         + execute
+        + "\n" + verification_review_contract()
         + "\nEngineer: produce these records from actual execution before submitting results for review. "
-        "Reviewer: independently inspect the oracle and run the checker before "
+        "Reviewer: independently inspect the oracle and the host-executed checker result before "
         "returning done. Manager/Planner: preserve these acceptance requirements. "
         "A passing simulation or a RESULTS.md report alone is not completion.\n"
-        "For other profiles, run this read-only check from the execution project directory, not the "
+        "For Engineer debugging or an execution-capable operator in other profiles, run this read-only "
+        "check from the execution project directory, not the "
         "internal session-state directory; [] with exit code 0 means the stage's "
         "record checks passed, not that oracle independence has been established:\n\n"
         f"```bash\n{evidence_check_command('digital_circuit_verification', stage)}\n```\n"

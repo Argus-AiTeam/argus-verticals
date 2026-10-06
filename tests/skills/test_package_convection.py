@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -199,16 +198,16 @@ def test_native_two_material_stack_has_series_conduction_and_film_resistance(pla
 
 
 def test_finished_message_does_not_override_nonzero_solver_exit(planned, monkeypatch):
-    execute = native.subprocess.run
+    execute = native.run_logged
 
     def nonzero_solver(command, **kwargs):
-        result = execute(command, **kwargs)
+        exit_code, stopped = execute(command, **kwargs)
         if command == native.arguments("calculix"):
-            assert result.returncode == 0 and "Job finished" in result.stdout
-            return subprocess.CompletedProcess(command, 201, result.stdout, result.stderr)
-        return result
+            assert exit_code == 0 and "Job finished" in kwargs["log"].read_text()
+            return 201, stopped
+        return exit_code, stopped
 
-    monkeypatch.setattr(native.subprocess, "run", nonzero_solver)
+    monkeypatch.setattr(native, "run_logged", nonzero_solver)
     with pytest.raises(EvidenceError, match="did not complete successfully"):
         run_analysis(planned)
     result = load(planned, RESULTS)

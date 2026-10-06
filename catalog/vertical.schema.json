@@ -106,9 +106,18 @@
       }
     },
     "min_argus": {
-      "description": "Free-form label of the oldest Argus commit family this vertical is written for. The store compares by feature probe, not by this string.",
+      "description": "Informational label of the oldest Argus commit family this vertical is written for; not a machine-enforced version constraint.",
       "type": "string",
       "minLength": 1
+    },
+    "argus_features": {
+      "description": "Required framework capabilities checked by a feature-aware Store without importing the plugin. Older Stores ignore this field; update the Store separately before relying on it.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
     }
   }
 }

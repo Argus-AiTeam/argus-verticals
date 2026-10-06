@@ -11,6 +11,7 @@ from argus_verticals.hardware.shared.evidence import (
     evidence_check_command,
     project_file,
 )
+from argus_verticals.hardware.shared.review import hardware_review_contract
 
 from .evidence import validate_analysis, validate_model, validate_specification
 
@@ -62,18 +63,19 @@ def render_role_prompt_fragment(
             "from argus_verticals.rf_design.run_analysis import run_analysis; print(run_analysis(Path.cwd()))"
         )
         execution = (
-            "\nTo execute the prepared study, run this from the actual project. Existing "
+            "\nEngineer: to execute the prepared study, run this from the actual project. Existing "
             "rf/results is never overwritten; preserve prior results before an intentional rerun.\n"
             f"```bash\n{shlex.quote(sys.executable)} -c {shlex.quote(script)}\n```\n"
         )
     return (
         f"## RF work: {stage}\nWork only on the selected scope and requested networks.\n\n"
         + Path(__file__).with_name("evidence-contract.md").read_text(encoding="utf-8")
-        + execution
+        + execution + "\n" + hardware_review_contract()
         + "\nEngineer: execute the declared calculations. Reviewer: independently check "
         "the reference planes, models, conventions and numerical comparisons. Manager/Planner "
         "must preserve the original acceptance conditions.\n"
-        "Use this read-only checker from the execution project, not the session-state directory; "
+        "For Engineer debugging or an execution-capable operator, use this read-only checker "
+        "from the execution project, not the session-state directory; "
         "[] and exit 0 mean the declared task goal was accepted, not physical certification. "
         "In robustness diagnosis, inspect ASSESSMENT.json: a valid conclusion may report failed "
         "original limits. Design must pass every original check and required margin.\n"

@@ -16,6 +16,13 @@ The `benchmark/` subpackage remains a separate fixed-harness vertical
 (`digital_circuit_benchmark`) that inherits this skill tree without changing its
 benchmark contract.
 
+During verification, the host runs the existing scoped completion checker and
+supplies its result to the read/search-only Reviewer. The shared
+[review contract](../hardware/shared/verification-review.md) distinguishes
+numerical/RTL/physical claims and preserves project-specific precision and
+continuation rules. This bridge does not replay project commands, strengthen
+the legacy checker into an independent numerical oracle or migrate old tasks.
+
 - `stages.py`: contract, checklists, completion checks (uses `argus.verticals.path_evidence`).
 - `evidence.py`: fail-closed evidence checks (interface, preflight, verification sources) also consumed by `chip_design` and `benchmark/`.
 - `skills/engineer/` (RTL verification, error-guided repair, spec-guidance registry, benchmark execution), `skills/reviewer/`.

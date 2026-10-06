@@ -26,6 +26,10 @@ parts or hardware approval.
 Custom scopes retain `review`'s simulation obligation without forcing unrelated
 requirements or model stages. Specification/model stages do not execute a solver.
 All roles receive the same [canonical contract](evidence-contract.md).
+The shared [review rules](../hardware/shared/hardware-review.md) give a
+read/search-only Reviewer the current host-executed checker result. The host
+uses the saved task scope and existing external validation storage; it does
+not acquire experimental claims or authorize physical energizing.
 
 ```bash
 pip install -e ".[power]"
@@ -56,6 +60,10 @@ The original plan format and scoped workflow remain compatible.
 Version 0.2.2 shares bounded SPICE process execution and byte-bound validation
 storage with the analog domain. Converter physics, limits, measurements and
 workflow ownership are unchanged.
+The shared monitor now cleans up owned native POSIX process groups on timeout,
+output limits, observation errors and unexpected surviving children. Its source
+is included in byte-bound validation reuse. Existing per-call and full-study
+budgets are unchanged; incomplete execution cannot qualify as a diagnosis.
 
 Version 0.2.1 retains successful numerical validation in the Argus session's
 runtime state, outside the execution project. Simulation/review checks and

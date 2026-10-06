@@ -47,6 +47,8 @@ inputs cannot hide behind identical stimuli. Structural findings name the native
 cell/bit and expected versus observed clock/reset connection, and keep inspecting
 remaining direct stages after a defect. Native time/output limits are monitored
 during execution; terminated commands retain their actual exits and reasons.
+The process monitor is shared with bounded chip-control execution; CDC's limits,
+stimuli and evidence format remain unchanged.
 The canonical contract below defines the two/three-stage adapter boundary,
 diagnosis versus design goals, independent raw traces and native replay. Use
 `"cdc": true` in an existing general/FPGA verification plan only when explicitly
@@ -83,9 +85,18 @@ simulation and formal record shapes with examples. The provider injects this
 same document into the Manager, Planner, Engineer and Reviewer stage prompts;
 acceptance requirements do not depend on optional skill retrieval. It also
 supplies a read-only check using Argus's own Python and vertical loader, which
-works with Store-only installations without manual namespace setup. Engineer
-and Reviewer must run it from the execution project before approval. A
+works with Store-only installations without manual namespace setup. The existing
+host round-evidence hook runs the selected stage/profile checker on the execution
+project and sends the result directly to the read/search-only Reviewer. It does
+not replay commands from general records or start a scientific experiment. A
 Reviewer `done` or passing simulation alone cannot replace provider acceptance.
+
+Optional `supporting_files` in the plan binds original precision contracts,
+oracle dependencies and retained fixtures to simulation/formal input copies.
+Missing or changed declared inputs invalidate the result. The shared
+[review contract](../../hardware/shared/verification-review.md) covers
+mixed-precision boundaries and no-claim continuation; it does not replace a
+project's numerical evaluator or authorize an existing campaign to migrate.
 
 These checks establish consistency and reject incomplete execution records;
 they cannot establish that an arbitrary testbench is independent, that manually

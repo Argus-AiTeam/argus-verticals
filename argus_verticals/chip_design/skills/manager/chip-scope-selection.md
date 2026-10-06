@@ -73,3 +73,12 @@ handoff to change the profile or target. Do not silently run additional stages
 when prerequisites are missing. Explain the gap, requested scope change and
 cost/tool implication. Record unknown budgets as questions rather than invented
 acceptance thresholds.
+
+When continuing an existing accelerator campaign, distinguish engineering
+readiness from the scientific hypothesis. Preserve the native task/dependency
+contract and require the existing Manager lifecycle to authorize new execution.
+Do not map a project's numbered numerical stages onto this provider's stage
+names, silently change its profile, substitute the bounded APB4 adapter, or
+require physical implementation for a CPU-only numerical investigation.
+If the requested claim is outside the provider's executable acceptance,
+retain the project's existing bounded process rather than inventing evidence.

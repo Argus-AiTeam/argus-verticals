@@ -9,8 +9,12 @@ Read the circuit, saved waveform and native completion diagnostics against
 the original model and plan. Check winding/rectifier orientation, switch timing,
 initial conditions, load conductance and measurement-window membership.
 
-Recompute time-weighted means, RMS values, extrema and source/load/loss/storage
-balance. Negative source current is expected when a voltage source supplies
+Read the current host-executed checker result and inspect its recomputed
+time-weighted means, RMS values, extrema and source/load/loss/storage balance.
+Independently examine the equations and selected observation windows.
+Reviewer is read/search-only; do not claim shell execution or use an
+Engineer-authored Reviewer run in place of missing or failed host evidence.
+Negative source current is expected when a voltage source supplies
 power. Input/output inequality during startup is not automatically loss.
 Inspect first/last-cycle agreement before calling an interval steady.
 
@@ -24,7 +28,7 @@ evidence; a completed report is not permission for physical operation.
 For operating-envelope work, inspect the separate original specification.
 Verify the Cartesian product plus nominal, a common design across corners,
 both resolutions for every scenario, and explicit comparisons for every
-checked quantity. Recompute the worst observed headroom and its actual
+checked quantity. Inspect the recomputed worst observed headroom and its actual
 scenario; a nominal pass does not excuse a failing combination.
 
 Read engineering status separately from task acceptance. A valid diagnostic

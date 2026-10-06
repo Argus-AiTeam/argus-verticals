@@ -102,15 +102,43 @@ adds complete finite Cartesian input/load/temperature/component samples,
 common design decisions and original-limit headroom, with distinct diagnosis
 and design acceptance. These complete the eight primary domain
 registrations, not industrial coverage of every subject within those domains.
-The existing `chip_design` architecture model remains accelerator-oriented in
-this batch; a general control-SoC model and independent physical/DFT execution
-are still separate work, not capabilities implied by the taxonomy.
+The existing `chip_design` architecture model remains accelerator-oriented.
+Its opt-in `control` profile separately adds bounded APB4 registers, a timer and
+interrupts: native RTL and synthesized-model comparison against an independent
+state model, original generic-cell limits, and authorized RTL repair without
+weakening requirements. A general control SoC and independent physical/DFT
+execution remain separate work; generic Yosys counts are not physical PPA.
 
 The digital verification specialty also offers an opt-in CDC/reset profile:
 native Yosys structural checks and Icarus clock/phase traces for explicitly
 declared single-bit level/reset adapters. It preserves valid negative diagnosis
 and requires a passing result when composed into FPGA design verification.
 It is not complete CDC/RDC sign-off or a multiclock FPGA implementation backend.
+
+### Hardware readiness boundaries
+
+All eight domains have scoped completion checks; the common host-review path
+covers digital/chip verification, every verification-specialty/FPGA stage and
+the five independent analog/RF/PCB/package/power workflows. Chip control retains
+its dedicated native report checker. Host evidence is not Reviewer approval.
+Original acceptance and final completion checks remain in force, including
+the distinction between a supported negative diagnosis and a passing design.
+
+| Domain | Current executable or checked support | Not established by that support |
+|---|---|---|
+| Digital | RTL regressions, formal-record checks, bounded native level/reset CDC adapters | Automatic general formal proof, full CDC/RDC or industrial protocol coverage |
+| Chip | Accelerator source-bound evidence checks; native APB4 RTL/synthesized simulation | A project-specific mixed-precision evaluator, independent physical/DFT/tapeout execution |
+| FPGA | RTL checks and single-clock iCE40 implementation | Multiclock/backend portability or measured board operation without original measurements |
+| Analog | ngspice OP/DC/AC/transient and finite operating-envelope/refinement checks | Foundry PDK, noise/PSS, mixed-language or silicon qualification |
+| RF | scikit-rf network calculations and finite component/frequency studies | Full-wave EM, nonlinear RF, calibration or measured physical performance |
+| PCB | KiCad ERC/DRC/parity, copper refill and manufacturing-file checks | Field-solved SI/PI, general DFM or fabrication/assembly approval |
+| Package | Gmsh/CalculiX bounded steady conduction and prescribed convection | CFD, transient/contact models, stress/warpage or reliability qualification |
+| Power | ngspice bounded Buck/Boost and finite operating-envelope checks | Hardware safety, measured efficiency, unspecified device dynamics or electrothermal qualification |
+
+These are capability boundaries, not unfinished stages to add to every task.
+Expand a native backend only when the original engineering question requires it.
+Keep project-specific runtime/entry/ownership acceptance separate from vertical
+installation; general record checks cannot certify a new accelerator experiment.
 
 | entry point | module | purpose (as shown in the Manager's menu) | skill parents |
 |---|---|---|---|
@@ -146,8 +174,9 @@ contract, the artifact manifest, the source registry and its provenance log,
 each with a JSON schema.
 
 `argus_verticals/hardware/shared/` similarly shares file/copy/numeric record
-utilities between independent hardware domains, without inheriting their
-knowledge, stages or acceptance methods.
+utilities, scoped host-review evidence and owned native-process monitoring
+between independent hardware domains, without inheriting their knowledge,
+stages or acceptance methods.
 `argus_verticals/hardware/spice/` shares the native waveform reader, scalar
 measurements, bounded process execution and byte-bound numerical validation
 storage between analog and power domains, without sharing their workflows.
@@ -175,7 +204,19 @@ from Argus.
 | `requires` | other catalog verticals the store installs alongside: the code imports them (`chip_design` → `digital_circuit`) or `VERTICAL_SKILL_PARENTS` names them (`nanogpt_speedrun` → `speedrun`); Argus built-ins such as `kernel_engineering` are not listed |
 | `shared` | helper directories bundled into the archive because the code imports them (the five literary verticals → `argus_verticals/literary/shared`) |
 | `python_requirements`, `optional_python_requirements` | pip requirements the runtime code imports, unguarded or behind a guard, spelled exactly as in an extra of `pyproject.toml`; the store shows them, it does not install them |
-| `tags`, `maintainers`, `min_argus` | 2–4 browsing tags; GitHub handles; the Argus commit family the vertical is written for (`2026-09-14-split`; the store compares by feature probe, not by this string) |
+| `tags`, `maintainers`, `min_argus` | 2–4 browsing tags; GitHub handles; an informational Argus commit-family label, not an enforced version constraint |
+| `argus_features` (optional) | required framework features: `composable-workflow-profiles`, `vertical-routing-paths`, `host-round-evidence`; a feature-aware Store checks the complete dependency selection before installation |
+
+The nine hardware providers using shared host review declare these three
+features. A feature-aware Store reports missing or unknown requirements before
+downloading or replacing any selected provider, retains the declarations for
+offline checks, and distinguishes an incompatible catalog update from an
+otherwise usable installed version. It probes only known framework APIs, not
+plugin code or project commands; this is not scientific or toolchain acceptance.
+Legacy manifests without `argus_features` retain their existing behavior.
+Older Stores ignore this field: the framework-side support must be installed
+separately before relying on the early refusal. A provider update does not
+upgrade a frozen project runtime or migrate historical projects.
 
 **`catalog.json`** at the repository root — the browsing index, committed and
 kept current by CI (`python scripts/build_catalog.py --check` fails when it is

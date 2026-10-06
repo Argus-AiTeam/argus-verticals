@@ -27,6 +27,9 @@ def validate_plan(root: Path) -> dict:
     for field in ("sources", "testbenches"):
         for relative in names(plan.get(field), field):
             project_file(root, relative)
+    if "supporting_files" in plan:
+        for relative in names(plan["supporting_files"], "supporting_files"):
+            project_file(root, relative)
     names(plan.get("configurations"), "configurations")
     cases = names(plan.get("cases"), "cases")
     if any(not re.fullmatch(r"[a-z][a-z0-9_]*", case) for case in cases):
@@ -70,7 +73,7 @@ def _cdc_inputs(root: Path, plan: dict) -> list[str]:
 def validate_simulation(root: Path, *, additional_inputs: tuple[str, ...] = ()) -> None:
     plan = validate_plan(root)
     results = record(root, "verification/RESULTS.json")
-    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *additional_inputs, *_cdc_inputs(root, plan)])
+    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *plan.get("supporting_files", []), *additional_inputs, *_cdc_inputs(root, plan)])
     runs = results.get("runs")
     if not isinstance(runs, list) or not runs:
         raise EvidenceError("runs: a nonempty executed regression is required")
@@ -113,7 +116,7 @@ def validate_formal(root: Path) -> None:
     ):
         raise EvidenceError("formal.assumptions: list every assumption and its reason, or explicitly use []")
     results = record(root, "verification/FORMAL.json")
-    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *_cdc_inputs(root, plan)])
+    current_files(root, results, ["verification/PLAN.json", *plan["sources"], *plan["testbenches"], *plan.get("supporting_files", []), *_cdc_inputs(root, plan)])
     for key, expected in (("assertions", assertions), ("covers", covers)):
         entries = results.get(key)
         if not isinstance(entries, dict) or set(entries) != set(expected):
