@@ -110,6 +110,13 @@ For general simulation/formal, test explicitly declared `supporting_files`
 (precision contracts, oracle dependencies and retained fixtures) for independent
 current copies and invalid paths. Binding inputs does not establish oracle
 independence or substitute for a project's scientific acceptance.
+Chip's legacy verification format uses its existing `source_hashes`, not the
+specialty's copies. Test all declared entries, duplicate/malformed bindings,
+original numerical contracts and evaluator/helper changes. An optional
+`verification/PLAN.json` and every `supporting_files` entry must be bound.
+Exercise the same failures through host review and final completion, without
+executing recorded commands. Preserve valid legacy records, exact numerical
+variant selection, integer command exits and finite unambiguous JSON.
 The opt-in digital CDC/reset tests use native Yosys extraction and Icarus traces,
 including bad stage counts, intermediate fanout, wrong clocks, asynchronous
 release and raw-reset paths that digital simulation alone may miss. Keep the

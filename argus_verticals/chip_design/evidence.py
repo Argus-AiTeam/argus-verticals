@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -11,6 +12,9 @@ from typing import Any
 
 from argus.core.file_digest import sha256_file as _sha256
 from argus.core.vertical_contract import VerticalContractError
+
+from argus_verticals.hardware.shared.evidence import EvidenceError as RecordEvidenceError
+from argus_verticals.hardware.shared.evidence import names
 
 DELIVERY_LEVELS = {"rtl_ip", "fpga", "gds", "pre_tapeout", "tapeout"}
 PASS_STATUSES = {"pass", "passed", "ready", "success", "proved"}
@@ -21,10 +25,29 @@ class EvidenceError(ValueError):
     """Raised when chip-design evidence is absent, unsafe, or contradictory."""
 
 
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON field {key!r}")
+        result[key] = value
+    return result
+
+
+def _finite_float(text: str) -> float:
+    value = float(text)
+    if not math.isfinite(value):
+        raise ValueError(f"nonfinite JSON number {text!r}")
+    return value
+
+
 def _load_object(path: Path) -> dict[str, Any]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        payload = json.loads(
+            path.read_text(encoding="utf-8"), object_pairs_hook=_unique_object,
+            parse_float=_finite_float, parse_constant=_finite_float,
+        )
+    except (OSError, ValueError) as exc:
         raise EvidenceError(f"{path}: invalid JSON: {exc}") from exc
     if not isinstance(payload, dict):
         raise EvidenceError(f"{path}: expected a JSON object")
@@ -105,31 +128,35 @@ def _require_current_source_hashes(
     raw = payload.get("source_hashes")
     bindings: dict[str, str] = {}
     if isinstance(raw, Mapping):
-        bindings = {
-            str(relative): str(digest).strip().lower()
-            for relative, digest in raw.items()
-            if str(relative).strip()
-        }
+        rows = list(raw.items())
     elif isinstance(raw, list):
+        rows = []
         for entry in raw:
             if not isinstance(entry, Mapping):
-                continue
-            relative = str(entry.get("path") or "").strip()
-            digest = str(entry.get("sha256") or "").strip().lower()
-            if relative:
-                bindings[relative] = digest
+                raise EvidenceError(f"{result_path}: each source_hashes entry must be an object")
+            rows.append((entry.get("path"), entry.get("sha256")))
     else:
         raise EvidenceError(f"{result_path}: source_hashes must be an object or list")
+
+    for relative, digest in rows:
+        if not isinstance(relative, str) or not relative.strip() or relative in bindings:
+            raise EvidenceError(f"{result_path}: source_hashes requires distinct nonempty paths")
+        if not isinstance(digest, str):
+            raise EvidenceError(f"{result_path}: source_hashes must bind {relative} with SHA-256")
+        expected = digest.strip().lower()
+        if len(expected) != 64 or any(char not in "0123456789abcdef" for char in expected):
+            raise EvidenceError(f"{result_path}: source_hashes must bind {relative} with SHA-256")
+        bindings[relative] = expected
 
     required = list(required_paths)
     manifest = _load_object(_project_file(project_root, "design/RTL_MANIFEST.json"))
     required.extend(_paths(manifest, "source_files", "generated_sources"))
     for relative in dict.fromkeys(required):
-        expected = bindings.get(relative, "")
-        if len(expected) != 64 or any(char not in "0123456789abcdef" for char in expected):
+        if relative not in bindings:
             raise EvidenceError(
                 f"{result_path}: source_hashes must bind {relative} with SHA-256"
             )
+    for relative, expected in bindings.items():
         source = _project_file(project_root, relative)
         if _sha256(source) != expected:
             raise EvidenceError(
@@ -232,15 +259,30 @@ def _verification(project_root: Path) -> Path:
         raise EvidenceError(f"{path}: verification must pass without contradictory failure evidence")
     commands = _require_list(payload, "commands", path)
     for index, command in enumerate(commands):
-        if not isinstance(command, Mapping) or isinstance(command.get("exit_code"), bool):
+        if not isinstance(command, Mapping) or type(command.get("exit_code")) is not int:
             raise EvidenceError(f"{path}: commands[{index}] must record an integer exit_code")
         if command.get("exit_code") != 0:
             raise EvidenceError(f"{path}: commands[{index}] did not exit successfully")
+        argv = command.get("argv")
+        if not isinstance(argv, list) or not argv or any(
+            not isinstance(arg, str) or not arg.strip() for arg in argv
+        ):
+            raise EvidenceError(f"{path}: commands[{index}].argv must record the actual argument vector")
     _require_mapping(payload, "coverage", path)
     _require_list(payload, "scenarios", path)
     _require_mapping(payload, "numerical", path)
     _require_project_files(project_root, payload, "raw_artifacts")
-    _require_current_source_hashes(project_root, payload, path)
+    required = ["design/RTL_MANIFEST.json"]
+    plan_file = project_root / "verification/PLAN.json"
+    if plan_file.exists() or plan_file.is_symlink():
+        _, plan = _payload(project_root, "verification/PLAN.json")
+        required.append("verification/PLAN.json")
+        if "supporting_files" in plan:
+            try:
+                required.extend(names(plan["supporting_files"], "supporting_files"))
+            except RecordEvidenceError as exc:
+                raise EvidenceError(str(exc)) from exc
+    _require_current_source_hashes(project_root, payload, path, required_paths=tuple(required))
     return path
 
 

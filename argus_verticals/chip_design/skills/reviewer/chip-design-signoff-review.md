@@ -123,6 +123,13 @@ failure logs/waves.
 
 Numerical accelerator review includes quality/tolerance, overflow, saturation,
 rounding, quantization scales, exceptional values, and cross-configuration parity.
+Check the exact operator and selected parameter mode, including group versus
+full-reduction results and bias placement. Do not substitute an earlier
+primitive's overflow/zero policy for the current project's acceptance.
+Inspect all declared `source_hashes` and any `verification/PLAN.json` supporting
+file closure; missing or changed numerical dependencies invalidate the record.
+The checker does not discover undeclared transitive imports or establish the
+scientific hypothesis from these bindings alone.
 
 Compile-only evidence, one happy-path test, stale output, or weakened expected
 values never suffice. Until verification passes, PPA and benchmark numbers are

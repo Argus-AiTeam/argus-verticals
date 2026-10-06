@@ -108,6 +108,9 @@ def test_all_verification_roles_receive_precision_and_continuation_boundaries(tm
         stage="verification", checklist_mode=ChecklistMode.STAGE,
     ))
     assert verification_review_contract() in prompt.role_banner
+    if vertical == "chip_design":
+        assert Path(chip_stages.__file__).with_name("verification-contract.md").read_text() in prompt.role_banner
+        assert "CPU-only scientific work keeps its native" in prompt.role_banner
     assert "unmeasured" in prompt.role_banner
     assert "claim" in prompt.role_banner
     assert "Rerun decisive commands" not in prompt.role_banner

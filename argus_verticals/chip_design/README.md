@@ -39,7 +39,27 @@ Keep weights, activations, accumulators, residuals and K/V precision distinct.
 Preserve each project's oracle, original tolerances and legal Manager ownership;
 an implementation check is not a numerical result or a hardware claim. Neither
 new knowledge nor host checking automatically migrates a historical campaign.
-The legacy accelerator evidence format and its acceptance rules are unchanged.
+The [accelerator record contract](verification-contract.md) is also injected
+into all four verification roles. It preserves the legacy format while checking
+every declared `source_hashes` entry, including evaluator dependencies rather
+than only RTL. Malformed or duplicate bindings, duplicate JSON fields and
+nonfinite numbers fail explicitly; commands require actual argv and integer
+exit codes.
+
+An optional `verification/PLAN.json` can declare `supporting_files` for the
+original numerical contract, reference helpers and retained fixtures. A present
+plan and its declared files must be included in `source_hashes`. Existing
+projects without that JSON plan need no new manifest. This is not the
+specialty's simulation/formal record format and does not create a new evaluator.
+PPA/prototype/benchmark also check every declared binding; final completion
+rechecks verification. Preserve historical records rather than rewriting old
+bindings to satisfy a new check.
+
+An operator name such as FP16 or G128 is not a complete numerical specification:
+group versus full-reduction accumulation, bias placement, selected mode, signed
+underflow zero and overflow behavior must match the original implementation
+contract. CPU-only experiments keep their project-native lifecycle and
+scientific acceptance; do not fabricate RTL to route them through this checker.
 
 ## Bounded APB4 control
 

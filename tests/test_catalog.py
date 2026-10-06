@@ -562,6 +562,49 @@ if directory == "verification/control":
     assert assessment["task_accepted"] and assessment["status"] == "passed"
     assert len(assessment["configurations"]) == 2
     assert all(c["synthesis"]["passed"] and all(s["passed"] for s in c["simulations"].values()) for c in assessment["configurations"].values())
+    # A separate synthetic legacy record checks installed bindings, not ACE science.
+    import hashlib
+    from argus_verticals.chip_design import evidence as chip_evidence
+    assert Path(chip_evidence.__file__).resolve().is_relative_to(store.store_root().resolve())
+    legacy = Path.cwd() / "legacy-numerical"
+    files = {
+        "rtl/top.sv": "module top(input wire clk); endmodule\\n",
+        "reference/oracle.py": "ROUNDING = 'original-project-mode'\\n",
+        "design/numerical-contract.json": '{"overflow":"reject-nonfinite-output"}',
+        "verification/raw/check.log": "Synthetic record-consistency fixture, not a numerical run.\\n",
+        "design/RTL_MANIFEST.json": json.dumps({"source_files": ["rtl/top.sv"]}),
+        "verification/PLAN.json": json.dumps({"supporting_files": [
+            "reference/oracle.py", "design/numerical-contract.json",
+        ]}),
+    }
+    for name, content in files.items():
+        path = legacy / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    result_path = legacy / "verification/RESULTS.json"
+    result_path.write_text(json.dumps({
+        "status": "pass", "commands": [{"argv": [sys.executable, "-c",
+            "from pathlib import Path; Path('must-not-execute').touch()"], "exit_code": 0}],
+        "coverage": {"fixture_only": True}, "scenarios": ["source-binding"],
+        "numerical": {"fixture_only": True}, "raw_artifacts": ["verification/raw/check.log"],
+        "source_hashes": {name: hashlib.sha256((legacy / name).read_bytes()).hexdigest() for name in files},
+    }))
+    legacy_state = Path.cwd() / "legacy-state"
+    persist_vertical(legacy_state, "chip_design", workflow_profile="verification")
+    fragment = stages.render_role_prompt_fragment(
+        role="reviewer", operation="evaluate", stage="verification", scope="", project_root=legacy_state,
+    )
+    assert Path(stages.__file__).with_name("verification-contract.md").read_text() in fragment
+    contract = load_vertical_contract("chip_design", legacy_state)
+    assert not contract.completion_issues("verification", legacy, state_root=legacy_state)
+    (legacy / "reference/oracle.py").write_text("ROUNDING = 'changed-mode'\\n")
+    before = {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(legacy, legacy_state / "handoffs/task", 1))
+    host, = [e for e in gathered if e.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert "source_hashes is stale for reference/oracle.py" in host.reviewer_text
+    assert contract.completion_issues("verification", legacy, state_root=legacy_state)
+    assert before == {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    assert not (legacy / "must-not-execute").exists()
 elif directory == "verification/cdc":
     assert '"workflow_profile": "cdc"' in item.reviewer_text
     assessment = json.loads((project / directory / "ASSESSMENT.json").read_text())

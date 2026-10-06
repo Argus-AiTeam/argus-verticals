@@ -259,6 +259,7 @@ def test_control_roles_receive_exact_original_contract(tmp_path, role, operation
     ))
     assert prompt.stage_order == ("verification",)
     assert Path(stages.__file__).with_name("control-contract.md").read_text() in prompt.role_banner
+    assert Path(stages.__file__).with_name("verification-contract.md").read_text() not in prompt.role_banner
     assert stages.control_check_command() in prompt.role_banner
     assert "Design/repair must pass" in prompt.role_banner
     assert "your read/search-only tools need no shell permission" in prompt.role_banner

@@ -201,6 +201,220 @@ def test_custom_verification_rejects_missing_existing_manifest(tmp_path):
     )
 
 
+@pytest.mark.parametrize("relative", [
+    "reference/argus_npu_reference.py", "reference/rounding.py",
+    "design/numerical-contract.json", "verification/fixtures/input.hex",
+])
+@pytest.mark.parametrize("binding_shape", ["object", "list"])
+def test_verification_checks_every_declared_numerical_source(tmp_path, relative, binding_shape):
+    root = _complete_project(tmp_path)
+    _write(root / relative, "original project-owned numerical input\n")
+    path = root / "verification/RESULTS.json"
+    result = json.loads(path.read_text())
+    result["source_hashes"][relative] = _digest(root / relative)
+    if binding_shape == "list":
+        result["source_hashes"] = [{"path": key, "sha256": value} for key, value in result["source_hashes"].items()]
+    _write_json(path, result)
+    VALIDATORS["verification"](root)
+    _write(root / relative, "changed project-owned numerical input\n")
+    with pytest.raises(EvidenceError, match="source_hashes is stale"):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("missing", ["plan", "contract", "oracle", "fixture"])
+def test_declared_numerical_dependencies_cannot_be_dropped_from_chip_results(tmp_path, missing):
+    root = _complete_project(tmp_path)
+    files = {
+        "plan": "verification/PLAN.json", "contract": "design/numerical-contract.json",
+        "oracle": "reference/rounding.py", "fixture": "verification/fixtures/input.hex",
+    }
+    for key, relative in files.items():
+        if key != "plan":
+            _write(root / relative, "original numerical dependency\n")
+    _write_json(root / files["plan"], {"supporting_files": list(files.values())[1:]})
+    path = root / "verification/RESULTS.json"
+    result = json.loads(path.read_text())
+    result["source_hashes"].update({relative: _digest(root / relative) for relative in files.values()})
+    _write_json(path, result)
+    VALIDATORS["verification"](root)
+    result["source_hashes"].pop(files[missing])
+    _write_json(path, result)
+    with pytest.raises(EvidenceError, match="source_hashes"):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("defect", ["missing_path", "missing_hash", "not_object", "duplicate", "empty_key", "not_hash", "missing_file"])
+def test_source_binding_records_are_not_silently_discarded(tmp_path, defect):
+    root = _complete_project(tmp_path)
+    path = root / "verification/RESULTS.json"
+    result = json.loads(path.read_text())
+    rows = [{"path": key, "sha256": value} for key, value in result["source_hashes"].items()]
+    extra = {"path": "reference/argus_npu_reference.py", "sha256": _digest(root / "reference/argus_npu_reference.py")}
+    if defect == "missing_path":
+        extra.pop("path")
+    elif defect == "missing_hash":
+        extra.pop("sha256")
+    elif defect == "not_object":
+        extra = "ignored"
+    elif defect == "duplicate":
+        rows.append(dict(rows[0]))
+    elif defect == "empty_key":
+        extra["path"] = ""
+    elif defect == "not_hash":
+        extra["sha256"] = True
+    elif defect == "missing_file":
+        extra["path"] = "reference/missing.py"
+    result["source_hashes"] = [*rows, extra]
+    _write_json(path, result)
+    with pytest.raises(EvidenceError):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("defect", ["float_exit", "missing_argv", "empty_argv", "blank_argument", "wrong_argv"])
+def test_numerical_execution_record_needs_actual_argv_and_integer_exit(tmp_path, defect):
+    root = _complete_project(tmp_path)
+    path = root / "verification/RESULTS.json"
+    result = json.loads(path.read_text())
+    command = result["commands"][0]
+    if defect == "float_exit":
+        command["exit_code"] = 0.0
+    elif defect == "missing_argv":
+        command.pop("argv")
+    else:
+        command["argv"] = {"empty_argv": [], "blank_argument": ["python", ""], "wrong_argv": "make test"}[defect]
+    _write_json(path, result)
+    with pytest.raises(EvidenceError):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("numerical", [
+    '{"max_abs_error": NaN}', '{"max_abs_error": Infinity}',
+    '{"cases": [{"error": -Infinity}]}', '{"max_abs_error": 1e400}',
+    '{"rounding": "RNE", "rounding": "RTZ"}',
+])
+def test_numerical_json_cannot_hide_nonfinite_or_ambiguous_values(tmp_path, numerical):
+    root = _complete_project(tmp_path)
+    path = root / "verification/RESULTS.json"
+    text = path.read_text()
+    result = json.loads(text)
+    result["numerical"] = "__NUMERICAL__"
+    path.write_text(json.dumps(result).replace('"__NUMERICAL__"', numerical))
+    with pytest.raises(EvidenceError):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("supporting", [None, [], {}, "oracle.py", [False], ["reference/oracle.py"] * 2, ["../outside.py"], ["/outside.py"]])
+def test_numerical_plan_rejects_malformed_supporting_files(tmp_path, supporting):
+    root = _complete_project(tmp_path)
+    _write_json(root / "verification/PLAN.json", {"supporting_files": supporting})
+    path = root / "verification/RESULTS.json"
+    result = json.loads(path.read_text())
+    result["source_hashes"]["verification/PLAN.json"] = _digest(root / "verification/PLAN.json")
+    _write_json(path, result)
+    with pytest.raises(EvidenceError):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("defect", ["bad_json", "not_object", "invalid_utf8", "broken_link", "external_link", "directory"])
+def test_existing_numerical_plan_cannot_be_silently_ignored(tmp_path, defect):
+    root = _complete_project(tmp_path / "work")
+    path = root / "verification/PLAN.json"
+    if defect == "broken_link":
+        path.symlink_to(root / "missing-plan.json")
+    elif defect == "external_link":
+        outside = tmp_path / "outside.json"
+        outside.write_text("{}")
+        path.symlink_to(outside)
+    elif defect == "directory":
+        path.mkdir()
+    else:
+        path.write_bytes({"bad_json": b"{", "not_object": b"[]", "invalid_utf8": b"\xff"}[defect])
+    with pytest.raises(EvidenceError):
+        VALIDATORS["verification"](root)
+
+
+def test_duplicate_json_source_binding_cannot_hide_an_earlier_value(tmp_path):
+    root = _complete_project(tmp_path)
+    path = root / "verification/RESULTS.json"
+    text = path.read_text()
+    key = '"rtl/top.sv":'
+    path.write_text(text.replace(key, f'{key} "{64 * "0"}", {key}'))
+    with pytest.raises(EvidenceError, match="duplicate JSON field"):
+        VALIDATORS["verification"](root)
+
+
+@pytest.mark.parametrize("stage", ["ppa", "prototype", "benchmark", "signoff"])
+def test_later_chip_claims_reject_changed_declared_numerical_dependencies(tmp_path, stage):
+    root = _complete_project(tmp_path, delivery_level="fpga" if stage == "prototype" else "rtl_ip")
+    source = "reference/argus_npu_reference.py"
+    result_stage = "verification" if stage == "signoff" else stage
+    path = root / result_stage / "RESULTS.json"
+    result = json.loads(path.read_text())
+    if isinstance(result["source_hashes"], list):
+        result["source_hashes"].append({"path": source, "sha256": _digest(root / source)})
+    else:
+        result["source_hashes"][source] = _digest(root / source)
+    _write_json(path, result)
+    if stage == "signoff":
+        ppa_path = root / "ppa/RESULTS.json"
+        ppa = json.loads(ppa_path.read_text())
+        for row in ppa["source_hashes"]:
+            if row["path"] == "verification/RESULTS.json":
+                row["sha256"] = _digest(path)
+        _write_json(ppa_path, ppa)
+        manifest_path = root / "signoff/ARTIFACT_MANIFEST.json"
+        manifest = json.loads(manifest_path.read_text())
+        for row in manifest["artifacts"]:
+            row["sha256"] = _digest(root / row["path"])
+        _write_json(manifest_path, manifest)
+    VALIDATORS[stage](root)
+    _write(root / source, "def reference_model(value):\n    return value + 1\n")
+    with pytest.raises(EvidenceError, match="source_hashes is stale for reference/"):
+        VALIDATORS[stage](root)
+
+
+@pytest.mark.parametrize("mutation", ["none", "oracle", "plan", "missing_fixture"])
+def test_host_and_final_chip_check_share_numerical_bindings_without_execution(tmp_path, mutation):
+    from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence
+    from argus.skills.stage_machine import StageCompletionError, complete_final_stage
+    from argus.skills.vertical_select import vertical_completion_certificate_status
+
+    state, work = tmp_path / "state", _complete_project(tmp_path / "execution")
+    sources = ["reference/argus_npu_reference.py", "verification/fixtures/input.hex"]
+    _write(work / sources[1], "3c00 8001\n")
+    _write_json(work / "verification/PLAN.json", {"supporting_files": sources})
+    path = work / "verification/RESULTS.json"
+    result = json.loads(path.read_text())
+    result["source_hashes"].update({name: _digest(work / name) for name in ["verification/PLAN.json", *sources]})
+    result["commands"][0]["argv"] = [sys.executable, "-c", "from pathlib import Path; Path('must-not-execute').touch()"]
+    _write_json(path, result)
+    if mutation == "oracle":
+        original = work / sources[0]
+        timestamp = original.stat()
+        data = original.read_text()
+        original.write_text(data.replace("return value", "return False"))
+        assert original.stat().st_size == timestamp.st_size
+    elif mutation == "plan":
+        _write_json(work / "verification/PLAN.json", {"supporting_files": sources[:1]})
+    elif mutation == "missing_fixture":
+        (work / sources[1]).unlink()
+    persist_vertical(state, "chip_design", workflow_profile="custom", workflow_requested_stages=("verification",))
+    before = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    gathered = collect_round_evidence(RoundEvidenceRequest(work, state / "handoffs/task", 1))
+    host, = [item for item in gathered if item.provider.startswith("argus_verticals.hardware.shared.review:")]
+    assert ('"issues": []' in host.reviewer_text) == (mutation == "none")
+    assert before == {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    assert not (work / "must-not-execute").exists()
+    if mutation == "none":
+        complete_final_stage(state, reason="synthetic source-binding fixture", evidence_root=work)
+        assert vertical_completion_certificate_status(state, "chip_design")["ok"]
+    else:
+        with pytest.raises(StageCompletionError):
+            complete_final_stage(state, reason="must reject stale numerical inputs", evidence_root=work)
+        assert before == {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    assert not (work / "must-not-execute").exists()
+
+
 @pytest.mark.parametrize("missing_manifest", [False, True])
 def test_host_legacy_accelerator_check_preserves_custom_prerequisites(tmp_path, missing_manifest):
     from argus.engineer.round_evidence import RoundEvidenceRequest, collect_round_evidence

@@ -439,6 +439,7 @@ def render_role_prompt_fragment(
             "Existing accelerator verification retains its original source-bound verification schema; "
             "do not substitute the APB4 control adapter or invent physical results.\n\n"
             + verification_review_contract()
+            + "\n" + Path(__file__).with_name("verification-contract.md").read_text(encoding="utf-8")
             + "\nFor Engineer debugging or an execution-capable operator, the legacy record check is:\n"
             f"```bash\n{evidence_check_command('chip_design', stage)}\n```\n"
             "The host uses the saved profile, including any custom RTL-manifest requirements; "
