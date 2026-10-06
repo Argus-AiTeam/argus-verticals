@@ -112,6 +112,14 @@ dependency before changing installed files, preserve old installed versions
 when only a catalog update is incompatible, and expose the cause to operators.
 `min_argus` is informational; an older Store ignoring the new field is not an
 enforcement boundary. Do not automatically upgrade frozen project runtimes.
+CI pins the feature-aware Store implementation through `ARGUS_REF` in
+`.github/workflows/tests.yml`. The release-catalog test checks the actual Store
+parser and feature refusal against the current manifests; fresh Store-only
+native cases also require the declarations to survive installation.
+The framework's existing Linux suite separately consumes a fixed provider
+checkout through `ARGUS_VERTICALS_REPO`, without pip-installing these providers.
+Keep both CI references explicit when changing this contract. They are test
+inputs, not runtime migration instructions or scientific acceptance receipts.
 For general simulation/formal, test explicitly declared `supporting_files`
 (precision contracts, oracle dependencies and retained fixtures) for independent
 current copies and invalid paths. Binding inputs does not establish oracle

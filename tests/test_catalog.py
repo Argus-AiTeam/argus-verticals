@@ -457,6 +457,28 @@ def _expected_members(name: str) -> list[str]:
     return sorted(members)
 
 
+def test_release_requirements_are_enforced_by_the_paired_store(release):
+    from argus.engineer import round_evidence
+    from argus.verticals import store
+
+    assert callable(getattr(store, "runtime_issues", None)), (
+        "The paired framework lacks Store feature enforcement; update ARGUS_REF in tests.yml"
+    )
+    _, payload = release
+    entries = store.validate_catalog(payload, local_source=False)["verticals"]
+    for name, manifest in MANIFESTS.items():
+        if not manifest.get("argus_features"):
+            continue
+        assert entries[name]["argus_features"] == manifest["argus_features"]
+        assert not store.runtime_issues(entries, name)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.delattr(round_evidence, "RoundEvidenceRequest")
+        for name, manifest in MANIFESTS.items():
+            if "host-round-evidence" in manifest.get("argus_features", []):
+                issues = store.runtime_issues(entries, name)
+                assert any("host-round-evidence" in issue and "RoundEvidenceRequest" in issue for issue in issues)
+
+
 @pytest.mark.parametrize("vertical,stage,directory,reference", [
     ("chip_design", "verification", "verification/control", "run_control_reference"),
     ("digital_circuit_verification", "simulation", "verification/cdc", "run_cdc_reference"),
@@ -524,6 +546,9 @@ from argus.verticals._base import load_vertical_contract
 vertical, stage, directory, reference = sys.argv[1:]
 installed = store.install(vertical, wait=True)
 assert installed["status"] == "done", installed
+requirements = store.load_catalog()["catalog"]["verticals"][vertical]["argus_features"]
+assert "host-round-evidence" in requirements
+assert store.installed()[vertical]["argus_features"] == requirements
 load_vertical_contract(vertical)
 module = "digital_circuit.verification" if vertical == "digital_circuit_verification" else vertical
 stages = importlib.import_module(f"argus_verticals.{module}.stages")

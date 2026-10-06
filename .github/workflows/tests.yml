@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Hardware routing plus the concrete Manager-target fix found by the analog trial.
-  ARGUS_REF: daa71b3ef4c51147497312145c4da52473bf36c9
+  # Paired Store feature enforcement; this CI reference does not upgrade project runtimes.
+  ARGUS_REF: 756b3d5689ea4af06d70018f9fcc53c32166393c
 
 jobs:
   tests:
