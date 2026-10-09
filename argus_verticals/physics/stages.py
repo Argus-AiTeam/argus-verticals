@@ -47,6 +47,17 @@ WORKFLOW_MODE = "proportional"
 # Physics missions end through the ordinary reviewer-certified final-stage path.
 # They are neither paper-submission missions nor metric-optimization campaigns.
 completion_gate = "none"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Physics theory, simulation and analysis is open-ended
+# research work. The two-verdict progress window opens after round 60, an
+# explicit progress judgement is required from round 120, and six consecutive
+# explicit no-progress verdicts end the mission.
+ROUND_POLICY = {
+    "stall_threshold": 6,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 60,
+    "hard_escalate_rounds": 120,
+}
 
 # The stage machine calls ``stage_completion_issues`` before it can mark the
 # final stage done. This checks only the compiled-paper outcome.
@@ -313,6 +324,7 @@ __all__ = [
     "STAGE_ORDER",
     "WORKFLOW_MODE",
     "completion_gate",
+    "ROUND_POLICY",
     "role_banner",
     "stage_completion_issues",
     "stage_entry_contract",

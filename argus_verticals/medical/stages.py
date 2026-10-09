@@ -27,6 +27,17 @@ MISSION_KIND = "research"
 REQUIRE_INDEPENDENT_REVIEW = True
 COMPLETION_CONTRACT_VERSION = 1
 completion_gate = "certified"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Biomedical evidence work retrieves, normalizes and
+# analyzes many sources, like a research mission. The two-verdict progress
+# window opens after round 60, an explicit progress judgement is required from
+# round 120, and six consecutive explicit no-progress verdicts end the mission.
+ROUND_POLICY = {
+    "stall_threshold": 6,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 60,
+    "hard_escalate_rounds": 120,
+}
 
 STAGE_PRIMARY_DELIVERABLES = {
     "deliver": (
@@ -244,6 +255,7 @@ __all__ = [
     "STAGE_PRIMARY_DELIVERABLES",
     "WORKFLOW_MODE",
     "completion_gate",
+    "ROUND_POLICY",
     "role_banner",
     "stage_completion_issues",
 ]

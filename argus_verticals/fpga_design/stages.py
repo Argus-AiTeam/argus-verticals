@@ -34,6 +34,19 @@ VERTICAL_SKILLS = Path(__file__).parent / "skills"
 STAGE_ORDER = CHECKLIST_STAGE_ORDER = ("requirements", "rtl", "verification", "implementation", "bringup", "delivery")
 WORKFLOW_MODE = "staged"
 completion_gate = "none"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). FPGA delivery is gated by simulation, native
+# implementation and bring-up measurements; a failing native check followed by
+# several repair rounds is the normal path, not a stall. The round-count guards
+# are off; the Reviewer's explicit FORWARD_PROGRESS=false streak decides (8
+# verdicts), with room for a long repair. A Reviewer that stops giving any
+# progress judgement is caught after 200 rounds.
+ROUND_POLICY = {
+    "stall_threshold": 8,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 0,
+    "hard_escalate_rounds": 200,
+}
 REQUIRE_INDEPENDENT_REVIEW = True
 WORKFLOW_PROFILES = {
     "requirements": {"purpose": "freeze the board, interfaces and acceptance conditions", "stages": ("requirements",)},

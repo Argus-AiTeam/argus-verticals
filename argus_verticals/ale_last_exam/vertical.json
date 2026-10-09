@@ -1,6 +1,6 @@
 {
   "name": "ale_last_exam",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.ale_last_exam.stages",
   "purpose_zh": "Agents' Last Exam 长程专业工作流：在真实沙箱中按隐藏参考答案、以产物优先的方式完成 GUI+CLI 交付",
   "paths": [

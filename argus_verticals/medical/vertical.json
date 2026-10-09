@@ -1,6 +1,6 @@
 {
   "name": "medical",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.medical.stages",
   "purpose_zh": "生物医药证据执行：靶点-疾病机制、人类遗传学、临床前转化、临床试验、安全性、失败项目、竞争管线，产出可审计的非诊断决策档案并独立评审；不是通用论文流水线",
   "paths": [

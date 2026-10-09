@@ -1,6 +1,6 @@
 {
   "name": "rf_design",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "module": "argus_verticals.rf_design.stages",
   "purpose_zh": "射频与微波网络：S 参数、传输线、阻抗匹配和端口约定；scikit-rf 网络分析、有限元件容差组合与频率加密稳健性",
   "paths": ["argus_verticals/rf_design"],

@@ -1,6 +1,6 @@
 {
   "name": "prose",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.prose.stages",
   "purpose_zh": "创作或修改文学随笔、回忆录或抒情/叙事散文/随笔；不是诗歌，也不是情节驱动的小说",
   "paths": [

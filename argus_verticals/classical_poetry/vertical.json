@@ -1,6 +1,6 @@
 {
   "name": "classical_poetry",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.classical_poetry.stages",
   "purpose_zh": "创作或校验中文近体诗/古体/词，押韵、平仄以可复现的方式机器检查，并做文学评审",
   "paths": [

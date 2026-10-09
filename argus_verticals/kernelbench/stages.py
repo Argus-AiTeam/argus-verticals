@@ -36,6 +36,18 @@ SPEEDRUN_CHECKLIST_ITEMS = speedrun_base_contract().checklist_items
 STAGE_ORDER = ["research", "setup", "optimize", "measure", "report"]
 
 completion_gate = "metric"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Kernel scores count only after correctness checks; a
+# correctness or speed regression chased over many rounds is normal. The
+# round-count guards are off; the Reviewer's explicit FORWARD_PROGRESS=false
+# streak decides (8 verdicts), with room for a long repair. A Reviewer that
+# stops giving any progress judgement is caught after 200 rounds.
+ROUND_POLICY = {
+    "stall_threshold": 8,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 0,
+    "hard_escalate_rounds": 200,
+}
 MISSION_KIND = "optimize"
 
 
