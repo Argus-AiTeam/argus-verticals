@@ -1,6 +1,6 @@
 {
   "name": "speedrun",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.speedrun.stages",
   "purpose_zh": "墙钟预算内的单指标脚本/基准优化：搭建、优化、测量、报告；不写论文",
   "paths": [

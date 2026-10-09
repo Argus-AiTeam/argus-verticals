@@ -1,6 +1,6 @@
 {
   "name": "quant",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.quant.stages",
   "purpose_zh": "股票因子研究（IC/ICIR、回测、Sharpe），产出评审员认证的报告，不是通用指标循环",
   "paths": [

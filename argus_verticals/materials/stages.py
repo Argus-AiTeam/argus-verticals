@@ -34,6 +34,18 @@ REQUIRE_INDEPENDENT_REVIEW = True
 # A report may be a research result, process-design package, or reproduction; it
 # is not automatically a paper-submission or metric campaign.
 completion_gate = "none"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Materials studies run grounding, modelling, execution
+# and validation over many rounds, like a research mission. The two-verdict
+# progress window opens after round 60, an explicit progress judgement is
+# required from round 120, and six consecutive explicit no-progress verdicts
+# end the mission.
+ROUND_POLICY = {
+    "stall_threshold": 6,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 60,
+    "hard_escalate_rounds": 120,
+}
 
 def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
     """Require inspectable evidence for execution, validation, and reporting."""
@@ -293,6 +305,7 @@ __all__ = [
     "STAGE_ORDER",
     "WORKFLOW_MODE",
     "completion_gate",
+    "ROUND_POLICY",
     "role_banner",
     "stage_completion_issues",
 ]

@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "2bdd514aae1a82b7c9c4ce44617610fbb2834258",
+    "commit": "6cd36d7df009181167a28a631f355eb486b07ba3",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -21,14 +21,14 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 14683,
+      "size_bytes": 15224,
       "skill_parents": [],
       "tags": [
         "benchmark",
         "agents",
         "sandbox"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "analog_mixed_signal": {
       "api_version": 1,
@@ -57,14 +57,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 157723,
+      "size_bytes": 158365,
       "skill_parents": [],
       "tags": [
         "hardware",
         "analog",
         "spice"
       ],
-      "version": "0.2.4"
+      "version": "0.3.0"
     },
     "chip_design": {
       "api_version": 1,
@@ -94,7 +94,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 244000,
+      "size_bytes": 244643,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -104,7 +104,7 @@
         "rtl",
         "eda"
       ],
-      "version": "1.3.1"
+      "version": "1.4.0"
     },
     "classical_poetry": {
       "api_version": 1,
@@ -127,7 +127,7 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 763701,
+      "size_bytes": 764269,
       "skill_parents": [],
       "tags": [
         "literary",
@@ -135,7 +135,7 @@
         "chinese",
         "prosody"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "digital_circuit": {
       "api_version": 1,
@@ -163,7 +163,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 110190,
+      "size_bytes": 110839,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -171,7 +171,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.1.3"
+      "version": "1.2.0"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,
@@ -195,7 +195,7 @@
         "benchmark"
       ],
       "shared": [],
-      "size_bytes": 13398,
+      "size_bytes": 14070,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -204,7 +204,7 @@
         "rtl",
         "benchmark"
       ],
-      "version": "0.1.1"
+      "version": "0.2.0"
     },
     "digital_circuit_verification": {
       "api_version": 1,
@@ -235,7 +235,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 103753,
+      "size_bytes": 104411,
       "skill_parents": [
         "digital_circuit"
       ],
@@ -245,7 +245,7 @@
         "formal",
         "cdc"
       ],
-      "version": "0.2.6"
+      "version": "0.3.0"
     },
     "fiction_writing": {
       "api_version": 1,
@@ -271,14 +271,14 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 286249,
+      "size_bytes": 286881,
       "skill_parents": [],
       "tags": [
         "literary",
         "fiction",
         "writing"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "fpga_design": {
       "api_version": 1,
@@ -309,7 +309,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 45851,
+      "size_bytes": 46498,
       "skill_parents": [
         "digital_circuit",
         "digital_circuit_verification"
@@ -319,7 +319,7 @@
         "fpga",
         "verification"
       ],
-      "version": "0.1.4"
+      "version": "0.2.0"
     },
     "kernelbench": {
       "api_version": 1,
@@ -337,7 +337,7 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 86947,
+      "size_bytes": 87535,
       "skill_parents": [
         "kernel_engineering"
       ],
@@ -347,7 +347,7 @@
         "benchmark",
         "optimization"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "literary_editor": {
       "api_version": 1,
@@ -370,14 +370,14 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 66813,
+      "size_bytes": 67356,
       "skill_parents": [],
       "tags": [
         "literary",
         "editing",
         "writing"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "materials": {
       "api_version": 1,
@@ -395,14 +395,14 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 47101,
+      "size_bytes": 47665,
       "skill_parents": [],
       "tags": [
         "science",
         "materials",
         "simulation"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "medical": {
       "api_version": 1,
@@ -420,7 +420,7 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 61826,
+      "size_bytes": 62375,
       "skill_parents": [],
       "tags": [
         "biomedical",
@@ -428,7 +428,7 @@
         "evidence",
         "research"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "modern_poetry": {
       "api_version": 1,
@@ -451,14 +451,14 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 67430,
+      "size_bytes": 67976,
       "skill_parents": [],
       "tags": [
         "literary",
         "poetry",
         "writing"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "nanochat": {
       "api_version": 1,
@@ -476,7 +476,7 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 40378,
+      "size_bytes": 40966,
       "skill_parents": [],
       "tags": [
         "ml",
@@ -484,7 +484,7 @@
         "optimization",
         "benchmark"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "nanogpt_speedrun": {
       "api_version": 1,
@@ -504,7 +504,7 @@
       ],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 18146,
+      "size_bytes": 18726,
       "skill_parents": [
         "speedrun"
       ],
@@ -514,7 +514,7 @@
         "speedrun",
         "gpu"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "package_design": {
       "api_version": 1,
@@ -544,14 +544,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 99588,
+      "size_bytes": 100222,
       "skill_parents": [],
       "tags": [
         "hardware",
         "package",
         "thermal"
       ],
-      "version": "0.2.2"
+      "version": "0.3.0"
     },
     "pcb_design": {
       "api_version": 1,
@@ -581,14 +581,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 112263,
+      "size_bytes": 112903,
       "skill_parents": [],
       "tags": [
         "hardware",
         "pcb",
         "kicad"
       ],
-      "version": "0.2.2"
+      "version": "0.3.0"
     },
     "physics": {
       "api_version": 1,
@@ -606,7 +606,7 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 48828,
+      "size_bytes": 49347,
       "skill_parents": [],
       "tags": [
         "science",
@@ -614,7 +614,7 @@
         "simulation",
         "research"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "power_electronics": {
       "api_version": 1,
@@ -645,14 +645,14 @@
         "argus_verticals/hardware/shared",
         "argus_verticals/hardware/spice"
       ],
-      "size_bytes": 150227,
+      "size_bytes": 150874,
       "skill_parents": [],
       "tags": [
         "hardware",
         "power",
         "spice"
       ],
-      "version": "0.2.4"
+      "version": "0.3.0"
     },
     "prose": {
       "api_version": 1,
@@ -675,14 +675,14 @@
       "shared": [
         "argus_verticals/literary/shared"
       ],
-      "size_bytes": 68252,
+      "size_bytes": 68793,
       "skill_parents": [],
       "tags": [
         "literary",
         "prose",
         "writing"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "quant": {
       "api_version": 1,
@@ -709,7 +709,7 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 337967,
+      "size_bytes": 338512,
       "skill_parents": [],
       "tags": [
         "finance",
@@ -717,7 +717,7 @@
         "factors",
         "backtest"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     "rf_design": {
       "api_version": 1,
@@ -748,14 +748,14 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 127510,
+      "size_bytes": 128144,
       "skill_parents": [],
       "tags": [
         "hardware",
         "rf",
         "network-analysis"
       ],
-      "version": "0.2.3"
+      "version": "0.3.0"
     },
     "speedrun": {
       "api_version": 1,
@@ -773,14 +773,14 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 59945,
+      "size_bytes": 60526,
       "skill_parents": [],
       "tags": [
         "optimization",
         "benchmark",
         "speedrun"
       ],
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   }
 }

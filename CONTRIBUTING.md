@@ -52,6 +52,16 @@ code comments, Skill markdown, issues and pull requests alike.
    Releases are repository-wide tags `vX.Y.Z`: pushing one builds and attaches
    `<name>-<version>.zip` for every vertical, so a vertical whose version did
    not change ships a byte-identical archive.
+10. **Every vertical declares its round guards.** `ROUND_POLICY` in `stages.py`
+   sets all four guards of Argus's `core/round_policy.py`
+   (`stall_threshold`, `no_progress_threshold`, `soft_round_limit`,
+   `hard_escalate_rounds`; `0` turns one off) with a comment saying why.
+   There is no fixed round cap: verification-heavy hardware and kernel work
+   runs `8/2/0/200`, metric optimization `6/2/0/200`, research-shaped work
+   `6/2/60/120`, bounded writing and editing the defaults `4/2/12/24`.
+   `tests/test_round_policy.py` pins each choice. An Argus without
+   per-vertical round policies never reads the attribute, so it is not an
+   `argus_features` requirement and does not change `min_argus`.
 
 ## Ownership
 

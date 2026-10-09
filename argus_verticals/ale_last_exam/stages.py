@@ -37,6 +37,17 @@ CHECKLIST_STAGE_ORDER = tuple(STAGE_ORDER)
 # ALE success is the benchmark's post-run artifact score.  It is neither a
 # paper-submission gate nor a metric-search campaign.
 completion_gate = "none"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Long-horizon professional tasks run for many rounds
+# of tool work, like a research mission. The two-verdict progress window opens
+# after round 60, an explicit progress judgement is required from round 120,
+# and six consecutive explicit no-progress verdicts end the mission.
+ROUND_POLICY = {
+    "stall_threshold": 6,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 60,
+    "hard_escalate_rounds": 120,
+}
 
 # The required output locations are task-specific and live in the task prompt.
 # A generic shell command cannot validate them without re-parsing prose, so the
@@ -175,5 +186,6 @@ __all__ = [
     "CHECKLIST_STAGE_ORDER",
     "STAGE_ORDER",
     "completion_gate",
+    "ROUND_POLICY",
     "role_banner",
 ]

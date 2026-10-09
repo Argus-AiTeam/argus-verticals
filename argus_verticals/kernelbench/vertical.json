@@ -1,6 +1,6 @@
 {
   "name": "kernelbench",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.kernelbench.stages",
   "purpose_zh": "在 B200 SOL-ExecBench/KernelBench 上最大化通过正确性检查的 GPU 内核 SOL 得分/加速比",
   "paths": [

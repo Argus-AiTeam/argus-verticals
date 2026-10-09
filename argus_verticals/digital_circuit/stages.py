@@ -36,6 +36,19 @@ STAGE_ORDER = ("specification", "rtl", "verification", "synthesis", "delivery")
 CHECKLIST_STAGE_ORDER = STAGE_ORDER
 WORKFLOW_MODE = "staged"
 completion_gate = "none"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). RTL correctness is gated by simulation, formal and
+# synthesis checks; a failing native check followed by several repair rounds is
+# the normal path, not a stall. The round-count guards are off; the Reviewer's
+# explicit FORWARD_PROGRESS=false streak decides (8 verdicts), with room for a
+# long repair. A Reviewer that stops giving any progress judgement is caught
+# after 200 rounds.
+ROUND_POLICY = {
+    "stall_threshold": 8,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 0,
+    "hard_escalate_rounds": 200,
+}
 WORKFLOW_PROFILES = {
     "specification": {
         "purpose": "explain or specify a circuit; no implementation or tool-result claim",
@@ -408,6 +421,7 @@ __all__ = [
     "STAGE_ORDER",
     "WORKFLOW_MODE",
     "completion_gate",
+    "ROUND_POLICY",
     "role_banner",
     "stage_completion_issues",
 ]

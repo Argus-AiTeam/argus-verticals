@@ -58,6 +58,19 @@ CHECKLIST_STAGE_ORDER = STAGE_ORDER
 # architecture, and toolchain contracts.
 WORKFLOW_MODE = "proportional"
 completion_gate = "metric"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). ASIC/subsystem work is gated by simulation, synthesis
+# and control-contract checks; a failing native check followed by several
+# repair rounds is the normal path, not a stall. The round-count guards are
+# off; the Reviewer's explicit FORWARD_PROGRESS=false streak decides (8
+# verdicts), with room for a long repair. A Reviewer that stops giving any
+# progress judgement is caught after 200 rounds.
+ROUND_POLICY = {
+    "stall_threshold": 8,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 0,
+    "hard_escalate_rounds": 200,
+}
 REQUIRE_INDEPENDENT_REVIEW = True
 WORKFLOW_PROFILES = {
     "architecture": {

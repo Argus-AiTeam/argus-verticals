@@ -82,6 +82,19 @@ STAGE_ORDER = ["intake", "plan", "draft", "state_update", "review", "revise"]
 #: story_state, NOT a numeric metric and NOT a paper. ``"none"`` suppresses both
 #: final-certification and metric prompt-framing regimes.
 completion_gate = "none"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Each mission writes one story or chapter against a
+# story_state; that is a bounded draft-review-revise task, and a long work
+# proceeds chapter by chapter. It keeps the framework defaults, written out:
+# the two-verdict progress window opens after round 12, an explicit progress
+# judgement is required from round 24, and four consecutive explicit
+# no-progress verdicts end the mission.
+ROUND_POLICY = {
+    "stall_threshold": 4,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 12,
+    "hard_escalate_rounds": 24,
+}
 
 def stage_completion_issues(stage: str, project_root: Path) -> tuple[str, ...]:
     if stage in {"review", "revise"}:

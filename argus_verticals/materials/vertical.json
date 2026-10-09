@@ -1,6 +1,6 @@
 {
   "name": "materials",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.materials.stages",
   "purpose_zh": "材料科学与材料加工，跨原子、微观组织、连续介质、CAD/CAE 与实验尺度",
   "paths": [

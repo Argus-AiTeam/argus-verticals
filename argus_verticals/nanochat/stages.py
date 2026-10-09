@@ -39,6 +39,18 @@ CHECKLIST_ITEMS = _BASE.checklist_items
 #: Mechanical metric gate (not a paper); the supervisor stops when the metric
 #: stops improving rather than on paper-completeness.
 completion_gate = "metric"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). val_bpb optimization is a long loop: change the
+# training run, re-measure, compare. Rounds without a better score are part of
+# searching, so the soft round window is off and the Reviewer's explicit
+# no-progress streak decides (6 verdicts). A Reviewer that stops giving any
+# progress judgement is caught after 200 rounds.
+ROUND_POLICY = {
+    "stall_threshold": 6,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 0,
+    "hard_escalate_rounds": 200,
+}
 MISSION_KIND = "optimize"
 
 
@@ -598,6 +610,7 @@ __all__ = [
     "CHECKLIST_STAGE_ORDER",
     "CHECKLIST_ITEMS",
     "completion_gate",
+    "ROUND_POLICY",
     "role_banner",
     "search_altitude_context",
 ]

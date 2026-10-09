@@ -1,6 +1,6 @@
 {
   "name": "literary_editor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "argus_verticals.literary_editor.stages",
   "purpose_zh": "改写、扩写、润色、校对或评论既有文学文本，保持编辑范围与原文事实不变",
   "paths": [

@@ -390,6 +390,17 @@ PROTECTED_ITEM_IDS: frozenset[str] = frozenset(
 #: Quant missions complete on a certified final factor REPORT (report
 #: certification, the research-paper analog) — NOT a numeric metric.
 completion_gate = "certified"
+# Round guards (Argus core/round_policy.py; an Argus without per-vertical round
+# policies ignores this). Factor research runs benchmark, backtest, analysis
+# and report rounds, like a research mission. The two-verdict progress window
+# opens after round 60, an explicit progress judgement is required from round
+# 120, and six consecutive explicit no-progress verdicts end the mission.
+ROUND_POLICY = {
+    "stall_threshold": 6,
+    "no_progress_threshold": 2,
+    "soft_round_limit": 60,
+    "hard_escalate_rounds": 120,
+}
 MISSION_KIND = "research"
 
 
@@ -423,4 +434,5 @@ __all__ = [
     "PROTECTED_ITEM_IDS",
     "role_banner",
     "completion_gate",
+    "ROUND_POLICY",
 ]
