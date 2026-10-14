@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "6cd36d7df009181167a28a631f355eb486b07ba3",
+    "commit": "73eecd72e1d6a4c530fca0a379576b5554fb5eec",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -163,7 +163,7 @@
       "shared": [
         "argus_verticals/hardware/shared"
       ],
-      "size_bytes": 110839,
+      "size_bytes": 111326,
       "skill_parents": [],
       "tags": [
         "hardware",
@@ -171,7 +171,7 @@
         "verilog",
         "verification"
       ],
-      "version": "1.2.0"
+      "version": "1.2.1"
     },
     "digital_circuit_benchmark": {
       "api_version": 1,

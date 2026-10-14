@@ -10,6 +10,7 @@ from argus_verticals.digital_circuit.evidence import (
     validate_benchmark_interface,
     validate_preflight,
     validate_verification_results,
+    validate_verification_sources,
 )
 
 
@@ -22,6 +23,46 @@ def _verification_source(root) -> None:
     source = root / "tb" / "dut_tb.sv"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text("module dut_tb; endmodule\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize("directory", ["tb", "testbench", "verification", "formal", "reference", "tests"])
+@pytest.mark.parametrize("suffix", [".v", ".sv", ".py", ".sby"])
+def test_verification_source_accepts_supported_project_layouts(tmp_path, directory, suffix):
+    source = tmp_path / directory / "nested" / ("check" + suffix)
+    source.parent.mkdir(parents=True)
+    source.write_text("retained source\n", encoding="utf-8")
+    assert validate_verification_sources(tmp_path) == source
+
+
+def test_tests_layout_preserves_result_failure_checks(tmp_path):
+    source = tmp_path / "tests" / "check.py"
+    source.parent.mkdir()
+    source.write_text("assert 1 + 1 == 2\n", encoding="utf-8")
+    result = tmp_path / "verification" / "result.json"
+    _json(result, {"status": "pass", "tests": [{"status": "failed"}]})
+    with pytest.raises(EvidenceError):
+        validate_verification_results(tmp_path)
+    _json(result, {"status": "pass", "failed": 0})
+    assert validate_verification_results(tmp_path) == result
+
+
+@pytest.mark.parametrize("name,content", [("check.py", ""), ("README.md", "passed")])
+def test_tests_layout_rejects_empty_sources_and_report_only(tmp_path, name, content):
+    source = tmp_path / "tests" / name
+    source.parent.mkdir()
+    source.write_text(content, encoding="utf-8")
+    with pytest.raises(EvidenceError, match="no executable verification source"):
+        validate_verification_sources(tmp_path)
+
+
+def test_tests_layout_rejects_sources_outside_project(tmp_path, require_symlink_support):
+    outside = tmp_path.parent / "outside-check.py"
+    outside.write_text("assert True\n", encoding="utf-8")
+    link = tmp_path / "tests" / "check.py"
+    link.parent.mkdir()
+    link.symlink_to(outside)
+    with pytest.raises(EvidenceError, match="no executable verification source"):
+        validate_verification_sources(tmp_path)
 
 
 def test_verification_rejects_success_text_with_failure_evidence(tmp_path):

@@ -188,7 +188,7 @@ def validate_verification_sources(project_root: Path) -> Path:
     """Require executable verification source, not only a success-shaped report."""
     root = project_root.resolve()
     suffixes = {".v", ".sv", ".py", ".sby"}
-    for relative in ("tb", "testbench", "verification", "formal", "reference"):
+    for relative in ("tb", "testbench", "verification", "formal", "reference", "tests"):
         base = root / relative
         if not base.is_dir():
             continue
@@ -206,7 +206,7 @@ def validate_verification_sources(project_root: Path) -> Path:
                 return path
     raise EvidenceError(
         "no executable verification source found under tb/, testbench/, "
-        "verification/, formal/, or reference/"
+        "verification/, formal/, reference/, or tests/"
     )
 
 

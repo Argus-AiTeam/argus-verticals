@@ -23,6 +23,13 @@ numerical/RTL/physical claims and preserves project-specific precision and
 continuation rules. This bridge does not replay project commands, strengthen
 the legacy checker into an independent numerical oracle or migrate old tasks.
 
+The legacy verification source check recognizes `tb/`, `testbench/`,
+`verification/`, `formal/`, `reference/`, and `tests/`. A nonempty source with a
+supported extension must resolve inside the project; empty files, reports alone,
+and links to outside sources do not qualify. Source discovery does not execute
+tests or establish their correctness. The separate passing-result check remains
+required. Updating the provider does not hot-upgrade a frozen project runtime.
+
 - `stages.py`: contract, checklists, completion checks (uses `argus.verticals.path_evidence`).
 - `evidence.py`: fail-closed evidence checks (interface, preflight, verification sources) also consumed by `chip_design` and `benchmark/`.
 - `skills/engineer/` (RTL verification, error-guided repair, spec-guidance registry, benchmark execution), `skills/reviewer/`.
