@@ -1,0 +1,6 @@
+Ideal RC step response
+.include models/rc.inc
+.temp 27
+.tran 1u 1m
+.save v(in) v(out)
+.end

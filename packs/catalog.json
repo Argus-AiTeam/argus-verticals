@@ -1,13 +1,13 @@
 {
   "packs": [
     {
-      "name": "speedrun",
-      "version": "0.2.0",
-      "description": "single-metric script/benchmark optimization under a wall-clock budget: setup, optimize, measure, report; no paper",
-      "description_zh": "墙钟预算内的单指标脚本/基准优化：搭建、优化、测量、报告；不写论文",
+      "name": "analog_mixed_signal",
+      "version": "0.3.0",
+      "description": "analog/mixed-signal circuits: bias, small-signal gain, feedback, op-amps, filters, noise, device models and data-converter interfaces; executable ngspice operating-point, DC sweep, AC and transient analysis with parameter corners, margins and numerical refinement, not RTL verification, RF/EM, PCB layout or foundry sign-off",
+      "description_zh": "模拟与混合信号电路：偏置、反馈、滤波、模型和接口；ngspice 直流、交流、瞬态、多工况裕量诊断与数值收敛",
       "requires": [],
       "needs": [
-        "Python 3.10+; bundled evidence check uses only the standard library and needs no GPU. Optimization runs need the task's frozen scorer, inputs, benchmark software and declared hardware; the NanoGPT trace specifically needs its original 8xH100 harness and software. Nothing is installed or detected by this pack."
+        "Python 3.10+; evidence.py uses only the standard library and needs no GPU. `run`, both references and the `simulation`/`review` checks of an envelope study (which replay every case) need native ngspice 42 or newer on `PATH` (for example `apt install ngspice`); the other checks only read files. No license, PDK, vendor model or lab hardware is used, and nothing is energized. This pack installs nothing."
       ],
       "files": [
         {
@@ -16,19 +16,575 @@
         },
         {
           "path": "SKILL.md",
-          "size": 6623
+          "size": 7258
+        },
+        {
+          "path": "evidence-contract.md",
+          "size": 15386
         },
         {
           "path": "evidence.py",
-          "size": 3173
+          "size": 80091
         },
         {
-          "path": "skills/engineer/speedrun-hands-on-trace.md",
-          "size": 16931
+          "path": "reference/amplifier.inc",
+          "size": 226
         },
         {
-          "path": "skills/engineer/speedrun-sota-optimization.md",
-          "size": 26198
+          "path": "reference/amplifier_ac.cir",
+          "size": 139
+        },
+        {
+          "path": "reference/amplifier_op.cir",
+          "size": 119
+        },
+        {
+          "path": "reference/rc.inc",
+          "size": 119
+        },
+        {
+          "path": "reference/rc_ac.cir",
+          "size": 104
+        },
+        {
+          "path": "reference/rc_dc.cir",
+          "size": 92
+        },
+        {
+          "path": "reference/rc_op.cir",
+          "size": 85
+        },
+        {
+          "path": "reference/rc_tran.cir",
+          "size": 91
+        },
+        {
+          "path": "skills/engineer/analog-amplifiers.md",
+          "size": 1966
+        },
+        {
+          "path": "skills/engineer/analog-bias-small-signal.md",
+          "size": 1848
+        },
+        {
+          "path": "skills/engineer/analog-converters-interfaces.md",
+          "size": 2021
+        },
+        {
+          "path": "skills/engineer/analog-feedback-stability.md",
+          "size": 1827
+        },
+        {
+          "path": "skills/engineer/analog-filters-transients.md",
+          "size": 1870
+        },
+        {
+          "path": "skills/engineer/analog-knowledge-map.md",
+          "size": 2059
+        },
+        {
+          "path": "skills/engineer/analog-models-corners.md",
+          "size": 2593
+        },
+        {
+          "path": "skills/engineer/analog-ngspice-evidence.md",
+          "size": 2912
+        },
+        {
+          "path": "skills/engineer/analog-noise-dynamic-range.md",
+          "size": 1929
+        },
+        {
+          "path": "skills/engineer/analog-passives-physical.md",
+          "size": 2079
+        },
+        {
+          "path": "skills/manager/analog-scope-selection.md",
+          "size": 2095
+        },
+        {
+          "path": "skills/planner/analog-analysis-planning.md",
+          "size": 2311
+        },
+        {
+          "path": "skills/reviewer/analog-independent-review.md",
+          "size": 3005
+        }
+      ]
+    },
+    {
+      "name": "chip_design",
+      "version": "1.4.0",
+      "description": "digital ASIC/hardware accelerator subsystems: workload, microarchitecture, compute, memory/DMA, interconnect and host integration; bounded APB4 register/timer/interrupt control design, repair and diagnosis. For the fixed apb4-timer-v1 contract, the control profile already includes authorized RTL repair, native synthesis, both RTL/synthesized simulations and generic-cell limits within verification; these generic counts are not PPA and do not require custom rtl+ppa stages. Other requests use scoped architecture/RTL/PPA tasks or explicit full implementation and sign-off, not GPU software kernels",
+      "description_zh": "模块化数字 ASIC/硬件加速器设计：计算、存储、互联、主机与 PPA，含有界 APB4 寄存器／定时器／中断设计与修复",
+      "requires": [],
+      "needs": [
+        "Python 3.11+; the scripts use only the standard library and need no GPU. Simulation needs Verilator or Icarus Verilog (`iverilog` and `vvp`), lint needs Verilator, Verible or slang, synthesis needs Yosys, Vivado or Quartus, and FPGA, physical-design, sign-off, PDK and compiler/runtime needs follow the delivery level (`environment_audit.py` names the accepted tool bundles), together with any vendor licenses, boards and PDK access the target requires. `control.py` needs yosys, iverilog and vvp on PATH. Nothing is installed by this pack; `environment_audit.py` probes the machine only when a role runs it."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 18116
+        },
+        {
+          "path": "control.py",
+          "size": 44147
+        },
+        {
+          "path": "control_reference.sv",
+          "size": 3214
+        },
+        {
+          "path": "environment_audit.py",
+          "size": 32336
+        },
+        {
+          "path": "evidence.py",
+          "size": 30023
+        },
+        {
+          "path": "references/comparison-protocol.md",
+          "size": 921
+        },
+        {
+          "path": "references/control-contract.md",
+          "size": 12053
+        },
+        {
+          "path": "references/specialized_tool_registry.json",
+          "size": 14881
+        },
+        {
+          "path": "references/tapeout-readiness.md",
+          "size": 853
+        },
+        {
+          "path": "references/verification-contract.md",
+          "size": 7977
+        },
+        {
+          "path": "references/workflow.md",
+          "size": 7126
+        },
+        {
+          "path": "skills/engineer/chip-architecture-map.md",
+          "size": 3140
+        },
+        {
+          "path": "skills/engineer/chip-clock-reset-power.md",
+          "size": 2534
+        },
+        {
+          "path": "skills/engineer/chip-compute.md",
+          "size": 3582
+        },
+        {
+          "path": "skills/engineer/chip-design-environment-first.md",
+          "size": 11555
+        },
+        {
+          "path": "skills/engineer/chip-host-runtime.md",
+          "size": 3668
+        },
+        {
+          "path": "skills/engineer/chip-interconnect.md",
+          "size": 2596
+        },
+        {
+          "path": "skills/engineer/chip-memory-dma.md",
+          "size": 2696
+        },
+        {
+          "path": "skills/engineer/chip-ppa.md",
+          "size": 2699
+        },
+        {
+          "path": "skills/engineer/chip-verification.md",
+          "size": 3944
+        },
+        {
+          "path": "skills/engineer/digital-arbitration.md",
+          "size": 2437
+        },
+        {
+          "path": "skills/engineer/digital-arithmetic.md",
+          "size": 2684
+        },
+        {
+          "path": "skills/engineer/digital-cdc-rdc.md",
+          "size": 2947
+        },
+        {
+          "path": "skills/engineer/digital-fsm.md",
+          "size": 2479
+        },
+        {
+          "path": "skills/engineer/digital-handshake-pipelines.md",
+          "size": 2574
+        },
+        {
+          "path": "skills/engineer/digital-knowledge-map.md",
+          "size": 2767
+        },
+        {
+          "path": "skills/engineer/digital-logic-encoding.md",
+          "size": 2451
+        },
+        {
+          "path": "skills/engineer/digital-low-power.md",
+          "size": 2429
+        },
+        {
+          "path": "skills/engineer/digital-memory-fifo.md",
+          "size": 2850
+        },
+        {
+          "path": "skills/engineer/digital-parameters.md",
+          "size": 2322
+        },
+        {
+          "path": "skills/engineer/digital-sequential-reset.md",
+          "size": 2343
+        },
+        {
+          "path": "skills/engineer/digital-synthesis-timing.md",
+          "size": 2607
+        },
+        {
+          "path": "skills/engineer/digital-verification-formal.md",
+          "size": 2912
+        },
+        {
+          "path": "skills/manager/chip-scope-selection.md",
+          "size": 6768
+        },
+        {
+          "path": "skills/planner/chip-scoped-planning.md",
+          "size": 3498
+        },
+        {
+          "path": "skills/reviewer/chip-design-signoff-review.md",
+          "size": 11971
+        }
+      ]
+    },
+    {
+      "name": "digital_circuit",
+      "version": "1.2.0",
+      "description": "digital logic and cycle-accurate Verilog/SystemVerilog RTL: combinational/sequential circuits, arithmetic, FSMs, FIFOs, interfaces, CDC, verification and synthesis; not CUDA/Triton kernels or whole-chip architecture",
+      "description_zh": "体系化数字电路知识与 RTL：组合/时序、算术、FSM、FIFO、协议、CDC、验证和综合，支持按任务范围选择流程",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; evidence.py uses only the standard library and needs no GPU. Simulation needs an HDL simulator (for example Icarus Verilog or Verilator, optionally cocotb), formal proof an engine such as SymbiYosys, and synthesis/timing a synthesis tool (for example Yosys or a vendor FPGA/ASIC flow) with its target device or cell library and any licenses; a fixed external benchmark needs its frozen evaluator and its simulator image (for example a local Docker image). Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 12314
+        },
+        {
+          "path": "evidence.py",
+          "size": 16642
+        },
+        {
+          "path": "skills/engineer/digital-arbitration.md",
+          "size": 2437
+        },
+        {
+          "path": "skills/engineer/digital-arithmetic.md",
+          "size": 2684
+        },
+        {
+          "path": "skills/engineer/digital-cdc-rdc.md",
+          "size": 2947
+        },
+        {
+          "path": "skills/engineer/digital-circuit-benchmark-execution.md",
+          "size": 4319
+        },
+        {
+          "path": "skills/engineer/digital-circuit-error-guided-repair.md",
+          "size": 2519
+        },
+        {
+          "path": "skills/engineer/digital-circuit-first-pass-contract-closure.md",
+          "size": 3298
+        },
+        {
+          "path": "skills/engineer/digital-circuit-rtl-verification.md",
+          "size": 3777
+        },
+        {
+          "path": "skills/engineer/digital-circuit-spec-guidance-registry.md",
+          "size": 2265
+        },
+        {
+          "path": "skills/engineer/digital-fsm.md",
+          "size": 2479
+        },
+        {
+          "path": "skills/engineer/digital-handshake-pipelines.md",
+          "size": 2574
+        },
+        {
+          "path": "skills/engineer/digital-knowledge-map.md",
+          "size": 4616
+        },
+        {
+          "path": "skills/engineer/digital-logic-encoding.md",
+          "size": 2451
+        },
+        {
+          "path": "skills/engineer/digital-low-power.md",
+          "size": 2429
+        },
+        {
+          "path": "skills/engineer/digital-memory-fifo.md",
+          "size": 2850
+        },
+        {
+          "path": "skills/engineer/digital-parameters.md",
+          "size": 2322
+        },
+        {
+          "path": "skills/engineer/digital-sequential-reset.md",
+          "size": 2343
+        },
+        {
+          "path": "skills/engineer/digital-synthesis-timing.md",
+          "size": 2607
+        },
+        {
+          "path": "skills/engineer/digital-verification-formal.md",
+          "size": 2912
+        },
+        {
+          "path": "skills/reviewer/digital-circuit-benchmark-review.md",
+          "size": 2735
+        },
+        {
+          "path": "skills/reviewer/digital-circuit-guidance-promotion-review.md",
+          "size": 1433
+        },
+        {
+          "path": "skills/reviewer/digital-circuit-signoff-review.md",
+          "size": 4264
+        }
+      ]
+    },
+    {
+      "name": "fiction_writing",
+      "version": "0.2.0",
+      "description": "write or continue original fiction narrative prose while preserving characters, world, and timeline; not a literature review or research task",
+      "description_zh": "撰写或续写原创小说叙事文本，保持人物、世界观与时间线一致；不是文献综述或研究任务",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; fiction.py uses only the standard library and needs no GPU, model or network. If the optional `opencc` package is importable, the copy check also folds traditional to simplified Chinese; without it, a copy converted wholesale between scripts is not caught. A continuation needs the operator's source text as `fiction/reference_text.md`, with its rights cleared for the use. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 8550
+        },
+        {
+          "path": "fiction.py",
+          "size": 45743
+        },
+        {
+          "path": "references/en/style-and-anti-ai.md",
+          "size": 4536
+        },
+        {
+          "path": "references/shared/narrative-craft.md",
+          "size": 4719
+        },
+        {
+          "path": "references/voice_cards/base.json",
+          "size": 508
+        },
+        {
+          "path": "references/voice_cards/classical_zhanghui.json",
+          "size": 2641
+        },
+        {
+          "path": "references/voice_cards/literary.json",
+          "size": 659
+        },
+        {
+          "path": "references/voice_cards/romance.json",
+          "size": 661
+        },
+        {
+          "path": "references/voice_cards/scifi.json",
+          "size": 657
+        },
+        {
+          "path": "references/voice_cards/suspense.json",
+          "size": 766
+        },
+        {
+          "path": "references/voice_cards/web_fiction.json",
+          "size": 670
+        },
+        {
+          "path": "references/zh/style-and-anti-ai.md",
+          "size": 5024
+        },
+        {
+          "path": "schemas/review.schema.json",
+          "size": 1594
+        },
+        {
+          "path": "schemas/state_patch.schema.json",
+          "size": 7575
+        },
+        {
+          "path": "schemas/story_state.schema.json",
+          "size": 5034
+        },
+        {
+          "path": "schemas/style_profile.schema.json",
+          "size": 4817
+        },
+        {
+          "path": "skills/engineer/chapter-drafting-and-continuation.md",
+          "size": 3448
+        },
+        {
+          "path": "skills/engineer/creative-brief-and-style-profile.md",
+          "size": 4417
+        },
+        {
+          "path": "skills/engineer/story-and-chapter-planning.md",
+          "size": 2469
+        },
+        {
+          "path": "skills/engineer/story-state-update.md",
+          "size": 4561
+        },
+        {
+          "path": "skills/engineer/targeted-fiction-revision.md",
+          "size": 2557
+        },
+        {
+          "path": "skills/reviewer/continuity-style-and-plot-review.md",
+          "size": 6617
+        }
+      ]
+    },
+    {
+      "name": "fpga_design",
+      "version": "0.2.0",
+      "description": "FPGA board projects, resource inference, pin/clock constraints and bring-up; executable single-clock iCE40 implementation and hardware measurements, scoped RTL verification or full board delivery; not ASIC physical design or GPU kernels",
+      "description_zh": "FPGA 工程、资源推断、引脚和时钟约束及板级调试；首个可执行实现流程限定单时钟 iCE40，上板需真实测量",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; the bundled scripts use only the standard library. Verification needs a Verilog simulator (the reference regression uses Icarus Verilog `iverilog`/`vvp`). Implementation needs the open-source Yosys, nextpnr-ice40 and IceStorm `icepack` on `PATH` under exactly the names `yosys`, `nextpnr-ice40` and `icepack` (the check compares the recorded argv) and targets iCE40 hx1k/hx8k/lp8k/up5k only; no vendor license is used. Bring-up needs the physical board, a measurement setup and the operator's explicit permission to program it. The `requirements`, `rtl` and `verification` scopes need no FPGA tools or board. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 6068
+        },
+        {
+          "path": "evidence.py",
+          "size": 17592
+        },
+        {
+          "path": "fifo_reference/stream_fifo.sv",
+          "size": 1364
+        },
+        {
+          "path": "fifo_reference/stream_fifo_tb.sv",
+          "size": 3283
+        },
+        {
+          "path": "records.md",
+          "size": 8798
+        },
+        {
+          "path": "run_fifo_reference.py",
+          "size": 3885
+        },
+        {
+          "path": "run_implementation.py",
+          "size": 3069
+        },
+        {
+          "path": "skills/engineer/fpga-board-bringup.md",
+          "size": 2093
+        },
+        {
+          "path": "skills/engineer/fpga-engineering-map.md",
+          "size": 1699
+        },
+        {
+          "path": "skills/engineer/fpga-resources-timing.md",
+          "size": 2146
+        },
+        {
+          "path": "skills/engineer/verification-matrix.md",
+          "size": 2601
+        },
+        {
+          "path": "skills/manager/fpga-scope.md",
+          "size": 948
+        },
+        {
+          "path": "skills/reviewer/fpga-acceptance.md",
+          "size": 872
+        },
+        {
+          "path": "skills/reviewer/hardware-evidence-review.md",
+          "size": 3005
+        },
+        {
+          "path": "skills/reviewer/verification-acceptance.md",
+          "size": 955
+        }
+      ]
+    },
+    {
+      "name": "literary_editor",
+      "version": "0.2.0",
+      "description": "rewrite, expand, polish, proofread, or critique an existing literary text while preserving edit scope and source facts",
+      "description_zh": "改写、扩写、润色、校对或评论既有文学文本，保持编辑范围与原文事实不变",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; edit_check.py uses only the standard library and needs no GPU or network. The work needs the operator's source text and editing request; no other software, hardware, or license. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 3945
+        },
+        {
+          "path": "edit_check.py",
+          "size": 7313
+        },
+        {
+          "path": "skills/reviewer/edit-review.md",
+          "size": 1752
         }
       ]
     },
@@ -97,6 +653,698 @@
         {
           "path": "skills/reviewer/materials-validation-review.md",
           "size": 2053
+        }
+      ]
+    },
+    {
+      "name": "medical",
+      "version": "0.2.0",
+      "description": "biomedical and pharmaceutical evidence execution: target-disease mechanisms, human genetics, preclinical translation, clinical trials, safety, failed programs, competitive pipelines, and auditable non-diagnostic decision dossiers with independent review; not a generic paper pipeline",
+      "description_zh": "生物医药证据执行：靶点-疾病机制、人类遗传学、临床前转化、临床试验、安全性、失败项目、竞争管线，产出可审计的非诊断决策档案并独立评审；不是通用论文流水线",
+      "requires": [],
+      "needs": [
+        "Python 3.9+; dossier.py uses only the standard library and needs no GPU. `--live` needs outbound HTTPS to eutils.ncbi.nlm.nih.gov and clinicaltrials.gov (public, no key; NCBI usage limits apply). Claims that need methods, numbers, or context beyond metadata need access to the full-text publications or other primary sources, and paid sources or private data need the operator's authorization. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 9142
+        },
+        {
+          "path": "dossier.py",
+          "size": 42922
+        },
+        {
+          "path": "skills/engineer/target-disease-research.md",
+          "size": 3488
+        },
+        {
+          "path": "skills/manager/medical-manager.md",
+          "size": 908
+        },
+        {
+          "path": "skills/planner/medical-planning.md",
+          "size": 826
+        },
+        {
+          "path": "skills/reviewer/medical-evidence-review.md",
+          "size": 1418
+        }
+      ]
+    },
+    {
+      "name": "modern_poetry",
+      "version": "0.2.0",
+      "description": "compose or revise modern free verse/prose poems without classical prosody checks; enforce only declared hard constraints",
+      "description_zh": "创作或修改现代自由诗/散文诗，不做古典格律检查；只执行声明的硬性约束",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; poem_check.py uses only the standard library and needs no GPU, model, corpus, or license. Reference poems the request supplies may be read and cited only as the request permits; most modern verse is in copyright, so do not reproduce it beyond that. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 4027
+        },
+        {
+          "path": "poem_check.py",
+          "size": 9681
+        },
+        {
+          "path": "skills/reviewer/modern-verse-review.md",
+          "size": 2470
+        }
+      ]
+    },
+    {
+      "name": "package_design",
+      "version": "0.3.0",
+      "description": "Semiconductor package engineering: die attach, wire bond, flip chip and bumps, package substrates, interposers, chiplets, thermal paths, mechanical and assembly constraints; executable Gmsh/CalculiX steady thermal studies of ideal bonded stacks with fixed-temperature or prescribed convection boundaries; not PCB fabrication, RTL, RF network calculation, general structural FEA or physical qualification",
+      "description_zh": "半导体封装、键合倒装、基板中介层与芯粒集成知识；可选 Gmsh／CalculiX 理想粘结叠层稳态导热、显式对流边界与网格收敛",
+      "requires": [],
+      "needs": [
+        "Python 3.10+. `evidence.py` for the specification and model stages uses only the standard library; the thermal and review checks, `run_analysis.py` and `reference.py` also need numpy>=1.26 and, on PATH, Gmsh 4.x >= 4.12 (`gmsh`) and CalculiX 2.x >= 2.21 (`ccx`). Gmsh 4.12.1 and CalculiX 2.21 are the validated versions (Ubuntu 24.04: `apt-get install gmsh calculix-ccx`). Both are open source; no commercial EDA tool, license, GPU or physical lab is used. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 6526
+        },
+        {
+          "path": "evidence-contract.md",
+          "size": 10521
+        },
+        {
+          "path": "evidence.py",
+          "size": 5943
+        },
+        {
+          "path": "mesh.py",
+          "size": 11119
+        },
+        {
+          "path": "model.py",
+          "size": 12275
+        },
+        {
+          "path": "native.py",
+          "size": 11689
+        },
+        {
+          "path": "reference.py",
+          "size": 7080
+        },
+        {
+          "path": "run_analysis.py",
+          "size": 3039
+        },
+        {
+          "path": "skills/engineer/package-advanced-integration.md",
+          "size": 1339
+        },
+        {
+          "path": "skills/engineer/package-architecture.md",
+          "size": 1394
+        },
+        {
+          "path": "skills/engineer/package-assembly.md",
+          "size": 1285
+        },
+        {
+          "path": "skills/engineer/package-die-attach.md",
+          "size": 1319
+        },
+        {
+          "path": "skills/engineer/package-interconnect.md",
+          "size": 1298
+        },
+        {
+          "path": "skills/engineer/package-knowledge-map.md",
+          "size": 1701
+        },
+        {
+          "path": "skills/engineer/package-mechanics.md",
+          "size": 1266
+        },
+        {
+          "path": "skills/engineer/package-native-execution.md",
+          "size": 1578
+        },
+        {
+          "path": "skills/engineer/package-substrates.md",
+          "size": 1347
+        },
+        {
+          "path": "skills/engineer/package-thermal.md",
+          "size": 2012
+        },
+        {
+          "path": "skills/manager/package-decisions.md",
+          "size": 1105
+        },
+        {
+          "path": "skills/planner/package-planning.md",
+          "size": 1239
+        },
+        {
+          "path": "skills/reviewer/package-review.md",
+          "size": 1918
+        }
+      ]
+    },
+    {
+      "name": "pcb_design",
+      "version": "0.3.0",
+      "description": "PCB and printed circuit board engineering: schematics, components and footprints, stackup, placement, routing, return paths and fabrication preparation; executable KiCad copper-zone refill on copies, ERC/DRC, schematic-board parity, Gerber and Excellon drill outputs; not RTL, IC layout, RF network calculation, package design, field-solved SI/PI or physical qualification",
+      "description_zh": "PCB 原理图、器件封装、叠层布局布线与制造准备；KiCad 铜区副本重填、ERC/DRC、图板一致性和 Gerber/钻孔输出",
+      "requires": [],
+      "needs": [
+        "Python 3.10+ with `sexpdata>=1.0.2,<2` to read KiCad files (`--help` and the specification check use only the standard library). `run`, `reference` and the verification/review checks need KiCad 9.x with `kicad-cli` on PATH; boards with copper zones (`zone_refill: true`) also need KiCad's official `pcbnew` Python binding at exactly the same version, in its own interpreter (default `/usr/bin/python3`, or an absolute path given with `--kicad-python`). No GPU, license or network access is needed; fabrication, assembly, SI/PI field solving and physical testing are outside this pack. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 6639
+        },
+        {
+          "path": "evidence-contract.md",
+          "size": 9125
+        },
+        {
+          "path": "evidence.py",
+          "size": 44014
+        },
+        {
+          "path": "references/coupon/coupon.kicad_pcb",
+          "size": 5213
+        },
+        {
+          "path": "references/coupon/coupon.kicad_pro",
+          "size": 286
+        },
+        {
+          "path": "references/coupon/coupon.kicad_sch",
+          "size": 2233
+        },
+        {
+          "path": "references/coupon/fp-lib-table",
+          "size": 144
+        },
+        {
+          "path": "references/coupon/local.kicad_sym",
+          "size": 783
+        },
+        {
+          "path": "references/coupon/local.pretty/Probe.kicad_mod",
+          "size": 1268
+        },
+        {
+          "path": "references/coupon/sym-lib-table",
+          "size": 145
+        },
+        {
+          "path": "references/four-layer-zones.kicad_pcb",
+          "size": 6693
+        },
+        {
+          "path": "refill.py",
+          "size": 3260
+        },
+        {
+          "path": "skills/engineer/pcb-assembly.md",
+          "size": 1373
+        },
+        {
+          "path": "skills/engineer/pcb-components.md",
+          "size": 1435
+        },
+        {
+          "path": "skills/engineer/pcb-knowledge-map.md",
+          "size": 1657
+        },
+        {
+          "path": "skills/engineer/pcb-layout.md",
+          "size": 1432
+        },
+        {
+          "path": "skills/engineer/pcb-manufacturing.md",
+          "size": 1712
+        },
+        {
+          "path": "skills/engineer/pcb-native-execution.md",
+          "size": 2033
+        },
+        {
+          "path": "skills/engineer/pcb-power-thermal.md",
+          "size": 1342
+        },
+        {
+          "path": "skills/engineer/pcb-schematic.md",
+          "size": 1381
+        },
+        {
+          "path": "skills/engineer/pcb-signal-integrity.md",
+          "size": 1427
+        },
+        {
+          "path": "skills/engineer/pcb-stackup.md",
+          "size": 1485
+        },
+        {
+          "path": "skills/manager/pcb-decisions.md",
+          "size": 1057
+        },
+        {
+          "path": "skills/planner/pcb-planning.md",
+          "size": 1234
+        },
+        {
+          "path": "skills/reviewer/pcb-review.md",
+          "size": 1986
+        }
+      ]
+    },
+    {
+      "name": "physics",
+      "version": "0.2.0",
+      "description": "theory, simulation, data analysis, literature, or experiment design for a real physical system with bounded evidence",
+      "description_zh": "针对真实物理系统、在有界证据下进行理论、模拟、数据分析、文献或实验设计",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; manuscript.py uses only the standard library, needs no third-party package and no GPU. Building `MANUSCRIPT.pdf` needs a LaTeX distribution such as TeX Live (`pdflatex` or `latexmk`). The physics work itself needs whatever the chosen route demands: solvers or numerical libraries, compute, datasets, full-text literature access, and for experiment work the apparatus and authorization to use it. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 9023
+        },
+        {
+          "path": "manuscript.py",
+          "size": 2483
+        },
+        {
+          "path": "skills/engineer/physics-research-execution.md",
+          "size": 560
+        },
+        {
+          "path": "skills/planner/physics-research-planning.md",
+          "size": 488
+        },
+        {
+          "path": "skills/reviewer/physics-research-review.md",
+          "size": 590
+        }
+      ]
+    },
+    {
+      "name": "power_electronics",
+      "version": "0.3.0",
+      "description": "Power electronics: DC-DC converters, power switches and rectifiers, magnetics, control and protection, losses, filters and layout constraints; native ngspice Buck/Boost startup, ripple, load-step and finite operating/tolerance studies with margins; not general analog signal processing, PCB fabrication, RF networks or physical energizing",
+      "description_zh": "电力电子：变换器、功率器件、磁性元件与控制保护知识；ngspice Buck/Boost 启动、纹波、负载阶跃、功率平衡与多工况裕量诊断",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; the scripts use only the standard library and need no GPU. Simulation, review and the runners need native ngspice 42 or newer on PATH (`ngspice -n --version`); the specification and model checks need no simulator. No license, device library or hardware is used, and physical energizing is out of scope. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 7350
+        },
+        {
+          "path": "evidence-contract.md",
+          "size": 16586
+        },
+        {
+          "path": "evidence.py",
+          "size": 5938
+        },
+        {
+          "path": "model.py",
+          "size": 12050
+        },
+        {
+          "path": "native.py",
+          "size": 4637
+        },
+        {
+          "path": "robustness.py",
+          "size": 13425
+        },
+        {
+          "path": "run_analysis.py",
+          "size": 2763
+        },
+        {
+          "path": "run_reference.py",
+          "size": 6441
+        },
+        {
+          "path": "run_robustness_reference.py",
+          "size": 4707
+        },
+        {
+          "path": "shared.py",
+          "size": 10021
+        },
+        {
+          "path": "skills/engineer/power-capacitors-filters.md",
+          "size": 1068
+        },
+        {
+          "path": "skills/engineer/power-control-compensation.md",
+          "size": 1151
+        },
+        {
+          "path": "skills/engineer/power-converter-topologies.md",
+          "size": 1069
+        },
+        {
+          "path": "skills/engineer/power-emi-layout.md",
+          "size": 1111
+        },
+        {
+          "path": "skills/engineer/power-inverters-drives.md",
+          "size": 1046
+        },
+        {
+          "path": "skills/engineer/power-isolated-conversion.md",
+          "size": 1109
+        },
+        {
+          "path": "skills/engineer/power-knowledge-map.md",
+          "size": 1084
+        },
+        {
+          "path": "skills/engineer/power-losses-thermal.md",
+          "size": 1146
+        },
+        {
+          "path": "skills/engineer/power-magnetics.md",
+          "size": 1039
+        },
+        {
+          "path": "skills/engineer/power-native-execution.md",
+          "size": 1320
+        },
+        {
+          "path": "skills/engineer/power-operating-envelope.md",
+          "size": 4087
+        },
+        {
+          "path": "skills/engineer/power-protection-startup.md",
+          "size": 1119
+        },
+        {
+          "path": "skills/engineer/power-semiconductors-drivers.md",
+          "size": 1043
+        },
+        {
+          "path": "skills/manager/power-decisions.md",
+          "size": 1447
+        },
+        {
+          "path": "skills/planner/power-planning.md",
+          "size": 1596
+        },
+        {
+          "path": "skills/reviewer/power-review.md",
+          "size": 2292
+        },
+        {
+          "path": "study.py",
+          "size": 12721
+        },
+        {
+          "path": "waveform.py",
+          "size": 6417
+        }
+      ]
+    },
+    {
+      "name": "prose",
+      "version": "0.2.0",
+      "description": "compose or revise literary essays, memoir, or 抒情/叙事散文/随笔; not verse or plot-driven fiction",
+      "description_zh": "创作或修改文学随笔、回忆录或抒情/叙事散文/随笔；不是诗歌，也不是情节驱动的小说",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; prose_check.py uses only the standard library and needs no GPU. Writing needs the operator's own facts, memories and notes for memoir or essay material; public essays serve as technique reference only, with each work's rights checked. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 4298
+        },
+        {
+          "path": "prose_check.py",
+          "size": 15296
+        },
+        {
+          "path": "schemas/review.schema.json",
+          "size": 1747
+        },
+        {
+          "path": "schemas/task_envelope.schema.json",
+          "size": 1946
+        },
+        {
+          "path": "skills/reviewer/prose-review.md",
+          "size": 2628
+        }
+      ]
+    },
+    {
+      "name": "quant",
+      "version": "0.2.0",
+      "description": "equity factor research (IC/ICIR, backtest, Sharpe) producing a reviewer-certified report, not a generic metric loop",
+      "description_zh": "股票因子研究（IC/ICIR、回测、Sharpe），产出评审员认证的报告，不是通用指标循环",
+      "requires": [],
+      "needs": [
+        "Python 3.10+. search_ledger.py and backtest.py use only the standard library; analysis/ needs `numpy>=1.26` (`scipy>=1.11` optional: `ic_half_life` falls back to a two-point fit without it); model_toolkit/ needs numpy and `pandas>=2`, plus `lightgbm>=4` for the `gbdt` family, `torch>=2.2` for `mlp` (GPU when available, CPU otherwise) and `scikit-learn>=1.4` for the `linear` ridge baseline; charting.py needs pandas, `matplotlib>=3.8` and `mplfinance>=0.12.10b0`. The research itself needs the task's point-in-time equity data (prices, corporate actions, delisted names, universe membership) and a backtest engine for it; no license or special hardware. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 12706
+        },
+        {
+          "path": "analysis/__init__.py",
+          "size": 1217
+        },
+        {
+          "path": "analysis/factor_overfit.py",
+          "size": 13255
+        },
+        {
+          "path": "analysis/multiple_testing.py",
+          "size": 7965
+        },
+        {
+          "path": "analysis/oos_discipline.py",
+          "size": 2284
+        },
+        {
+          "path": "analysis/orthogonality.py",
+          "size": 4407
+        },
+        {
+          "path": "analysis/walk_forward.py",
+          "size": 6433
+        },
+        {
+          "path": "backtest.py",
+          "size": 6891
+        },
+        {
+          "path": "charting.py",
+          "size": 4910
+        },
+        {
+          "path": "model_toolkit/__init__.py",
+          "size": 1095
+        },
+        {
+          "path": "model_toolkit/registry.py",
+          "size": 3555
+        },
+        {
+          "path": "model_toolkit/selection.py",
+          "size": 8675
+        },
+        {
+          "path": "model_toolkit/task_profile.py",
+          "size": 4471
+        },
+        {
+          "path": "model_toolkit/trainers.py",
+          "size": 8010
+        },
+        {
+          "path": "search_ledger.py",
+          "size": 6276
+        },
+        {
+          "path": "skills/engineer/kline-chart.md",
+          "size": 1899
+        },
+        {
+          "path": "skills/engineer/model-selection-loop.md",
+          "size": 5145
+        },
+        {
+          "path": "skills/engineer/quant-factor-loop.md",
+          "size": 4845
+        },
+        {
+          "path": "skills/reviewer/quant-factor-report-review.md",
+          "size": 3874
+        }
+      ]
+    },
+    {
+      "name": "rf_design",
+      "version": "0.3.0",
+      "description": "RF and microwave network design: Touchstone/S parameters, impedance matching, transmission lines, port order and reference impedances, passive cascades, noise and stability reasoning; executable scikit-rf network analysis and finite component-tolerance/frequency robustness, not RTL, general SPICE transients, full-wave EM, PCB layout or physical certification",
+      "description_zh": "射频与微波网络：S 参数、传输线、阻抗匹配和端口约定；scikit-rf 网络分析、有限元件容差组合与频率加密稳健性",
+      "requires": [],
+      "needs": [
+        "Python 3.10+ with numpy>=1.26 and scikit-rf>=2.1,<3 (which brings scipy and pandas) for evidence.py; reference.py uses only the standard library but runs evidence.py with the same interpreter. Calculations run in-process on the CPU and need no GPU, EM or SPICE solver, license, VNA or other hardware; measured claims need the task's own Touchstone data and its provenance. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 6354
+        },
+        {
+          "path": "evidence-contract.md",
+          "size": 16728
+        },
+        {
+          "path": "evidence.py",
+          "size": 56059
+        },
+        {
+          "path": "reference.py",
+          "size": 8029
+        },
+        {
+          "path": "skills/engineer/rf-active-noise.md",
+          "size": 1722
+        },
+        {
+          "path": "skills/engineer/rf-filters.md",
+          "size": 1746
+        },
+        {
+          "path": "skills/engineer/rf-knowledge-map.md",
+          "size": 1894
+        },
+        {
+          "path": "skills/engineer/rf-matching.md",
+          "size": 2055
+        },
+        {
+          "path": "skills/engineer/rf-measurement.md",
+          "size": 1728
+        },
+        {
+          "path": "skills/engineer/rf-network-execution.md",
+          "size": 2345
+        },
+        {
+          "path": "skills/engineer/rf-physical.md",
+          "size": 1771
+        },
+        {
+          "path": "skills/engineer/rf-stability-passivity.md",
+          "size": 1705
+        },
+        {
+          "path": "skills/engineer/rf-transmission-lines.md",
+          "size": 1707
+        },
+        {
+          "path": "skills/engineer/rf-waves-ports.md",
+          "size": 1660
+        },
+        {
+          "path": "skills/manager/rf-scope-selection.md",
+          "size": 1537
+        },
+        {
+          "path": "skills/planner/rf-study-planning.md",
+          "size": 1574
+        },
+        {
+          "path": "skills/reviewer/rf-independent-review.md",
+          "size": 2283
+        }
+      ]
+    },
+    {
+      "name": "speedrun",
+      "version": "0.2.0",
+      "description": "single-metric script/benchmark optimization under a wall-clock budget: setup, optimize, measure, report; no paper",
+      "description_zh": "墙钟预算内的单指标脚本/基准优化：搭建、优化、测量、报告；不写论文",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; bundled evidence check uses only the standard library and needs no GPU. Optimization runs need the task's frozen scorer, inputs, benchmark software and declared hardware; the NanoGPT trace specifically needs its original 8xH100 harness and software. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 6623
+        },
+        {
+          "path": "evidence.py",
+          "size": 3173
+        },
+        {
+          "path": "skills/engineer/speedrun-hands-on-trace.md",
+          "size": 16931
+        },
+        {
+          "path": "skills/engineer/speedrun-sota-optimization.md",
+          "size": 26198
         }
       ]
     }

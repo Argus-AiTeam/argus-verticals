@@ -1,0 +1,6 @@
+Ideal RC frequency response
+.include models/rc.inc
+.temp 27
+.ac dec 100 10 1meg
+.save v(in) v(out)
+.end

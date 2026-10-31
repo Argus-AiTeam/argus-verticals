@@ -1,0 +1,6 @@
+Behavioral feedback amplifier frequency response
+.include models/amplifier.inc
+.temp 27
+.ac dec 100 10 10meg
+.save v(in) v(out) v(fb)
+.end

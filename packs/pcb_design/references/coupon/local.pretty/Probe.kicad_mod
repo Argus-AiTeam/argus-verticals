@@ -1,0 +1,75 @@
+(footprint "Probe"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "J"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "741ceaf6-d481-4e0a-9543-3234d69cf0a2")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "Probe"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "810f2e44-c436-44d1-ba28-2ebe60d7fffd")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "3dd050f3-b33c-4dcd-bda0-9eb0582dacbd")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "08389361-3a56-4bcb-9fdd-bca470c273ce")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_rect
+		(start -1.5 -1.5)
+		(end 1.5 1.5)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "0790e1f6-1957-483b-85dd-ecca8c8bcde0")
+	)
+	(pad "1" thru_hole circle
+		(at 0 0)
+		(size 2 2)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "98946bd5-e6c9-4235-bc3a-c665d534ea94")
+	)
+	(embedded_fonts no)
+)

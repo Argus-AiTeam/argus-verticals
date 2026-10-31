@@ -1,0 +1,6 @@
+Ideal RC DC transfer
+.include models/rc.inc
+.temp 27
+.dc V1 0 1 0.1
+.save v(in) v(out)
+.end

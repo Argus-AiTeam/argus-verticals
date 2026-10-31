@@ -1,0 +1,35 @@
+---
+name: Native KiCad Evidence
+description: "Use the canonical PCB contract and actual native tools while preserving the original project and failed attempts."
+---
+
+# Use the selected native operations
+
+[evidence-contract.md](../../evidence-contract.md) is the authoritative `pcb/PLAN.json`
+schema; this pack's SKILL.md lists the `evidence.py run` and `check` commands. Do not substitute a similar schema, generated PASS
+string or manual result record. Set initial acceptance from the user's request
+and actual design, not from whichever report happens to pass.
+
+Resolve the project, selected root schematic/board, hierarchical sheets, local
+libraries and optional rules before execution. Root filenames must share the
+project stem so KiCad loads the right settings. Preserve library identities;
+an embedded footprint does not eliminate the need to retain the library used
+by native consistency checks.
+
+ERC/DRC exit 5 records actual findings. Inspect errors, warnings, exclusions,
+unconnected items and requested parity results separately. Retain failed
+outputs; repair only an authorized design issue, and preserve the previous
+results before rerunning. Never suppress a rule to turn a defect into success.
+
+The verifier reruns native commands in a temporary copy and checks geometry and
+reports against current sources. It is read-only with respect to the project,
+not a text-only heuristic. Unavailable KiCad or an unsupported design subset
+must remain an explicit failure, never a successful fallback.
+
+For copper zones, explicitly select `zone_refill: true`. Keep original boards
+and frozen input copies unchanged; use the runner's separate refilled working
+board for both checking and export. Never refill manually in the source tree
+or export its old saved polygons. The official pcbnew binding must match the
+CLI version; its separate Python interpreter is not the one running `evidence.py`.
+If present, the custom-rule pre-fill report is only a configuration diagnostic.
+The selected DRC result is produced after filling.

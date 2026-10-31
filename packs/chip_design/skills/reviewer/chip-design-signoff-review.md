@@ -1,0 +1,219 @@
+---
+name: "Chip Design Sign-Off Review"
+description: "Independently review digital chip and accelerator projects for workload and architecture closure, EDA/PDK/IP readiness, RTL correctness, verification independence, PPA integrity, prototype evidence, benchmark fairness, claim scope, and tapeout readiness."
+---
+
+# Chip Design Sign-Off Review
+
+Read the active workflow profile and apply only the corresponding sections below.
+Architecture-only work needs a sound quantitative design, not RTL/PPA/prototype
+files. The `rtl` profile ends at verified RTL and is not the full `rtl_ip`
+delivery claim described below. Existing-design profiles must supply valid
+current prerequisites but do not recreate unchanged upstream work. Full delivery,
+and work with no profile named, retain the complete target-level requirements.
+Do not request ceremonial N/A files for omitted stages.
+
+For the bounded `control` profile, apply `references/control-contract.md` instead of
+the accelerator delivery checklists below. Engineer must already have authored
+`verification/CONTROL_REVIEW.md`, with required narrative and the exact measured
+JSON summary. Return missing or inaccurate deliverables to Engineer; do not
+write them on Engineer's behalf. Rerun
+`python3 '<this folder>/evidence.py' verification --workflow-profile control --project-root .`
+when your tools include a shell; otherwise judge from the Engineer's recorded
+output of that check and the raw evidence. Missing or failed check output is
+incomplete, and an Engineer-authored record labeled as Reviewer execution cannot
+substitute for it. Do not request a separate validation-only task or claim a run
+you did not make. Also
+inspect semantic event counts and cycle witnesses, and distinguish reference
+stimulus coverage from a faulty DUT's behavior. Missing coverage is not a valid
+negative diagnosis. A fully evidenced negative diagnosis can finish, but design
+and repair must pass without changing original conditions.
+
+For `custom`, inspect requested goals and their resolved companions, not just a
+Manager narrative. RTL/PPA work includes definition, architecture, environment
+and verification but need not prototype, benchmark or certify full delivery.
+Selecting `signoff` includes the full workflow and cannot weaken target-level
+checks. A scope change requires the operator's request; old evidence is reusable
+only while its inputs, constraints and source bindings remain valid.
+
+For non-control verification, read `references/verification-contract.md` and the
+output of `evidence.py verification` under the active profile (rerun it when your
+tools include a shell). It preserves custom scope requirements but is
+not independent proof of a numerical hypothesis. Check each claimed precision
+boundary and original tolerance against the project oracle, not just a passing
+unit test or a repaired import. An entry failure before numerical execution is
+unmeasured, not a rejected hypothesis. Do not acquire an experimental claim,
+replay a historical run or resume a daemon to fill an evidence gap.
+
+Review the raw files and request authorized decisive execution only when
+material evidence is missing, stale, contradictory, implausible, or not reproducible from the recorded
+command. Never certify from the Engineer summary alone. A successful canonical
+PPA record that binds the current RTL, verification, constraints, target library
+and toolchain through `source_copies`, with its raw logs, is itself the decisive
+run: inspect those files and their consistency, but do not launch a second full
+Yosys/ABC PPA solely for ceremony. Request PPA execution only after a source/constraint/toolchain
+binding changes or when the canonical evidence is incomplete or suspect.
+
+## Delivery-level boundaries
+
+Read `design/CHIP_SCOPE.json` first. Its delivery level names the target, not proof
+that this task completed that target. When those results are actually claimed,
+keep the following boundaries distinct:
+
+- `rtl_ip`: synthesizable, verified IP with synthesis/PPA evidence;
+- `fpga`: implemented and measured on named hardware;
+- `gds`: open/commercial PDK physical design with declared closure;
+- `pre_tapeout`: all computer-executable digital implementation and sign-off checks
+  are closed, but no foundry submission or fabrication is claimed;
+- `tapeout`: foundry/package/IO and independent sign-off readiness (every item in
+  [tapeout readiness](../../references/tapeout-readiness.md));
+- fabricated silicon: requires measured physical chips and is outside this enum.
+
+Turn back any wording that promotes one level into another.
+
+## Definition and architecture
+
+Require a frozen workload, quality/numerical formats, interfaces, target, baselines,
+non-goals, and measurable standards the result must meet. Challenge arithmetic-intensity,
+bandwidth, SRAM, DMA, host, KV-cache, latency, throughput, and power assumptions.
+
+For batch-1 LLM decode, turn back raw TOPS as the sole design target. Verify bytes/token,
+bandwidth efficiency, utilization, and host offload. Check Amdahl leverage before
+agreeing to a large architectural change.
+
+## Environment and IP readiness
+
+For an `rtl` task, verify the readiness report with `--workflow-profile rtl`:
+simulation and lint must be ready; future synthesis/physical tools are not
+required. A `full` task still needs every delivery-level capability.
+For `custom`, pass `--workflow-profile custom --workflow-stages <requested goals>`
+to `evidence.py environment`; it compares the report's effective stages with that
+scope. Reject missing/altered scope metadata and lowered capability lists. For a
+composed final review, use `python3 '<this folder>/evidence.py' signoff
+--workflow-profile custom --workflow-stages signoff --project-root .`.
+
+Send the work back when:
+
+- required capabilities in `ENVIRONMENT_AUDIT.json` are not ready;
+- tests and PPA use incompatible environments without justification;
+- the chosen PDK, FPGA, standard cells, SRAM, IP, or compiler lacks a pinned revision;
+- licenses or source provenance are missing;
+- an agent reinvents a mature project/vendor component without evidence;
+- a toolchain failure is incorrectly used to refute an architecture.
+
+Inspect `TOOLCHAIN_CANDIDATES.md`, `IP_REUSE_PLAN.md`, `TARGET.json`, containers,
+project scripts, and registry queries.
+
+## RTL review
+
+Inspect:
+
+- manifest/source/generator consistency;
+- widths, signedness, truncation, saturation, overflow, and numerical policy;
+- complete combinational and disciplined sequential assignments;
+- reset values, CDC/RDC, generated clocks, handshakes, backpressure, and recovery;
+- arbiters, queues, DMA/memory ordering, partial bursts, address bounds, and ECC/errors;
+- synthesizability, black boxes, latches, multiple drivers, X behavior, and parameters;
+- third-party IP wrappers/configuration/licenses.
+
+Generated netlists or checked-in Verilog do not replace generator-source review.
+
+## Verification standard
+
+Require an independent oracle and fresh command output. Challenge whether the
+reference simply repeats the RTL. Require representative and adversarial scenarios,
+random seeds, assertions, X/Z, formal where appropriate, coverage goals, and retained
+failure logs/waves.
+
+Numerical accelerator review includes quality/tolerance, overflow, saturation,
+rounding, quantization scales, exceptional values, and cross-configuration parity.
+Check the exact operator and selected parameter mode, including group versus
+full-reduction results and bias placement. Do not substitute an earlier
+primitive's overflow/zero policy for the current project's acceptance.
+Inspect all declared `source_copies` and any `verification/PLAN.json` supporting
+file closure; missing or changed numerical dependencies invalidate the record.
+The checker does not discover undeclared transitive imports or establish the
+scientific hypothesis from these bindings alone.
+
+Compile-only evidence, one happy-path test, stale output, or weakened expected
+values never suffice. Until verification passes, PPA and benchmark numbers are
+not worth interpreting.
+
+## PPA and physical-design integrity
+
+Check exact device/PDK, libraries, tools, configuration, clocks/I/O, corners,
+utilization, memory inclusion, activity, and power method. Inspect raw timing,
+area/resources, power, warnings, black boxes, congestion, and generated outputs.
+Require an incremental ledger for non-SRAM delta area, cells, Fmax, cycles, and
+remaining reserve. Challenge dedicated operator blocks when lifetimes permit measured
+resource folding, but turn back reuse that loses more PPA through mux/control overhead.
+
+For GDS/tapeout claims independently check STA, DRC, LVS, antenna, density, PDN,
+IO/package, SRAM/hard macros, and foundry deck provenance. Open-PDK 130nm PPA cannot
+be presented as an absolute win over 3–8nm commercial silicon.
+
+## Prototype review
+
+FPGA claims require a real bitstream and named board, tool version, clocks/resources,
+host/runtime, on-board correctness, power measurement, and logs. Simulator or
+FireSim results must be labeled as such.
+
+Structured N/A must match the delivery level and explain what remains unverified.
+
+## Benchmark fairness
+
+Apply the [comparison protocol](../../references/comparison-protocol.md).
+
+Require identical workload and quality constraints, offload partition, host work,
+memory bandwidth/capacity, resource/area budget, clocks, warmup, repetitions,
+synchronization, and power method.
+
+Report distributions and separately show:
+
+- kernel cycles/latency, throughput, effective bandwidth, utilization, and energy;
+- full-system TTFT, TPOT, tokens/s, watts, joules/token, and quality where available;
+- FPGA or same-node PPA;
+- commercial market context.
+
+For Gemmini/VTA/NVDLA baselines verify configuration parity and do not compare INT4
+candidate arithmetic with unmatched INT8 resources without quality/resource accounting.
+
+## Autonomy and provenance
+
+Require role/DAG/event/checkpoint history, git commits, candidate and rejected attempts,
+raw evaluator/PPA logs, tool identities, source and output paths, and intervention records. The
+controller may prepare public inputs and run sealed evaluation, but controller-authored
+RTL, repaired outputs, or hidden-oracle feedback invalidate an autonomous-design claim.
+
+## Final decision
+
+Return done only when:
+
+- the declared delivery level is fully supported;
+- all preceding stage results are current and bound by `source_copies`;
+- reproduction works from documented source/tooling;
+- claims are bounded to the evidence;
+- known limitations and unsupported levels are prominent;
+- a maintainer or hardware reviewer can reproduce the result without guessing.
+
+Otherwise return a concrete HOLD/continue reason at the earliest invalid stage.
+
+## Capability-boundary iteration reuse
+
+Reuse Reviewer-certified upstream evidence unless the current delta contradicts
+it. Adding support for the next operator is not by itself a product-scope,
+architecture, or environment change. Reopen the earliest genuinely changed
+contract and decline ceremonial regeneration of stable upstream records. For
+intermediate operator and operator-group uplifts, accept the
+rtl/verification/PPA delta without demanding ceremonial prototype N/A, full
+benchmark, multi-node PPA or a rerun of the signoff stage. Turn back any claimed
+target relaxation that lacks the operator's explicit authorization; the
+Reviewer's judgment alone cannot change an operator-owned numeric target.
+
+Every reused verification, PPA, or benchmark result must bind the current
+`design/RTL_MANIFEST.json` through its `source_copies`. A stale binding is a concrete conflict and
+cannot be waived by prose. Non-milestone operator uplifts use the fast
+RTL→verification→Sky130-PPA loop; reserve prototype, full benchmark, multi-node
+PPA, sign-off, and milestone commits for a complete target hardware workload, a
+complete model/system demonstration, or an operator-requested release.
+Intermediate operator groups are checkpoints, not release milestones.

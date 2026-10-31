@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "state_patch",
+  "description": "One state_patch: a patch_id and a list of ops, each matching exactly one op shape below. Stray op-level keys, unknown value keys and an id given both at op level and in value with different values are rejected. Referential integrity (ids exist), no-overwrite and idempotency are checked by fiction.py apply.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["patch_id", "ops"],
+  "properties": {
+    "patch_id": {"type": "string", "minLength": 1},
+    "chapter": {"type": ["integer", "null"]},
+    "language": {"type": "string", "enum": ["zh", "en"]},
+    "based_on_revision": {"type": ["integer", "null"]},
+    "ops": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object", "additionalProperties": false, "required": ["op"],
+            "properties": {
+              "op": {"const": "set_meta"},
+              "set": {"type": "object", "additionalProperties": false,
+                "properties": {"form": {}, "title": {}, "language": {}, "world_clock": {}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_character"},
+              "id": {"type": "string", "minLength": 1},
+              "value": {"type": "object", "additionalProperties": false, "required": ["name"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "name": {"type": "string", "minLength": 1}, "aliases": {}, "status": {},
+                  "knows": {}, "location": {}, "birth_year": {}, "age": {},
+                  "motivation": {}, "notes": {}}}
+            },
+            "oneOf": [{"required": ["id"]}, {"properties": {"value": {"required": ["id"]}}}]
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_location"},
+              "id": {"type": "string", "minLength": 1},
+              "value": {"type": "object", "additionalProperties": false, "required": ["name"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "name": {"type": "string", "minLength": 1}, "notes": {}}}
+            },
+            "oneOf": [{"required": ["id"]}, {"properties": {"value": {"required": ["id"]}}}]
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_item"},
+              "id": {"type": "string", "minLength": 1},
+              "value": {"type": "object", "additionalProperties": false, "required": ["name"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "name": {"type": "string", "minLength": 1}, "holder": {}, "location": {}, "notes": {}}}
+            },
+            "oneOf": [{"required": ["id"]}, {"properties": {"value": {"required": ["id"]}}}]
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "id"],
+            "properties": {
+              "op": {"const": "update_character"},
+              "id": {"type": "string", "minLength": 1},
+              "set": {"type": "object", "additionalProperties": false,
+                "properties": {"name": {}, "aliases": {}, "status": {}, "knows": {},
+                  "location": {}, "birth_year": {}, "age": {}, "motivation": {}, "notes": {}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_relationship"},
+              "value": {"type": "object", "additionalProperties": false,
+                "required": ["from", "to", "type"],
+                "properties": {"from": {"type": "string", "minLength": 1},
+                  "to": {"type": "string", "minLength": 1},
+                  "type": {"type": "string", "minLength": 1}, "notes": {}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_world_rule"},
+              "value": {"type": "object", "additionalProperties": false,
+                "required": ["id", "statement"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "statement": {"type": "string", "minLength": 1}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_timeline"},
+              "value": {"type": "object", "additionalProperties": false,
+                "required": ["id", "order", "label"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "order": {"type": "integer"},
+                  "label": {"type": "string", "minLength": 1}, "year": {}, "chapter": {}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_open_thread"},
+              "value": {"type": "object", "additionalProperties": false,
+                "required": ["id", "statement"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "statement": {"type": "string", "minLength": 1}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "value"],
+            "properties": {
+              "op": {"const": "add_foreshadowing"},
+              "value": {"type": "object", "additionalProperties": false,
+                "required": ["id", "statement"],
+                "properties": {"id": {"type": "string", "minLength": 1},
+                  "statement": {"type": "string", "minLength": 1},
+                  "planted_chapter": {}, "payoff_chapter": {}, "status": {}}}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "id"],
+            "properties": {
+              "op": {"const": "move_item"},
+              "id": {"type": "string", "minLength": 1},
+              "to_holder": {"type": ["string", "null"]},
+              "to_location": {"type": ["string", "null"]}
+            },
+            "oneOf": [{"required": ["to_holder"]}, {"required": ["to_location"]}]
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "id"],
+            "properties": {
+              "op": {"const": "resolve_thread"},
+              "id": {"type": "string", "minLength": 1}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "id"],
+            "properties": {
+              "op": {"const": "resolve_foreshadowing"},
+              "id": {"type": "string", "minLength": 1},
+              "payoff_chapter": {"type": ["integer", "null"]}
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false, "required": ["op", "chapter"],
+            "properties": {
+              "op": {"const": "add_chapter_summary"},
+              "chapter": {"type": "integer"},
+              "summary": {"type": "string"}
+            }
+          }
+        ]
+      }
+    }
+  }
+}
