@@ -15,6 +15,7 @@ import argparse
 import json
 import re
 import sys
+from contextlib import suppress
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,7 +25,10 @@ CATALOG = PACKS / "catalog.json"
 
 def field(matter: str, key: str) -> str:
     said = (re.search(rf"^{key}:[ \t]*(.*)$", matter, re.M) or [None, ""])[1].strip()
-    return json.loads(said) if said.startswith('"') else re.sub(r"^'(.*)'$", r"\1", said)
+    with suppress(ValueError):  # quoted, yet no JSON string: as written, like Argus
+        if said.startswith('"'):
+            return json.loads(said)
+    return re.sub(r"^'(.*)'$", r"\1", said)
 
 
 def pack(folder: Path) -> dict:
