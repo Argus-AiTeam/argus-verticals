@@ -1,0 +1,12 @@
+(kicad_symbol_lib (version 20231120) (generator "kicad_symbol_editor")
+  (symbol "Probe" (pin_names (offset 0)) (in_bom yes) (on_board yes)
+    (property "Reference" "J" (at 0 2.54 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "Probe" (at 0 -2.54 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "Local:Probe" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (symbol "Probe_0_1" (circle (center 0 0) (radius 1.27) (stroke (width 0.254) (type default)) (fill (type none))))
+    (symbol "Probe_1_1"
+      (pin passive line (at 0 0 0) (length 0)
+        (name "1" (effects (font (size 1.27 1.27))))
+        (number "1" (effects (font (size 1.27 1.27)))))))
+)

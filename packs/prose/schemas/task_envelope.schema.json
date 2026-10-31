@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "task_envelope",
+  "description": "The prose task as one record, written before planning. `mode` is a CLOSED enum of authoring task types; `form` names the prose form (lyric_essay, narrative_essay, essay, memoir, 散文, 抒情散文, 叙事散文, 随笔, 回忆). One rule the schema cannot express is checked by `prose_check.py brief`: a mode that works on existing text (continuation, rewrite, expand, polish, proofread, critique) needs a reference input with role source_text or prior_state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "mode", "language", "form", "intent"],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "mode": {
+      "type": "string",
+      "enum": ["from_scratch", "continuation", "outline", "rewrite", "expand",
+               "polish", "proofread", "critique", "research_assisted"]
+    },
+    "language": {"type": "string", "enum": ["zh", "en"]},
+    "form": {"type": "string", "minLength": 1},
+    "genre_profile": {"type": "string"},
+    "intent": {"type": "string", "minLength": 1},
+    "audience": {"type": "string"},
+    "target_length": {"type": ["integer", "null"], "minimum": 0},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "reference_inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "ref"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["source_text", "prior_state", "style_reference", "research_source"]
+          },
+          "ref": {"type": "string", "minLength": 1},
+          "language": {"type": "string", "enum": ["zh", "en"]}
+        }
+      }
+    },
+    "retrieval_policy": {"type": "string", "enum": ["none", "query_only", "cite_required"]},
+    "output_requirements": {"type": "object"}
+  }
+}
