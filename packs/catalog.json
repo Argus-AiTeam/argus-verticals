@@ -1,0 +1,104 @@
+{
+  "packs": [
+    {
+      "name": "speedrun",
+      "version": "0.2.0",
+      "description": "single-metric script/benchmark optimization under a wall-clock budget: setup, optimize, measure, report; no paper",
+      "description_zh": "墙钟预算内的单指标脚本/基准优化：搭建、优化、测量、报告；不写论文",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; bundled evidence check uses only the standard library and needs no GPU. Optimization runs need the task's frozen scorer, inputs, benchmark software and declared hardware; the NanoGPT trace specifically needs its original 8xH100 harness and software. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 6623
+        },
+        {
+          "path": "evidence.py",
+          "size": 3173
+        },
+        {
+          "path": "skills/engineer/speedrun-hands-on-trace.md",
+          "size": 16931
+        },
+        {
+          "path": "skills/engineer/speedrun-sota-optimization.md",
+          "size": 26198
+        }
+      ]
+    },
+    {
+      "name": "materials",
+      "version": "0.2.0",
+      "description": "materials science and materials processing across atomistic, microstructure, continuum, CAD/CAE, and experimental scales",
+      "description_zh": "材料科学与材料加工，跨原子、微观组织、连续介质、CAD/CAE 与实验尺度",
+      "requires": [],
+      "needs": [
+        "Python 3.10+; evidence.py uses only the standard library and needs no GPU. Scientific execution needs task-selected data, solver or instrument access, licenses and hardware, and authorization for physical work. Nothing is installed or detected by this pack."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 10664
+        },
+        {
+          "path": "evidence.py",
+          "size": 4463
+        },
+        {
+          "path": "skills/engineer/materials-atomistic-simulation.md",
+          "size": 2707
+        },
+        {
+          "path": "skills/engineer/materials-cad-cae-process-simulation.md",
+          "size": 3216
+        },
+        {
+          "path": "skills/engineer/materials-data-literature-grounding.md",
+          "size": 2020
+        },
+        {
+          "path": "skills/engineer/materials-ecosystem-routing.md",
+          "size": 3554
+        },
+        {
+          "path": "skills/engineer/materials-experiment-loop.md",
+          "size": 1975
+        },
+        {
+          "path": "skills/engineer/materials-research-execution.md",
+          "size": 2065
+        },
+        {
+          "path": "skills/manager/materials-research-manager.md",
+          "size": 1458
+        },
+        {
+          "path": "skills/planner/materials-research-planning.md",
+          "size": 2106
+        },
+        {
+          "path": "skills/reviewer/materials-research-review.md",
+          "size": 2283
+        },
+        {
+          "path": "skills/reviewer/materials-simulation-signoff.md",
+          "size": 2283
+        },
+        {
+          "path": "skills/reviewer/materials-validation-review.md",
+          "size": 2053
+        }
+      ]
+    }
+  ]
+}
