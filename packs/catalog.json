@@ -708,11 +708,11 @@
         },
         {
           "path": "special_prompts/30-continuous-counterexample-search.md",
-          "size": 796
+          "size": 1297
         },
         {
           "path": "special_prompts/40-campaign-local-validation.md",
-          "size": 1179
+          "size": 1579
         }
       ]
     },

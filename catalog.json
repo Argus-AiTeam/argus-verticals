@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "d098dea3dcfa1d3de6428581e59bca7185ccd16b",
+    "commit": "7f8233649187f1b33037108cfe6836bea7b34e67",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -420,7 +420,7 @@
       "requires": [],
       "routing_path": [],
       "shared": [],
-      "size_bytes": 307533,
+      "size_bytes": 308434,
       "skill_parents": [
         "math"
       ],
