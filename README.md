@@ -362,3 +362,7 @@ the conformance test fails on metadata that no longer matches `pyproject.toml`
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+## `math_counterexample`
+
+Exact counterexample, refutation, scope-correction, and proof-graph campaigns (`argus_verticals.math_counterexample`), packaging the claim ledger (`math_state.py`), directed proof dependency graph (`proof_graph.py` / `proof_graph_check.py`), primary-source citation verifier (`citation_check.py`), Lean 4 formal-artifact verifier (`lean_evidence.py`), and role skill prompts used in the Argus Live Counterexample Lab.

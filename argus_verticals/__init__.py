@@ -18,6 +18,7 @@ Verticals in this package:
 - ``kernelbench``: correctness-checked SOL score / speedup on KernelBench.
 - ``literary_editor``: rewrite, expand, polish, proofread, or critique a text.
 - ``materials``: materials science and processing across scales.
+- ``math_counterexample``: exact counterexample, refutation, scope-correction, and proof-graph campaigns with claim-ledger, Lean 4, and Jacobian verification.
 - ``medical``: biomedical and pharmaceutical evidence dossiers.
 - ``modern_poetry``: modern free verse and prose poems.
 - ``nanochat``: minimise val_bpb on the nanochat ``train.py``.

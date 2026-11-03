@@ -657,6 +657,66 @@
       ]
     },
     {
+      "name": "math_counterexample",
+      "version": "0.1.2",
+      "description": "exact counterexample, refutation, scope-correction, and proof-graph campaigns with claim-ledger, Lean 4, and Jacobian verification",
+      "description_zh": "带命题账本、证明图、Lean 4 与 Jacobian 精确算术核验的数学反例、反驳与范围勘误研究垂直领域",
+      "requires": [],
+      "needs": [
+        "Python 3.11+; `proof_graph_check.py` uses only the Python standard library. Optional tools used by campaigns include Jacobian (`jacobian` CLI / `jacobian-mcp`) for exact symbolic/LP/SMT/integer-matrix certificates and Lean 4 (`lake` / `lean`) for formal proof verification."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 1109
+        },
+        {
+          "path": "SKILL.md",
+          "size": 1985
+        },
+        {
+          "path": "proof_graph.py",
+          "size": 11215
+        },
+        {
+          "path": "proof_graph_check.py",
+          "size": 2506
+        },
+        {
+          "path": "skills/engineer/math-research-execution.md",
+          "size": 17303
+        },
+        {
+          "path": "skills/manager/math-research-manager.md",
+          "size": 630
+        },
+        {
+          "path": "skills/planner/math-research-planning.md",
+          "size": 2659
+        },
+        {
+          "path": "skills/reviewer/math-research-review.md",
+          "size": 7435
+        },
+        {
+          "path": "special_prompts/10-house-rules.md",
+          "size": 236
+        },
+        {
+          "path": "special_prompts/20-jacobian-adapter-path.md",
+          "size": 811
+        },
+        {
+          "path": "special_prompts/30-continuous-counterexample-search.md",
+          "size": 796
+        },
+        {
+          "path": "special_prompts/40-campaign-local-validation.md",
+          "size": 1179
+        }
+      ]
+    },
+    {
       "name": "medical",
       "version": "0.2.0",
       "description": "biomedical and pharmaceutical evidence execution: target-disease mechanisms, human genetics, preclinical translation, clinical trials, safety, failed programs, competitive pipelines, and auditable non-diagnostic decision dossiers with independent review; not a generic paper pipeline",

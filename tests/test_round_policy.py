@@ -55,6 +55,7 @@ EXPECTED: dict[str, tuple[int, int, int, int]] = {
     "speedrun": OPTIMIZE,
     "ale_last_exam": RESEARCH,
     "materials": RESEARCH,
+    "math_counterexample": RESEARCH,
     "medical": RESEARCH,
     "physics": RESEARCH,
     "quant": RESEARCH,

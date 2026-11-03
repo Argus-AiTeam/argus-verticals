@@ -1,6 +1,6 @@
 {
   "generated_from": {
-    "commit": "6cd36d7df009181167a28a631f355eb486b07ba3",
+    "commit": "d098dea3dcfa1d3de6428581e59bca7185ccd16b",
     "repo": "Argus-AiTeam/argus-verticals"
   },
   "schema": 1,
@@ -403,6 +403,34 @@
         "simulation"
       ],
       "version": "0.2.0"
+    },
+    "math_counterexample": {
+      "api_version": 1,
+      "has_skills": true,
+      "maintainers": [],
+      "min_argus": "2026-09-14-split",
+      "module": "argus_verticals.math_counterexample.stages",
+      "name": "math_counterexample",
+      "paths": [
+        "argus_verticals/math_counterexample"
+      ],
+      "purpose": "exact counterexample, refutation, scope-correction, and proof-graph campaigns with claim-ledger, Lean 4, and Jacobian verification",
+      "purpose_zh": "带命题账本、证明图、Lean 4 与 Jacobian 精确算术核验的数学反例、反驳与范围勘误研究垂直领域",
+      "python_requirements": [],
+      "requires": [],
+      "routing_path": [],
+      "shared": [],
+      "size_bytes": 307533,
+      "skill_parents": [
+        "math"
+      ],
+      "tags": [
+        "science",
+        "math",
+        "counterexample",
+        "proof-graph"
+      ],
+      "version": "0.1.2"
     },
     "medical": {
       "api_version": 1,

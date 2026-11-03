@@ -1,0 +1,20 @@
+{
+  "name": "math_counterexample",
+  "version": "0.1.2",
+  "module": "argus_verticals.math_counterexample.stages",
+  "purpose_zh": "带命题账本、证明图、Lean 4 与 Jacobian 精确算术核验的数学反例、反驳与范围勘误研究垂直领域",
+  "paths": [
+    "argus_verticals/math_counterexample"
+  ],
+  "requires": [],
+  "shared": [],
+  "python_requirements": [],
+  "tags": [
+    "science",
+    "math",
+    "counterexample",
+    "proof-graph"
+  ],
+  "maintainers": [],
+  "min_argus": "2026-09-14-split"
+}
